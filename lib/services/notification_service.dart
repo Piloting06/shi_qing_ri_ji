@@ -131,13 +131,20 @@ class NotificationService {
         iOS: const DarwinNotificationDetails(),
       );
 
+      // Android 14+ 精准闹钟可能被用户关闭，降级为非精准（仍会提醒，可能偏差几分钟）
+      var mode = AndroidScheduleMode.exactAllowWhileIdle;
+      final canExact = await android?.canScheduleExactNotifications();
+      if (canExact == false) {
+        mode = AndroidScheduleMode.inexactAllowWhileIdle;
+      }
+
       await _notifications.zonedSchedule(
         700000 + capsuleId,
         '给未来自己的提醒卡片',
         preview,
         trigger,
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: mode,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         payload: jsonEncode({'type': 'capsule', 'capsuleId': capsuleId}),
@@ -219,6 +226,11 @@ class NotificationService {
     }
 
     final now = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
+    var testMode = AndroidScheduleMode.exactAllowWhileIdle;
+    final canExact = await android?.canScheduleExactNotifications();
+    if (canExact == false) {
+      testMode = AndroidScheduleMode.inexactAllowWhileIdle;
+    }
     await _notifications.zonedSchedule(
       999999,
       '测试胶囊提醒',
@@ -233,7 +245,7 @@ class NotificationService {
           priority: Priority.high,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: testMode,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
     return null; // success

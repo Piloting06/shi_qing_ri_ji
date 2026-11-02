@@ -183,7 +183,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         color: theme.textSecondary.withAlpha(150),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -229,7 +229,7 @@ class _FriendsPageState extends State<FriendsPage> {
                       disabledBackgroundColor: theme.borderColor,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                     child: searching
@@ -368,7 +368,7 @@ class _FriendsPageState extends State<FriendsPage> {
                 decoration: BoxDecoration(
                   color: theme.cardColor,
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
+                    top: Radius.circular(8),
                   ),
                   border: Border(top: BorderSide(color: theme.borderColor)),
                 ),
@@ -422,7 +422,7 @@ class _FriendsPageState extends State<FriendsPage> {
                             color: theme.textSecondary.withAlpha(150),
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           contentPadding: const EdgeInsets.all(14),
                         ),
@@ -439,7 +439,7 @@ class _FriendsPageState extends State<FriendsPage> {
                             backgroundColor: theme.accentColor,
                             foregroundColor: theme.textOnAccent,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                           child: sending
@@ -585,7 +585,7 @@ class _FriendsPageState extends State<FriendsPage> {
                     foregroundColor: theme.textOnAccent,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
@@ -1350,7 +1350,7 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
                       color: theme.textSecondary.withAlpha(150),
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,

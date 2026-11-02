@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fast_gbk/fast_gbk.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -353,6 +354,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<_WeatherLocation?> _ipLocation() async {
+    // ① 国内服务优先：城市级解析，对国内手机运营商 IP 明显更准
+    //    （运营商网关常把 IP 归到省会的机房城市，这正是"定位到杭州"的残余来源）
+    final cn = await _chinaIpLocation();
+    if (cn != null) return cn;
+
+    // ② ip-api 国际兜底（自带经纬度）
     final loc = await _clientIpLocation();
     if (loc['status'] != 'success' ||
         loc['lat'] == null ||
@@ -381,6 +388,38 @@ class _HomePageState extends State<HomePage> {
       status: 'IP 定位',
       cacheable: true,
     );
+  }
+
+  /// pconline（太平洋电脑网）IP 服务：HTTPS 免 key、国内网络稳定、城市级。
+  /// 返回 GBK 编码的 JSONP，需要按 GBK 解码；解析失败返回 null 走下一级。
+  Future<_WeatherLocation?> _chinaIpLocation() async {
+    try {
+      final res = await http
+          .get(
+            Uri.parse('https://whois.pconline.com.cn/ipJson.jsp?json=true'),
+          )
+          .timeout(const Duration(seconds: 4));
+      final body = gbk.decode(res.bodyBytes);
+      final i = body.indexOf('{');
+      final j = body.lastIndexOf('}');
+      if (i < 0 || j <= i) return null;
+      final obj = json.decode(body.substring(i, j + 1));
+      final city = (obj['city'] ?? '').toString().replaceAll('市', '');
+      final pro = (obj['pro'] ?? '').toString().replaceAll('省', '');
+      if (city.isEmpty) return null;
+      final matches = searchCityLocally(city);
+      if (matches.isEmpty) return null;
+      final c = matches.first;
+      return _WeatherLocation(
+        lat: c.lat,
+        lon: c.lng,
+        city: '$city，$pro，中国',
+        status: 'IP 定位',
+        cacheable: true,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _cacheLocation(

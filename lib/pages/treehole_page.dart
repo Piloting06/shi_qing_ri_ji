@@ -289,7 +289,7 @@ class _TreeholePageState extends State<TreeholePage>
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: theme.borderColor),
       ),
       child: Row(
@@ -300,7 +300,7 @@ class _TreeholePageState extends State<TreeholePage>
             height: 36,
             decoration: BoxDecoration(
               color: theme.gold.withAlpha(22),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.edit_note_outlined, color: theme.gold, size: 18),
           ),
@@ -515,13 +515,13 @@ class _TreeholePageState extends State<TreeholePage>
       children: [
         // Toggle button
         InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           onTap: () => _toggleComments(msgId),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: theme.surfaceAlpha,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -573,7 +573,7 @@ class _TreeholePageState extends State<TreeholePage>
                       hintText: '匿名回应一句...',
                       hintStyle: TextStyle(color: theme.textTertiary, fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       counterText: '',
@@ -799,7 +799,7 @@ class _TreeholePageState extends State<TreeholePage>
                         color: theme.textSecondary.withAlpha(150),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,

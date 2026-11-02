@@ -177,7 +177,7 @@ class _WeatherMark extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: theme.cardColor.withAlpha(theme.isDark ? 230 : 245),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: theme.borderColor),
         boxShadow: [
           BoxShadow(

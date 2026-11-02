@@ -143,7 +143,7 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: t.cardColor,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                             border:
                                 Border.all(color: t.borderColor.withAlpha(80)),
                             boxShadow: [
@@ -156,7 +156,7 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
                             ],
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [

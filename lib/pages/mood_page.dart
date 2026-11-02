@@ -487,7 +487,7 @@ class _MoodPageState extends State<MoodPage>
                       return GlowWrap(
                         accentColor: color,
                         radius: 30,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         onTap: () => _selectMood(s),
                         child: AnimatedScale(
                           scale: active ? 1.05 : 1.0,
@@ -498,7 +498,7 @@ class _MoodPageState extends State<MoodPage>
                               color: active
                                   ? color.withAlpha(28)
                                   : t.surfaceAlpha,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: active
                                     ? color.withAlpha(180)
@@ -540,7 +540,7 @@ class _MoodPageState extends State<MoodPage>
                           return GlowWrap(
                             accentColor: t.accentColor,
                             radius: 25,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(8),
                             onTap: () => setState(() {
                               if (sel) {
                                 _selectedTags.remove(tag['id']);
@@ -559,7 +559,7 @@ class _MoodPageState extends State<MoodPage>
                                 color: sel
                                     ? t.accentColor.withAlpha(30)
                                     : t.borderColor.withAlpha(60),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: sel
                                       ? t.accentColor.withAlpha(180)
@@ -839,7 +839,7 @@ class _MoodPageState extends State<MoodPage>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: t.accentColor.withAlpha(15),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: t.accentColor.withAlpha(30)),
       ),
       child: Row(
@@ -1288,7 +1288,7 @@ class _MoodPageState extends State<MoodPage>
       context: context,
       backgroundColor: t.cardColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
@@ -1392,7 +1392,7 @@ class _MoodPageState extends State<MoodPage>
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         color: t.cardColor.withAlpha(245),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: t.borderColor),
         boxShadow: XqDecorations.shadowSubtle(dark: t.isDark),
       ),
@@ -1456,7 +1456,7 @@ class _MoodPageState extends State<MoodPage>
                 elevation: 0,
                 minimumSize: const Size(100, 44),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),

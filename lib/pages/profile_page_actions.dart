@@ -170,7 +170,7 @@ extension _ProfilePageActions on _ProfilePageState {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: theme.cardColor,
         title: Text(
           '注销账号',
@@ -278,7 +278,7 @@ extension _ProfilePageActions on _ProfilePageState {
                       foregroundColor: theme.accentColor,
                       side: BorderSide(color: theme.accentColor.withAlpha(120)),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                     child: Row(
@@ -308,7 +308,7 @@ extension _ProfilePageActions on _ProfilePageState {
                       backgroundColor: theme.errorColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                     child: Row(

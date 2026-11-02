@@ -121,7 +121,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                         fontSize: 13,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.borderColor),
                       ),
                       contentPadding: const EdgeInsets.all(12),
@@ -145,7 +145,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                         backgroundColor: theme.accentColor,
                         foregroundColor: theme.textOnAccent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: const Text('记下来'),

@@ -6,12 +6,12 @@ class XqDecorations {
   XqDecorations._();
 
   // ── 圆角（微信风格：克制、精确）──
-  static const radiusSmall = 6.0;
-  static const radiusMedium = 10.0;
-  static const radiusCard = 14.0;
-  static const radiusLarge = 16.0;
-  static const radiusHero = 20.0;
-  static const radiusSheet = 16.0;
+  static const radiusSmall = 4.0;
+  static const radiusMedium = 8.0;
+  static const radiusCard = 8.0;
+  static const radiusLarge = 8.0;
+  static const radiusHero = 8.0;
+  static const radiusSheet = 8.0;
 
   // ── 阴影 ──
   static List<BoxShadow> shadowSubtle({bool dark = false}) => [

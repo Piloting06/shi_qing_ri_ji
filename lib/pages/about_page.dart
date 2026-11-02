@@ -200,7 +200,7 @@ class AboutPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: theme.accentColor.withAlpha(15),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               'v2.6.0',
@@ -266,7 +266,7 @@ class AboutPage extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         onTap: onTap != null
             ? () {
                 HapticFeedback.selectionClick();
@@ -283,7 +283,7 @@ class AboutPage extends StatelessWidget {
                 height: 38,
                 decoration: BoxDecoration(
                   color: theme.accentColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: theme.accentColor, size: 18),
               ),
@@ -430,7 +430,7 @@ class AboutPage extends StatelessWidget {
       builder: (_) => Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
         ),
         child: SafeArea(
           top: false,
@@ -487,7 +487,7 @@ class AboutPage extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: theme.accentColor.withAlpha(10),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
@@ -522,7 +522,7 @@ class AboutPage extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: theme.backgroundColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: theme.borderColor.withAlpha(60)),
         ),
         child: Row(
@@ -612,7 +612,7 @@ class AboutPage extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12)),
+            borderRadius: BorderRadius.circular(8)),
         backgroundColor: theme.cardColor,
         title: Row(
           children: [
@@ -669,7 +669,7 @@ class AboutPage extends StatelessWidget {
       builder: (_) => Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
         ),
         child: SafeArea(
           top: false,
@@ -749,7 +749,7 @@ class AboutPage extends StatelessWidget {
                       foregroundColor: theme.accentColor,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                         side: BorderSide(color: theme.borderColor),
                       ),
                     ),
@@ -777,7 +777,7 @@ class AboutPage extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: theme.backgroundColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: theme.borderColor.withAlpha(60)),
         ),
         child: Column(
@@ -851,7 +851,7 @@ class AboutPage extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: theme.cardColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
             child: SafeArea(
               top: false,
@@ -915,15 +915,15 @@ class AboutPage extends StatelessWidget {
                         filled: true,
                         fillColor: theme.backgroundColor,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: theme.borderColor),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: theme.borderColor.withAlpha(120)),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: theme.accentColor, width: 1.5),
                         ),
                         contentPadding: const EdgeInsets.all(14),
@@ -979,7 +979,7 @@ class AboutPage extends StatelessWidget {
                           backgroundColor: theme.accentColor,
                           foregroundColor: theme.textOnAccent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: sending

@@ -316,7 +316,7 @@ class _CityMapPageState extends State<CityMapPage>
               child: GlowWrap(
                 accentColor: active ? chipColor : theme.accentColor,
                 radius: 20,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 onTap: () => setState(() => _moodFilter = key),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -326,7 +326,7 @@ class _CityMapPageState extends State<CityMapPage>
                     color: active
                         ? chipColor.withAlpha(28)
                         : theme.surfaceAlpha,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: active
                           ? chipColor.withAlpha(180)
@@ -410,7 +410,7 @@ class _CityMapPageState extends State<CityMapPage>
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: theme.cardColor,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                         border:
                             Border.all(color: theme.borderColor.withAlpha(80)),
                       ),
@@ -475,11 +475,11 @@ class _CityMapPageState extends State<CityMapPage>
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.cardColor.withAlpha(180),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: theme.borderColor.withAlpha(120)),
                 ),
                 child: TextField(
@@ -517,9 +517,9 @@ class _CityMapPageState extends State<CityMapPage>
             height: 44,
             child: Material(
               color: theme.cardColor.withAlpha(180),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               child: InkWell(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(8),
                 onTap: () => _showSortSheet(theme),
                 child: Icon(Icons.sort_rounded,
                     color: theme.textSecondary, size: 20),
@@ -543,7 +543,7 @@ class _CityMapPageState extends State<CityMapPage>
       context: context,
       backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       builder: (ctx) => SafeArea(
         child: Column(
@@ -622,7 +622,7 @@ class _CityMapPageState extends State<CityMapPage>
                     theme.accentColor.withAlpha(6),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: theme.accentColor.withAlpha(30)),
               ),
               child: Row(
@@ -632,7 +632,7 @@ class _CityMapPageState extends State<CityMapPage>
                     height: 44,
                     decoration: BoxDecoration(
                       color: theme.accentColor.withAlpha(22),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(Icons.location_on,
                         color: theme.accentColor, size: 22),
@@ -671,7 +671,7 @@ class _CityMapPageState extends State<CityMapPage>
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: theme.accentColor.withAlpha(25),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '写足迹',
@@ -690,7 +690,7 @@ class _CityMapPageState extends State<CityMapPage>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: theme.cardColor.withAlpha(120),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
@@ -831,7 +831,7 @@ class _CityMapPageState extends State<CityMapPage>
                           horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: _moodColor(mood).withAlpha(30),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '$count',
@@ -1037,7 +1037,7 @@ class _CityMapPageState extends State<CityMapPage>
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: theme.cardColor.withAlpha(100),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: theme.borderColor.withAlpha(60)),
               ),
               child: Row(

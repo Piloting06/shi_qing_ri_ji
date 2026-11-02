@@ -452,7 +452,7 @@ class _WeatherSummaryCardState extends State<WeatherSummaryCard>
                       color: theme.cardColor.withAlpha(
                         theme.isDark ? 150 : 180,
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: theme.borderColor.withAlpha(80),
                       ),
@@ -462,7 +462,7 @@ class _WeatherSummaryCardState extends State<WeatherSummaryCard>
                         Expanded(
                           child: Center(
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(8),
                               child: AnimatedWeatherIllustration(
                                 code: code,
                                 inkColor: theme.ink,
@@ -510,7 +510,7 @@ class _WeatherSummaryCardState extends State<WeatherSummaryCard>
                 ),
                 decoration: BoxDecoration(
                   color: theme.gold.withAlpha(theme.isDark ? 10 : 14),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: theme.gold.withAlpha(theme.isDark ? 24 : 22),
                   ),

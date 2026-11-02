@@ -124,16 +124,16 @@ class XqTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(4),
           borderSide: BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(4),
           borderSide: BorderSide(color: border, width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: focus, width: 1.5),
+          borderRadius: BorderRadius.circular(4),
+          borderSide: BorderSide(color: focus, width: 1.2),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -169,12 +169,12 @@ class XqTheme {
       snackBarTheme: SnackBarThemeData(
         backgroundColor: card,
         contentTextStyle: XqTypography.bodyMedium.copyWith(color: text1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         behavior: SnackBarBehavior.floating,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         titleTextStyle:
             XqTypography.headlineMedium.copyWith(color: text1),
         contentTextStyle: XqTypography.bodyMedium.copyWith(color: text2),

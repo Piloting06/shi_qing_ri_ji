@@ -237,7 +237,7 @@ extension _ProfilePageSections on _ProfilePageState {
                 height: 36,
                 decoration: BoxDecoration(
                   color: iconColor.withAlpha(18),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
@@ -702,7 +702,7 @@ extension _ProfilePageSections on _ProfilePageState {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 58),
@@ -714,7 +714,7 @@ extension _ProfilePageSections on _ProfilePageState {
                 height: 42,
                 decoration: BoxDecoration(
                   color: theme.accentColor.withAlpha(18),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: theme.accentColor, size: 20),
               ),

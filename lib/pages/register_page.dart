@@ -333,7 +333,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               Container(
                                 decoration: BoxDecoration(
                                   color: theme.surfaceAlpha,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.all(4),
                                 child: Row(
@@ -515,7 +515,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(8),
                                             ),
                                           ),
                                           child: _codeCountdown > 0

@@ -76,12 +76,12 @@ class CityCommentSheet extends StatelessWidget {
             decoration: BoxDecoration(
               color: theme.cardColor.withAlpha(230),
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+                top: Radius.circular(8),
               ),
             ),
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+                top: Radius.circular(8),
               ),
               child: BackdropFilter(
                 filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -228,7 +228,7 @@ class CityCommentSheet extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: theme.backgroundColor.withAlpha(180),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
@@ -384,7 +384,7 @@ class CityCommentSheet extends StatelessWidget {
                         fontSize: 13,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.borderColor),
                       ),
                       contentPadding: const EdgeInsets.symmetric(

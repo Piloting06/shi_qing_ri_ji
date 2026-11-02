@@ -238,7 +238,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
                             color: theme.cardColor.withAlpha(
                               theme.isDark ? 145 : 175,
                             ),
-                            borderRadius: BorderRadius.circular(22),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: theme.borderColor.withAlpha(80),
                             ),

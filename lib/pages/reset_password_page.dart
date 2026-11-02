@@ -242,7 +242,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                   color: theme.gold.withAlpha(
                                     theme.isDark ? 15 : 20,
                                   ),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: theme.gold.withAlpha(40),
                                   ),
@@ -317,7 +317,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(14),
+                                                  BorderRadius.circular(8),
                                             ),
                                           ),
                                           child: Text(

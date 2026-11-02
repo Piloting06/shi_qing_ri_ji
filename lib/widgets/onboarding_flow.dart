@@ -67,7 +67,7 @@ class OnboardingFlow {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: theme.cardColor,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: theme.gold.withAlpha(60)),
               ),
               child: Column(
@@ -99,10 +99,10 @@ class OnboardingFlow {
                         color: theme.textSecondary.withAlpha(120),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.gold, width: 1.5),
                       ),
                     ),
@@ -120,7 +120,7 @@ class OnboardingFlow {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.gold,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(
@@ -191,7 +191,7 @@ class OnboardingFlow {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: theme.cardColor,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: theme.gold.withAlpha(60)),
               ),
               child: Column(
@@ -280,7 +280,7 @@ class OnboardingFlow {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.gold,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(

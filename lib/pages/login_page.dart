@@ -230,7 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                               Container(
                                 decoration: BoxDecoration(
                                   color: theme.surfaceAlpha,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.all(4),
                                 child: Row(

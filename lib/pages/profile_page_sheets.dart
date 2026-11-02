@@ -30,7 +30,7 @@ extension _ProfilePageSheets on _ProfilePageState {
             decoration: BoxDecoration(
               color: theme.cardColor,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+                top: Radius.circular(8),
               ),
             ),
             child: SafeArea(
@@ -89,11 +89,11 @@ extension _ProfilePageSheets on _ProfilePageState {
                           size: 18,
                         ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: theme.borderColor),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: theme.accentColor),
                         ),
                       ),
@@ -126,13 +126,13 @@ extension _ProfilePageSheets on _ProfilePageState {
                                 size: 18,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 borderSide: BorderSide(
                                   color: theme.borderColor,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 borderSide: BorderSide(
                                   color: theme.accentColor,
                                 ),
@@ -175,7 +175,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                 color: theme.accentColor.withAlpha(140),
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
                             child: countdown > 0
@@ -245,7 +245,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                           backgroundColor: theme.accentColor,
                           foregroundColor: theme.textOnAccent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: binding
@@ -278,7 +278,7 @@ extension _ProfilePageSheets on _ProfilePageState {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         title: Text(
           '修改昵称',
           style: TextStyle(
@@ -295,11 +295,11 @@ extension _ProfilePageSheets on _ProfilePageState {
             hintText: '输入新的昵称',
             hintStyle: TextStyle(color: theme.textTertiary),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: theme.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: theme.accentColor),
             ),
           ),
@@ -346,7 +346,7 @@ extension _ProfilePageSheets on _ProfilePageState {
           ),
           decoration: BoxDecoration(
             color: theme.cardColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: SafeArea(
             top: false,
@@ -402,11 +402,11 @@ extension _ProfilePageSheets on _ProfilePageState {
                             setSheetState(() => obscureOld = !obscureOld),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.borderColor),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.accentColor),
                       ),
                     ),
@@ -438,11 +438,11 @@ extension _ProfilePageSheets on _ProfilePageState {
                             setSheetState(() => obscureNew = !obscureNew),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.borderColor),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.accentColor),
                       ),
                     ),
@@ -465,11 +465,11 @@ extension _ProfilePageSheets on _ProfilePageState {
                         size: 18,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.borderColor),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: theme.accentColor),
                       ),
                     ),
@@ -493,7 +493,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                         backgroundColor: theme.accentColor,
                         foregroundColor: theme.textOnAccent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: const Text('确认修改'),
@@ -555,7 +555,7 @@ extension _ProfilePageSheets on _ProfilePageState {
           key: repaintKey,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               color: colors[2],
               border: Border.all(color: colors[0].withAlpha(60), width: 0.5),
               boxShadow: [
@@ -576,7 +576,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                     height: 80,
                     decoration: BoxDecoration(
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
+                        top: Radius.circular(8),
                       ),
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -644,7 +644,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: colors[0].withAlpha(18),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: colors[0].withAlpha(30)),
                           ),
                           child: Row(
@@ -709,7 +709,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                       color: colors[0].withAlpha(100),
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
                                 ),
@@ -733,7 +733,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                         ? const Color(0xFF222222)
                                         : Colors.white,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
                                 ),

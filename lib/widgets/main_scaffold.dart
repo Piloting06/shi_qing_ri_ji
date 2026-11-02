@@ -161,7 +161,7 @@ class _MainScaffoldState extends State<MainScaffold> {
               backgroundColor: theme.textPrimary.withAlpha(160),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(8),
               ),
               margin: EdgeInsets.fromLTRB(
                 80, 0, 80, 16 + MediaQuery.of(context).padding.bottom,
@@ -420,13 +420,13 @@ class _FrostedCapsuleState extends State<_FrostedCapsule>
           onPointerMove: _onPointerMove,
           onPointerUp: _onPointerUp,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(8),
             child: Container(
               width: _capsuleWidth,
               height: _capsuleHeight,
               decoration: BoxDecoration(
                 color: _capsuleBg(t.themeMode),
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: t.accentColor.withAlpha(80),
                   width: 1,

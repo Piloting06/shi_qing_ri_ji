@@ -277,7 +277,7 @@ class _CapsulePageState extends State<CapsulePage> {
               constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.72),
               decoration: BoxDecoration(
                 color: theme.cardColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
               ),
               child: SafeArea(
                 top: false,
@@ -327,7 +327,7 @@ class _CapsulePageState extends State<CapsulePage> {
                                   height: 52,
                                   decoration: BoxDecoration(
                                     color: theme.accentColor.withAlpha(18),
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(b.icon, color: theme.accentColor, size: 26),
                                 ),
@@ -346,7 +346,7 @@ class _CapsulePageState extends State<CapsulePage> {
                                         height: 36,
                                         decoration: BoxDecoration(
                                           color: theme.accentColor.withAlpha(14),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Icon(s.icon, color: theme.accentColor, size: 18),
                                       ),
@@ -401,7 +401,7 @@ class _CapsulePageState extends State<CapsulePage> {
                           style: FilledButton.styleFrom(
                             backgroundColor: theme.accentColor,
                             foregroundColor: theme.textOnAccent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
                       ),
@@ -432,7 +432,7 @@ class _CapsulePageState extends State<CapsulePage> {
           padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           decoration: BoxDecoration(
             color: theme.cardColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: SafeArea(
             top: false,
@@ -552,7 +552,7 @@ class _CapsulePageState extends State<CapsulePage> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: theme.borderColor),
         boxShadow: [
           BoxShadow(
@@ -588,7 +588,7 @@ class _CapsulePageState extends State<CapsulePage> {
               hintText: '未来的我，想对你说...',
               hintStyle: TextStyle(color: theme.textSecondary.withAlpha(150)),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
               ),
               counterStyle: TextStyle(color: theme.textSecondary, fontSize: 11),
             ),
@@ -651,7 +651,7 @@ class _CapsulePageState extends State<CapsulePage> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: theme.surfaceAlpha,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -703,7 +703,7 @@ class _CapsulePageState extends State<CapsulePage> {
                 foregroundColor: theme.gold,
                 side: BorderSide(color: theme.gold.withAlpha(80)),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -777,7 +777,7 @@ class _CapsulePageState extends State<CapsulePage> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: active ? theme.accentColor.withAlpha(20) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: active ? theme.accentColor.withAlpha(80) : theme.borderColor,
           ),

@@ -38,8 +38,8 @@ class AboutPage extends StatelessWidget {
               theme,
               icon: Icons.code_rounded,
               title: 'GitHub 仓库',
-              subtitle: 'Piloting06/xin_qing_ri_ji',
-              onTap: () => _launchUrl('https://github.com/Piloting06/xin_qing_ri_ji'),
+              subtitle: 'Piloting06/shi_qing_ri_ji',
+              onTap: () => _launchUrl('https://github.com/Piloting06/shi_qing_ri_ji'),
             ),
             _divider(theme),
             _infoRow(

@@ -143,7 +143,7 @@ class _CapsulePageState extends State<CapsulePage> {
       HapticFeedback.mediumImpact();
       if (mounted) {
         final msg = _days == 1 ? '胶囊已封存，明天会提醒你' : '胶囊已封存，到时会提醒你';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        XqToast.success(context, msg);
       }
       await _load();
       // 封存成功后，弹出品牌引导（帮助用户确保通知能收到）
@@ -212,9 +212,7 @@ class _CapsulePageState extends State<CapsulePage> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('打开失败，请稍后重试')));
+        XqToast.error(context, '打开失败，请稍后再试');
       }
     }
   }

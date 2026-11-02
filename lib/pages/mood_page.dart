@@ -11,10 +11,10 @@ import 'package:intl/intl.dart';
 import '../api/api_client.dart';
 import '../constants/mood.dart';
 import '../widgets/mood_card/mood_card_data.dart';
+import '../widgets/pressable_scale.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
 import '../widgets/mood_card_maker.dart';
-import '../widgets/glow_wrap.dart';
 import '../widgets/xq_toast.dart';
 import '../services/mood_queue.dart';
 import 'treehole_page.dart';
@@ -484,40 +484,32 @@ class _MoodPageState extends State<MoodPage>
                       final s = i + 1;
                       final active = s == _moodScore;
                       final color = Color(moodColors[s]!);
-                      return GlowWrap(
-                        accentColor: color,
-                        radius: 30,
-                        borderRadius: BorderRadius.circular(8),
+                      return PressableScale(
                         onTap: () => _selectMood(s),
-                        child: AnimatedScale(
-                          scale: active ? 1.05 : 1.0,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOutQuart,
-                          child: Container(
-                            decoration: BoxDecoration(
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: active
+                                ? color.withAlpha(24)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
                               color: active
-                                  ? color.withAlpha(28)
-                                  : t.surfaceAlpha,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: active
-                                    ? color.withAlpha(180)
-                                    : t.borderColor.withAlpha(80),
-                                width: active ? 1.5 : 1,
-                              ),
+                                  ? color.withAlpha(170)
+                                  : t.borderColor.withAlpha(80),
+                              width: active ? 1.2 : 0.8,
                             ),
-                            child: Center(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  '${moodEmojis[s]} ${moodLabels[s]}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: active
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                    color: active ? color : t.textSecondary,
-                                  ),
+                          ),
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${moodEmojis[s]} ${moodLabels[s]}',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight:
+                                      active ? FontWeight.w600 : FontWeight.w400,
+                                  color: active ? color : t.textSecondary,
                                 ),
                               ),
                             ),
@@ -537,10 +529,7 @@ class _MoodPageState extends State<MoodPage>
                         (entry) {
                           final tag = entry.value;
                           final sel = _selectedTags.contains(tag['id']);
-                          return GlowWrap(
-                            accentColor: t.accentColor,
-                            radius: 25,
-                            borderRadius: BorderRadius.circular(8),
+                          return GestureDetector(
                             onTap: () => setState(() {
                               if (sel) {
                                 _selectedTags.remove(tag['id']);
@@ -551,28 +540,23 @@ class _MoodPageState extends State<MoodPage>
                               _saved = false;
                             }),
                             child: Container(
+                              height: 28,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
+                                horizontal: 12,
                               ),
+                              alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: sel
-                                    ? t.accentColor.withAlpha(30)
-                                    : t.borderColor.withAlpha(60),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: sel
-                                      ? t.accentColor.withAlpha(180)
-                                      : t.borderColor.withAlpha(40),
-                                ),
+                                    ? t.accentColor.withAlpha(24)
+                                    : t.sunkenColor,
+                                borderRadius: BorderRadius.circular(2),
                               ),
                               child: Text(
                                 '${tag['icon']} ${tag['label']}',
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: sel
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
+                                  fontSize: 12.5,
+                                  fontWeight:
+                                      sel ? FontWeight.w600 : FontWeight.w400,
                                   color: sel ? t.accentColor : t.textSecondary,
                                 ),
                               ),

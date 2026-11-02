@@ -11,6 +11,13 @@ class ThemeState extends ChangeNotifier {
   String get themeMode => _themeMode;
   bool get isDark => _themeMode == 'dark' || _themeMode == 'sujian_dark';
 
+  /// 凹陷区（素笺：比纸深一层的标签/代码底），其余主题回退到卡片色
+  Color get sunkenColor => switch (_themeMode) {
+    'sujian' => XqColors.sujianSunken,
+    'sujian_dark' => XqColors.sujianDarkSunken,
+    _ => cardColor,
+  };
+
   /// 朱砂小印：素笺专属品牌点睛色（每屏至多一处），其余主题回退到各自的点缀色
   Color get sealColor => switch (_themeMode) {
     'sujian' => XqColors.sujianSeal,

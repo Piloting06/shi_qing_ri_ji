@@ -146,6 +146,7 @@ class XqColors {
   static const sujianGold = Color(0xFF9A7B3F); // 赭石（低饱和暖点缀）
   static const sujianPaperLine = Color(0xFFD8D2C4);
   static const sujianSeal = Color(0xFFA8382A); // 朱砂小印
+  static const sujianSunken = Color(0xFFEBE6DA); // 凹陷区/标签底
 
   // 和纸胶带色（素笺低饱和版：陶/苔/黛/绢）
   static const sujianWashi1 = Color(0xFFC9AFA5);
@@ -177,6 +178,7 @@ class XqColors {
   static const sujianDarkGold = Color(0xFFC9A96A);
   static const sujianDarkPaperLine = Color(0xFF2E2F29);
   static const sujianDarkSeal = Color(0xFFD9796A);
+  static const sujianDarkSunken = Color(0xFF121310);
 
   static const sujianDarkWashi1 = Color(0xFF4A3F3D);
   static const sujianDarkWashi2 = Color(0xFF3D4A44);

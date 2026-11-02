@@ -26,6 +26,7 @@ import 'legal_page.dart';
 import 'login_page.dart';
 import 'about_page.dart';
 import 'card_album_page.dart';
+import 'story_page.dart';
 
 part 'profile_page_actions.dart';
 part 'profile_page_sheets.dart';

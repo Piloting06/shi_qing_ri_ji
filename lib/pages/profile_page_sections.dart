@@ -191,6 +191,20 @@ extension _ProfilePageSections on _ProfilePageState {
         Divider(height: 1, color: theme.borderColor.withAlpha(80)),
         _listTile(
           theme,
+          icon: Icons.spa_outlined,
+          iconColor: theme.accentColor,
+          title: '素笺',
+          subtitle: '写一篇故事，或让节气替你起个头',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const StoryListPage()),
+            );
+          },
+        ),
+        Divider(height: 1, color: theme.borderColor.withAlpha(80)),
+        _listTile(
+          theme,
           icon: Icons.hourglass_empty_rounded,
           iconColor: theme.accentColor,
           title: '时光胶囊',

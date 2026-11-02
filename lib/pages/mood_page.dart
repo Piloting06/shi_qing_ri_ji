@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import '../api/api_client.dart';
 import '../constants/mood.dart';
+import '../pages/story_page.dart';
 import '../widgets/mood_card/mood_card_data.dart';
 import '../widgets/pressable_scale.dart';
 import '../stores/app_state.dart';
@@ -650,29 +651,57 @@ class _MoodPageState extends State<MoodPage>
                   _buildDayCard(t),
                   const SizedBox(height: 16),
 
-                  // Treehole link
+                  // 素笺 · 树洞
                   Center(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const TreeholePage(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const StoryListPage(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.spa_outlined,
+                            size: 16,
+                            color: t.textTertiary,
                           ),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.auto_awesome_outlined,
-                        size: 16,
-                        color: t.textTertiary,
-                      ),
-                      label: Text(
-                        '去树洞说说',
-                        style: TextStyle(
-                          color: t.textTertiary,
-                          fontSize: 13,
+                          label: Text(
+                            '写素笺',
+                            style: TextStyle(
+                              color: t.textTertiary,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const TreeholePage(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.auto_awesome_outlined,
+                            size: 16,
+                            color: t.textTertiary,
+                          ),
+                          label: Text(
+                            '去树洞说说',
+                            style: TextStyle(
+                              color: t.textTertiary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),

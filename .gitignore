@@ -22,23 +22,26 @@ key.properties
 server/.env
 CLAUDE.md
 
-# 后端（不公开）
-server/
-node_modules/
+# 后端：依赖/数据/备份不入库，代码入库
+server/node_modules/
+server/backups/
+server/.env
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 
-# 文档（不公开）
-docs/
+# 文档：治理文档入库（status/scope/adr），历史与本地文档忽略
+docs/*
+!docs/status.md
+!docs/scope.md
+!docs/adr/
+artifacts/
 开发日志/
 
 # 临时文件 / 归档
 *.tar.gz
 *.zip
-
-# SQLite
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
 
 # 其他
 .metadata

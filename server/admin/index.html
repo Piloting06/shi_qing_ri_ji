@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>心晴日记 · 管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:14px/1.6 system-ui,sans-serif;background:#f5f3ef;color:#2f2118;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.login-box{background:#fff;padding:32px;border-radius:20px;width:360px;max-width:90vw;box-shadow:0 8px 40px rgba(0,0,0,.08)}
+.login-box h1{text-align:center;font-size:22px;margin-bottom:6px}
+.login-box p{text-align:center;color:#888;font-size:13px;margin-bottom:24px}
+input{width:100%;padding:12px 14px;border:1px solid #e0d8cc;border-radius:12px;font-size:14px;margin-bottom:14px;outline:none}
+input:focus{border-color:#b8782c}
+button{width:100%;padding:13px;background:#b8782c;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+button:hover{background:#a06820}
+button:disabled{opacity:.5;cursor:default}
+#err{color:#c5524c;text-align:center;margin-top:8px;font-size:13px}
+
+.dash{display:none;max-width:1100px;width:100%;padding:20px}
+.dash.active{display:block}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#fff;border-radius:16px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:#fff;padding:20px;border-radius:14px;text-align:center}
+.stat .n{font-size:30px;font-weight:700;color:#b8782c}
+.stat .l{font-size:12px;color:#999;margin-top:4px}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:10px;border:1px solid #e0d8cc;cursor:pointer;font-size:13px;background:#fff}
+.tab.on{background:#b8782c;color:#fff;border-color:#b8782c}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:8px;text-align:left;border-bottom:1px solid #f0ebe0}
+th{color:#999;font-size:11px}
+.btn-sm{padding:5px 12px;border-radius:8px;border:1px solid #e0d8cc;cursor:pointer;font-size:11px;background:#fff}
+.btn-sm.danger{color:#c5524c;border-color:#c5524c33}
+.btn-sm.primary{color:#b8782c;border-color:#b8782c33}
+.flex{display:flex;gap:8px;align-items:center}
+.badge{padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.badge.green{background:#4f8c6220;color:#4f8c62}
+.badge.red{background:#c5524c20;color:#c5524c}
+.hid{display:none!important}
+.mt{margin-top:14px}
+.login-box.hid{display:none}
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="login-box">
+  <h1>心晴日记</h1>
+  <p>管理后台 v1.6</p>
+  <input id="lUser" placeholder="管理员账号">
+  <input id="lPass" type="password" placeholder="管理员密码">
+  <button id="lBtn" onclick="doLogin()">登 录</button>
+  <div id="err"></div>
+</div>
+
+<div id="dashboard" class="dash">
+  <div class="topbar">
+    <h2>管理后台</h2>
+    <div class="flex">
+      <span id="dUser" style="color:#888;font-size:13px"></span>
+      <button class="btn-sm danger" id="logoutBtn">退出</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-t="users">用户管理</div>
+    <div class="tab" data-t="treehole">树洞管理</div>
+    <div class="tab" data-t="comments">评论管理</div>
+    <div class="tab" data-t="words">敏感词库</div>
+    <div class="tab" data-t="logs">操作日志</div>
+  </div>
+
+  <div id="panel-users"><div class="card"><div id="usersTbl"></div><div id="usersPg" class="flex mt"></div></div></div>
+  <div id="panel-treehole" class="hid"><div class="card"><div id="treeTbl"></div><div id="treePg" class="flex mt"></div></div></div>
+  <div id="panel-comments" class="hid"><div class="card"><div id="cmtTbl"></div><div id="cmtPg" class="flex mt"></div></div></div>
+  <div id="panel-words" class="hid"><div class="card"><div class="flex"><input id="newWord" placeholder="新增敏感词..." style="max-width:260px;margin-bottom:0"><button class="btn-sm primary" id="addWordBtn">添加</button></div><div id="wordsList" class="mt"></div></div></div>
+  <div id="panel-logs" class="hid"><div class="card"><div id="logsTbl"></div><div id="logsPg" class="flex mt"></div></div></div>
+</div>
+
+<script>
+var A='/api/admin', token='', curTab='users', curPages={};
+
+function doLogin(){
+  var u=document.getElementById('lUser').value.trim();
+  var p=document.getElementById('lPass').value;
+  if(!u||!p){document.getElementById('err').textContent='请输入账号和密码';return}
+  document.getElementById('err').textContent='';
+  document.getElementById('lBtn').disabled=true;
+  document.getElementById('lBtn').textContent='登录中...';
+  fetch(A+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+  .then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.message||'Error');return d})})
+  .then(function(d){
+    token=d.token;
+    document.getElementById('dUser').textContent=d.username;
+    document.getElementById('loginBox').classList.add('hid');
+    document.getElementById('dashboard').classList.add('active');
+    localStorage.setItem('at',token);
+    loadDash();
+  })
+  .catch(function(e){document.getElementById('err').textContent=e.message})
+  .finally(function(){document.getElementById('lBtn').disabled=false;document.getElementById('lBtn').textContent='登 录'});
+}
+
+function api(method,path,body){
+  var h={'Content-Type':'application/json'};
+  if(token)h['Authorization']='Bearer '+token;
+  return fetch(A+path,{method:method,headers:h,body:body?JSON.stringify(body):null})
+  .then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.message||'Error');return d})});
+}
+
+function loadDash(){
+  api('GET','/dashboard').then(function(d){
+    document.getElementById('stats').innerHTML='<div class="stat"><div class="n">'+d.totalUsers+'</div><div class="l">总用户数</div></div><div class="stat"><div class="n">'+d.todayActive+'</div><div class="l">今日活跃</div></div><div class="stat"><div class="n">'+d.totalMessages+'</div><div class="l">树洞留言</div></div><div class="stat"><div class="n">'+d.totalComments+'</div><div class="l">评论数</div></div>';
+  }).catch(function(){});loadUsers();
+}
+
+function loadUsers(p){
+  p=p||1; api('GET','/users?page='+p).then(function(d){
+    var h='<table><tr><th>ID</th><th>手机</th><th>昵称</th><th>状态</th><th>注册</th><th>操作</th></tr>';
+    d.users.forEach(function(u){h+='<tr><td>'+u.id+'</td><td>'+u.phone+'</td><td>'+u.username+'</td><td><span class="badge '+(u.is_active?'green':'red')+'">'+(u.is_active?'正常':'封禁')+'</span></td><td>'+(u.created_at||'').slice(0,10)+'</td><td class="flex"><button class="btn-sm primary" onclick="viewUser('+u.id+')">详情</button><button class="btn-sm '+(u.is_active?'danger':'primary')+'" onclick="banUser('+u.id+')">'+(u.is_active?'封禁':'解封')+'</button></td></tr>'});
+    h+='</table>'; document.getElementById('usersTbl').innerHTML=h;
+    document.getElementById('usersPg').innerHTML=pager(d.page,d.totalPages,loadUsers);
+  }).catch(function(){});
+}
+
+function viewUser(id){api('GET','/users/'+id).then(function(d){var u=d.user,h='<h3>'+u.username+' ('+u.phone+')</h3><p>注册于 '+(u.created_at||'').slice(0,10)+'</p>';h+='<p style="margin-top:10px"><b>心情</b></p>';d.moods.forEach(function(m){h+='<div style="background:#faf8f3;padding:8px;border-radius:8px;margin:4px 0">'+m.date+' type:'+m.emotion_type+' | '+(m.notes||'')+'</div>'});alert(h.slice(0,500))}).catch(function(){})}
+
+function banUser(id){if(!confirm('确定操作?'))return;api('POST','/users/'+id+'/ban').then(function(d){alert(d.message);loadUsers(curPages.users||1)}).catch(function(e){alert(e.message)})}
+
+function loadMessages(p){p=p||1;api('GET','/treehole?page='+p).then(function(d){var h='<table><tr><th>ID</th><th>内容</th><th>发布者</th><th>互动</th><th>状态</th><th>操作</th></tr>';d.messages.forEach(function(m){h+='<tr><td>'+m.id+'</td><td>'+String(m.content||'').slice(0,50)+'</td><td>'+m.phone+'</td><td>🤗'+m.cloud_hugs+' ☕'+m.cloud_coffees+'</td><td><span class="badge '+(m.is_visible?'green':'red')+'">'+(m.is_visible?'显':'隐')+'</span></td><td class="flex"><button class="btn-sm primary" onclick="hideMsg('+m.id+')">'+(m.is_visible?'隐藏':'显示')+'</button><button class="btn-sm danger" onclick="delMsg('+m.id+')">删除</button></td></tr>'});h+='</table>';document.getElementById('treeTbl').innerHTML=h;document.getElementById('treePg').innerHTML=pager(d.page,d.totalPages,loadMessages)}).catch(function(){})}
+
+function hideMsg(id){api('POST','/treehole/'+id+'/toggle').then(function(d){alert(d.message);loadMessages(curPages.treehole||1)}).catch(function(e){alert(e.message)})}
+function delMsg(id){if(!confirm('确定删除?'))return;api('DELETE','/treehole/'+id).then(function(d){alert(d.message);loadMessages(curPages.treehole||1)}).catch(function(e){alert(e.message)})}
+
+function loadComments(p){p=p||1;api('GET','/comments?page='+p).then(function(d){var h='<table><tr><th>ID</th><th>内容</th><th>留言ID</th><th>发布者</th><th>时间</th><th>操作</th></tr>';d.comments.forEach(function(c){h+='<tr><td>'+c.id+'</td><td>'+String(c.content||'').slice(0,50)+'</td><td>'+c.message_id+'</td><td>'+c.phone+'</td><td>'+(c.created_at||'').slice(0,16)+'</td><td><button class="btn-sm danger" onclick="delComment('+c.id+')">删除</button></td></tr>'});h+='</table>';document.getElementById('cmtTbl').innerHTML=h;document.getElementById('cmtPg').innerHTML=pager(d.page,d.totalPages,loadComments)}).catch(function(){})}
+function delComment(id){if(!confirm('确定删除?'))return;api('DELETE','/comments/'+id).then(function(d){alert(d.message);loadComments(curPages.comments||1)}).catch(function(e){alert(e.message)})}
+
+function loadWords(){api('GET','/sensitive-words').then(function(d){document.getElementById('wordsList').innerHTML=d.words.map(function(w){return'<div class="flex" style="margin:4px 0;padding:6px 10px;background:#faf8f3;border-radius:8px"><span>'+w.word+'</span><span style="flex:1"></span><button class="btn-sm danger" onclick="delWord('+w.id+')">删除</button></div>'}).join('')}).catch(function(){})}
+function addWord(){var w=document.getElementById('newWord').value.trim();if(!w)return;api('POST','/sensitive-words',{word:w}).then(function(d){document.getElementById('newWord').value='';alert(d.message);loadWords()}).catch(function(e){alert(e.message)})}
+function delWord(id){api('DELETE','/sensitive-words/'+id).then(function(d){alert(d.message);loadWords()}).catch(function(e){alert(e.message)})}
+
+function loadLogs(p){p=p||1;api('GET','/logs?page='+p).then(function(d){var h='<table><tr><th>时间</th><th>管理员</th><th>操作</th><th>目标</th><th>详情</th></tr>';d.logs.forEach(function(l){h+='<tr><td>'+(l.created_at||'').slice(0,16)+'</td><td>'+l.username+'</td><td>'+l.action+'</td><td>'+l.target_type+'#'+l.target_id+'</td><td>'+l.detail+'</td></tr>'});h+='</table>';document.getElementById('logsTbl').innerHTML=h;document.getElementById('logsPg').innerHTML=pager(d.page,d.totalPages,loadLogs)}).catch(function(){})}
+
+function pager(page,total,fn){var h='';for(var i=1;i<=total;i++){h+='<button class="btn-sm '+(i==page?'primary':'')+'" onclick="'+fn.name+'('+i+')">'+i+'</button>'}return h}
+
+// Init
+(function(){
+  var t=localStorage.getItem('at');
+  if(t){token=t;document.getElementById('loginBox').classList.add('hid');document.getElementById('dashboard').classList.add('active');try{var p=JSON.parse(atob(t.split('.')[1]));document.getElementById('dUser').textContent=p.username;}catch(_){}loadDash()}
+  document.getElementById('logoutBtn').addEventListener('click',function(){token='';localStorage.removeItem('at');location.reload()});
+  document.getElementById('addWordBtn').addEventListener('click',addWord);
+  document.getElementById('tabs').addEventListener('click',function(e){if(!e.target.classList.contains('tab'))return;var t=e.target.dataset.t;curTab=t;document.querySelectorAll('.tab').forEach(function(el){el.classList.toggle('on',el.dataset.t===t)});document.querySelectorAll('[id^="panel-"]').forEach(function(p){p.classList.add('hid')});var panel=document.getElementById('panel-'+t);if(panel)panel.classList.remove('hid');if(t=='users')loadUsers();if(t=='treehole')loadMessages();if(t=='comments')loadComments();if(t=='words')loadWords();if(t=='logs')loadLogs()});
+})();
+</script>
+</body>
+</html>

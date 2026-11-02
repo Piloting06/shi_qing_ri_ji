@@ -1,3 +1,4 @@
+import '../widgets/ink_bloom.dart';
 import '../widgets/xq_empty_state.dart';
 import '../widgets/xq_toast.dart';
 import 'package:flutter/material.dart';
@@ -189,8 +190,18 @@ class _CapsulePageState extends State<CapsulePage> {
       HapticFeedback.heavyImpact();
       final data = await Api.openCapsule(id);
       if (mounted) {
-        _showContent(Map<String, dynamic>.from(data), fromReminder: fromReminder);
-        await _load();
+        // 全产品唯一的仪式动效：墨迹晕开（系统减弱动效时自动跳过）
+        final theme = Theme.of(context);
+        final reduced = MediaQuery.of(context).disableAnimations;
+        await InkBloom.play(
+          context,
+          ink: theme.textTheme.bodyLarge?.color ?? theme.colorScheme.onSurface,
+          reducedMotion: reduced,
+        );
+        if (mounted) {
+          _showContent(Map<String, dynamic>.from(data), fromReminder: fromReminder);
+          await _load();
+        }
       }
     } on ApiException catch (e) {
       if (e.statusCode == 401) return;

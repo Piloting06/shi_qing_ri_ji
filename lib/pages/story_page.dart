@@ -7,6 +7,7 @@ import '../constants/mood.dart';
 import '../services/story_store.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_typography.dart';
+import '../widgets/story_card.dart';
 import '../api/api_client.dart';
 import '../utils/story_chapter.dart';
 import '../widgets/xq_empty_state.dart';
@@ -315,6 +316,27 @@ class _StoryEditPageState extends State<StoryEditPage> {
           style: TextStyle(color: t.textTertiary, fontSize: 12),
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => StoryCardPreviewPage(
+                    title: _titleCtrl.text.trim(),
+                    body: _contentCtrl.text.trim(),
+                    dateText: _savedAt == null
+                        ? DateTime.now().toIso8601String().substring(0, 10).replaceAll('-', '.')
+                        : (DateTime.tryParse(_entry.updatedAt) ?? DateTime.now())
+                            .toIso8601String()
+                            .substring(0, 10)
+                            .replaceAll('-', '.'),
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.style_outlined, size: 20, color: t.textPrimary),
+            tooltip: '制成故事卡',
+          ),
           if (widget.entry != null)
             IconButton(
               onPressed: _delete,

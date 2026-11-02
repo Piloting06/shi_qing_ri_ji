@@ -42,6 +42,10 @@ class _PressableScaleState extends State<PressableScale>
 
   @override
   Widget build(BuildContext context) {
+    // 系统减弱动效：保留点击，去掉缩放
+    if (MediaQuery.of(context).disableAnimations) {
+      return GestureDetector(onTap: widget.onTap, child: widget.child);
+    }
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
       onTapCancel: () => _ctrl.reverse(),

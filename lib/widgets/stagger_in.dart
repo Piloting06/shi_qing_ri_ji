@@ -38,6 +38,13 @@ class _StaggerInState extends State<StaggerIn>
 
   @override
   Widget build(BuildContext context) {
+    // 系统减弱动效：移除位移，只保留短淡入（规范 reduced-motion）
+    if (MediaQuery.of(context).disableAnimations) {
+      return FadeTransition(
+        opacity: _anim,
+        child: widget.child,
+      );
+    }
     return FadeTransition(
       opacity: _anim,
       child: SlideTransition(

@@ -653,57 +653,47 @@ class _CapsuleTabItem extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.translationValues(0, active ? -2 : 0, 0),
-          child: SizedBox(
-            width: 64,
-            height: 52,
-            child: Center(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 260),
+        child: SizedBox(
+          width: 64,
+          height: 52,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 素笺规范：当前项用 accent 文字 + 2px 细线，不用色块
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
-                width: active ? 54 : 44,
-                height: active ? 48 : 44,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                width: active ? 16 : 0,
+                height: 2,
+                margin: const EdgeInsets.only(bottom: 3),
                 decoration: BoxDecoration(
-                  color: active ? accentColor.withAlpha(40) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: active ? accentColor.withAlpha(90) : Colors.transparent,
-                    width: 0.8,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      transitionBuilder: (child, anim) =>
-                          FadeTransition(opacity: anim, child: ScaleTransition(scale: anim, child: child)),
-                      child: Icon(
-                        active ? icon.filled : icon.outlined,
-                        key: ValueKey('${label}_$active'),
-                        size: 22,
-                        color: color,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                        color: color,
-                      ),
-                      child: Text(label),
-                    ),
-                  ],
+                  color: active ? accentColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(1),
                 ),
               ),
-            ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, anim) =>
+                    FadeTransition(opacity: anim, child: child),
+                child: Icon(
+                  icon.outlined,
+                  key: ValueKey('${label}_$active'),
+                  size: 21,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 2),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                  color: color,
+                ),
+                child: Text(label),
+              ),
+            ],
           ),
         ),
       ),

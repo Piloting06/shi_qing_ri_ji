@@ -19,12 +19,12 @@ class ThemeState extends ChangeNotifier {
   };
 
   static const Map<String, String> themeNames = {
-    'sujian': '素笺纸墨',
-    'sujian_dark': '素笺夜墨',
-    'warm': '晴日暖白',
-    'dark': '静夜深蓝',
-    'mint': '雾感薄荷',
-    'blush': '豆沙柔粉',
+    'sujian': '素笺',
+    'sujian_dark': '素笺 · 夜墨',
+    'warm': '暖笺',
+    'dark': '黛笺',
+    'mint': '青笺',
+    'blush': '藕笺',
   };
 
   static const Map<String, List<Color>> themeColors = {

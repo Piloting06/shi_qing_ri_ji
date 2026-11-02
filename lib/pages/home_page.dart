@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,22 +8,19 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
+import '../constants/mood.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
-import '../theme/xq_decorations.dart';
-
-import '../theme/xq_paper_textures.dart';
+import '../utils/solar_term_utils.dart';
 import '../utils/weather_utils.dart';
 import '../utils/geo_utils.dart';
-import '../widgets/pressable_scale.dart';
-import '../widgets/stagger_in.dart';
-import '../constants/mood.dart';
-import '../widgets/weather_summary_card.dart';
 import '../widgets/main_scaffold.dart';
 import '../widgets/mood_card_maker.dart';
-import 'capsule_page.dart';
+import '../widgets/stagger_in.dart';
 import 'weather_detail_page.dart';
 
+/// 素笺版首页：一屏一主角。
+/// 书眉（日期·星期·节气）→ 时段问候 → 今日一行 → 那年今日（偶现）→ 主操作「记一笔」→ 江南远山。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -40,16 +39,12 @@ class _HomePageState extends State<HomePage> {
   static const _locCacheVer = 2;
 
   Map<String, dynamic>? _weather;
-  String? _weatherError;
   String _currentCity = '';
   String _locationStatus = '正在定位';
-  String? _statusText; // 顶部状态小字，如"正在更新..."
   DateTime? _weatherUpdatedAt;
-  bool _showCitySearch = false;
   final _citySearchCtrl = TextEditingController();
   List<Map<String, dynamic>> _cityResults = [];
   bool _loading = true;
-  bool _refreshing = false; // 后台刷新中，不影响前台展示
   Map<String, dynamic>? _memory; // 那年今日
 
   @override
@@ -119,17 +114,15 @@ class _HomePageState extends State<HomePage> {
             _weather = data;
             _currentCity = city;
             _weatherUpdatedAt = updatedAt;
-            _weatherError = null;
-            _statusText = null;
-            _loading = false;
-            _refreshing = true;
+                _loading = false;
           });
         }
       } catch (_) {}
     }
 
     // 缓存新鲜（30分钟内）则不触发网络请求
-    if (updatedAt != null && DateTime.now().difference(updatedAt).inMinutes < 30) {
+    if (updatedAt != null &&
+        DateTime.now().difference(updatedAt).inMinutes < 30) {
       return;
     }
     _loadWeather();
@@ -151,11 +144,9 @@ class _HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() {
         if (hasCache) {
-          _refreshing = true;
-          _statusText = '正在更新...';
+          _loading = false;
         } else {
           _loading = true;
-          _weatherError = null;
         }
         _locationStatus = source ?? '正在定位';
       });
@@ -195,16 +186,13 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     setState(() {
       if (hasCache) {
-        _refreshing = false;
-        _statusText = '数据可能稍旧';
-      } else {
         _loading = false;
+      } else {
         _weather = null;
         _currentCity = '';
         _locationStatus = '定位失败';
         _weatherUpdatedAt = null;
       }
-      _weatherError = failures.isEmpty ? '定位失败，请手动选择城市' : failures.last;
     });
 
     // Default fallback — Beijing
@@ -230,13 +218,10 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     setState(() {
       _weather = Map<String, dynamic>.from(data);
-      _weatherError = null;
       _currentCity = location.city;
       _locationStatus = location.status;
       _weatherUpdatedAt = updatedAt;
       _loading = false;
-      _refreshing = false;
-      _statusText = null;
     });
   }
 
@@ -340,14 +325,8 @@ class _HomePageState extends State<HomePage> {
     final lat = prefs.getDouble(_weatherLatKey);
     final lon = prefs.getDouble(_weatherLonKey);
     if (lat == null || lon == null) return null;
-    final updatedAt = DateTime.tryParse(
-      prefs.getString(_weatherUpdatedAtKey) ?? '',
-    );
     // 始终从坐标反查城市名（不用缓存的字符串，避免换城市后名称不更新）
     final city = await _resolveCity(lat, lon, fallback: '上次位置');
-    if (mounted) {
-      setState(() => _weatherUpdatedAt = updatedAt);
-    }
     return _WeatherLocation(
       lat: lat,
       lon: lon,
@@ -452,21 +431,15 @@ class _HomePageState extends State<HomePage> {
       c['admin1'],
       c['country'],
     ].whereType<String>().where((s) => s.isNotEmpty).join('，');
-    setState(() {
-      _showCitySearch = false;
-      _citySearchCtrl.clear();
-      _cityResults = [];
-    });
+    _citySearchCtrl.clear();
+    _cityResults = [];
+    if (Navigator.canPop(context)) Navigator.pop(context);
     _loadWeather(
       lat: (c['latitude'] as num).toDouble(),
       lon: (c['longitude'] as num).toDouble(),
       name: label,
       source: '手动城市',
     );
-  }
-
-  void _openCitySearch() {
-    setState(() => _showCitySearch = true);
   }
 
   Future<void> _openWeatherDetail() async {
@@ -505,23 +478,12 @@ class _HomePageState extends State<HomePage> {
     if (action == WeatherDetailAction.relocate) {
       _loadWeather();
     } else if (action == WeatherDetailAction.chooseCity) {
-      _openCitySearch();
+      _openCitySheet();
     }
   }
 
   void _openMood() {
     MainScaffold.switchToTab(context, 1);
-  }
-
-  void _openCityMap() {
-    MainScaffold.switchToTab(context, 2);
-  }
-
-  void _openCapsule() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const CapsulePage()),
-    );
   }
 
   @override
@@ -530,150 +492,8 @@ class _HomePageState extends State<HomePage> {
     final appState = context.watch<AppState>();
     final now = DateTime.now();
 
-    return Scaffold(
-      backgroundColor: theme.backgroundColor,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadWeather,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            children: [
-              StaggerIn(index: 0, child: _buildHeader(theme, appState, now)),
-              const SizedBox(height: 16),
-              StaggerIn(
-                index: 1,
-                child: WeatherSummaryCard(
-                loading: _loading,
-                refreshing: _refreshing,
-                statusText: _statusText,
-                weather: _weather,
-                cityName: _currentCity,
-                locationStatus: _locationStatus,
-                updatedAt: _weatherUpdatedAt,
-                error: _weatherError,
-                onRetry: _loadWeather,
-                onChooseCity: _openCitySearch,
-                onOpenDetail: _openWeatherDetail,
-                ),
-              ),
-              if (_weather != null && !_loading) const SizedBox(height: 12),
-              if (_showCitySearch) ...[
-                _buildCitySearch(theme),
-                const SizedBox(height: 12),
-              ],
-              const SizedBox(height: 12),
-              StaggerIn(index: 2, child: _buildMoodPaperHero(theme, appState)),
-              if (_memory != null) ...[
-                const SizedBox(height: 12),
-                StaggerIn(index: 3, child: _buildMemoryCard(theme)),
-              ],
-              const SizedBox(height: 18),
-              StaggerIn(index: 4, child: _buildTodayDashboard(theme)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMemoryCard(ThemeState theme) {
-    final m = _memory!;
-    final date = m['date']?.toString() ?? '';
-    final year = int.tryParse(date.substring(0, 4));
-    final yearsAgo = year == null ? '' : ' · ${DateTime.now().year - year}年前的今天';
-    final score = (m['emotion_type'] as num?)?.toInt() ?? 0;
-    final emoji = moodEmojis[score] ?? '📝';
-    final moodLabel = moodLabels[score] ?? '';
-    final code = int.tryParse(m['weather_code']?.toString() ?? '');
-    final weatherText = weatherTextForCode(code);
-    final notes = (m['notes']?.toString() ?? '').trim();
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          MoodCardMaker.show(
-            context,
-            date: date,
-            moodLabel: moodLabel,
-            moodScore: score,
-            text: notes,
-            tags: const [],
-            weatherText: weatherText,
-            cityName: '那年今日',
-          );
-        },
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-            border: Border.all(
-              color: theme.gold.withAlpha(70),
-              width: 0.8,
-            ),
-          ),
-          child: Row(
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 26)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.history_rounded,
-                          size: 13,
-                          color: theme.gold,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '那年今日$yearsAgo${weatherText.isNotEmpty ? " · $weatherText" : ""}',
-                          style: TextStyle(
-                            color: theme.gold,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      notes.isEmpty ? '那天你只留下了心情' : notes,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: theme.textPrimary.withAlpha(220),
-                        fontSize: 13,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '点它，把那天做成卡片',
-                      style: TextStyle(
-                        color: theme.textTertiary,
-                        fontSize: 10.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right,
-                  size: 18, color: theme.textTertiary),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(ThemeState theme, AppState appState, DateTime now) {
     final weekdaysFull = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    final weekday = weekdaysFull[now.weekday == 7 ? 0 : now.weekday];
     final hour = now.hour;
     final greet = hour < 5
         ? '夜深了'
@@ -685,236 +505,149 @@ class _HomePageState extends State<HomePage> {
                     ? '下午好'
                     : '晚上好';
     final name = appState.displayName.isNotEmpty ? appState.displayName : '朋友';
-    final weekday = weekdaysFull[now.weekday == 7 ? 0 : now.weekday];
-
-    // 天气迷你章
+    final term = currentSolarTerm(now);
     final current =
         _weather != null ? _weather!['current'] as Map<String, dynamic>? : null;
-    final temp = current?['temp_current'];
     final cond = current?['weather'];
+    final temp = current?['temp_current'];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                '$greet，$name',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: theme.textPrimary,
-                  height: 1.15,
-                ),
-              ),
-            ),
-            if (temp != null && cond != null)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
-                decoration: BoxDecoration(
-                  color: theme.accentColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: theme.accentColor.withAlpha(45)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.wb_sunny_rounded,
-                        size: 12, color: theme.accentColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      '\$cond \$temp°',
-                      style: TextStyle(
-                        color: theme.accentColor,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 5),
-        Text(
-          '${now.year}年${now.month}月${now.day}日 $weekday',
-          style: TextStyle(
-            fontSize: 13,
-            color: theme.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMoodPaperHero(ThemeState theme, AppState appState) {
-    final prompt = dashboardPrompt(_weather);
-    final name = appState.displayName.isNotEmpty ? appState.displayName : '朋友';
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(XqDecorations.radiusHero),
-        onTap: _openMood,
-        child: Container(
-          decoration: XqDecorations.heroCard(
-            theme.cardElevated,
-            theme.cardColor,
-            theme.borderColor,
-            dark: theme.isDark,
-            glow: theme.accentColor,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(XqDecorations.radiusHero),
-            child: Stack(
-              children: [
-                // 纸张纹理
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: PaperTexturePainter(
-                        dotColor: theme.accentColor.withAlpha(
-                          theme.isDark ? 8 : 10,
-                        ),
-                        seed: DateTime.now().day,
-                      ),
-                    ),
-                  ),
-                ),
-                // 底部情绪微光渐变条
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 3,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.accentColor.withAlpha(0),
-                          theme.accentColor.withAlpha(80),
-                          theme.accentColor.withAlpha(0),
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-                // 内容
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: theme.backgroundColor,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _loadWeather,
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Stack(
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 脉冲心形图标
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 1.0, end: 1.08),
-                            duration: const Duration(milliseconds: 1200),
-                            curve: Curves.easeInOut,
-                            builder: (context, pulse, child) {
-                              return Transform.scale(scale: pulse, child: child);
-                            },
-                            onEnd: () {}, // 静态一次性动画
-                            child: Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: theme.accentColor.withAlpha(22),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: theme.accentColor.withAlpha(42),
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.favorite_rounded,
-                                color: theme.accentColor,
-                                size: 21,
-                              ),
+                      // 江南远山：三层淡墨山形，随节气微变
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          child: CustomPaint(
+                            size: const Size(double.infinity, 200),
+                            painter: _MountainPainter(
+                              ink: theme.ink,
+                              seed: now.month * 2 + (now.day > 15 ? 1 : 0),
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '$name，今天想怎么被记住？',
-                                  style: TextStyle(
-                                    color: theme.textPrimary,
-                                    fontSize: 16.5,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  prompt,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: theme.textSecondary,
-                                    fontSize: 11.5,
-                                    height: 1.35,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      // 按钮 + 手绘波浪装饰
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 44,
-                              child: FilledButton.icon(
-                                onPressed: _openMood,
-                                icon: const Icon(
-                                  Icons.edit_note_rounded,
-                                  size: 17,
-                                ),
-                                label: const Text(
-                                  '记录此刻',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: theme.accentColor,
-                                  foregroundColor: theme.textOnAccent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            StaggerIn(
+                              index: 0,
+                              child: Text(
+                                '${now.year}年${now.month}月${now.day}日 · $weekday · $term',
+                                style: TextStyle(
+                                  color: theme.textTertiary,
+                                  fontSize: 12,
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          // 手绘波浪装饰
-                          SizedBox(
-                            width: 48,
-                            height: 24,
-                            child: CustomPaint(
-                              painter: _HandWavePainter(
-                                color: theme.accentColor.withAlpha(70),
+                            const SizedBox(height: 16),
+                            StaggerIn(
+                              index: 1,
+                              child: Text(
+                                '$greet，$name',
+                                style: TextStyle(
+                                  color: theme.textPrimary,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 2,
+                                  height: 1.2,
+                                  fontFamily: 'serif',
+                                  fontFamilyFallback: [
+                                    'Noto Serif SC',
+                                    'Source Han Serif SC',
+                                    'Songti SC',
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 12),
+                            StaggerIn(
+                              index: 2,
+                              child: _buildTodayLine(theme, cond, temp),
+                            ),
+                            if (_memory != null) ...[
+                              const SizedBox(height: 16),
+                              StaggerIn(
+                                index: 3,
+                                child: _buildMemoryLine(theme),
+                              ),
+                            ],
+                            const Spacer(),
+                            StaggerIn(
+                              index: 4,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                    onPressed: _openWeatherDetail,
+                                    child: Text(
+                                      '天气详情',
+                                      style: TextStyle(
+                                        color: theme.textSecondary,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: _openCitySheet,
+                                    child: Text(
+                                      '换城市',
+                                      style: TextStyle(
+                                        color: theme.textSecondary,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            StaggerIn(
+                              index: 5,
+                              child: SizedBox(
+                                height: 48,
+                                child: FilledButton(
+                                  onPressed: _openMood,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: theme.accentColor,
+                                    foregroundColor: theme.textOnAccent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 16,
+                                      letterSpacing: 8,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  child: const Text('记一笔'),
+                                ),
+                              ),
+                            ),
+                            // 远山留白区：山体不与文字重叠
+                            const SizedBox(height: 212),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -922,255 +655,221 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildTodayDashboard(ThemeState theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '值得一试',
-          style: TextStyle(
-            color: theme.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+  /// 今日一行：天气以一行淡写呈现（素笺版不再做大卡）
+  Widget _buildTodayLine(ThemeState theme, dynamic cond, dynamic temp) {
+    if (_loading && _weather == null) {
+      return Text(
+        '天气正在路上…',
+        style: TextStyle(color: theme.textTertiary, fontSize: 15),
+      );
+    }
+    if (cond != null && temp != null) {
+      final city = _currentCity.isEmpty
+          ? '城市待确认'
+          : _currentCity.split('，').first;
+      return Text(
+        '$cond $temp° · $city',
+        style: TextStyle(
+          color: theme.textSecondary,
+          fontSize: 15,
+          letterSpacing: 0.5,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _gridTile(
-                theme,
-                icon: Icons.explore_outlined,
-                color: theme.accentColor,
-                title: '城迹',
-                subtitle: '城市情绪地图',
-                onTap: _openCityMap,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _gridTile(
-                theme,
-                icon: Icons.hourglass_top_rounded,
-                color: theme.gold,
-                title: '胶囊',
-                subtitle: '写给未来',
-                onTap: _openCapsule,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _gridTile(
-                theme,
-                icon: Icons.calendar_month_rounded,
-                color: const Color(0xFF8A7BC8),
-                title: '心情日历',
-                subtitle: '回看每一天',
-                onTap: () => MainScaffold.switchToTab(context, 1),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _gridTile(
-                theme,
-                icon: Icons.cottage_rounded,
-                color: const Color(0xFF5FA489),
-                title: '我的小屋',
-                subtitle: '成就与设置',
-                onTap: () => MainScaffold.switchToTab(context, 3),
-              ),
-            ),
-          ],
-        ),
-      ],
+      );
+    }
+    return GestureDetector(
+      onTap: _loadWeather,
+      child: Text(
+        '天气未取到 · 点按重试',
+        style: TextStyle(color: theme.accentColor, fontSize: 14),
+      ),
     );
   }
 
-  Widget _gridTile(
-    ThemeState theme, {
-    required IconData icon,
-    required Color color,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return PressableScale(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-            border: Border.all(color: theme.borderColor.withAlpha(80)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: color.withAlpha(22),
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(icon, color: color, size: 19),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  color: theme.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: theme.textSecondary,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
+  /// 那年今日：由卡片降级为一行素笺（点击仍可制卡）
+  Widget _buildMemoryLine(ThemeState theme) {
+    final m = _memory!;
+    final date = m['date']?.toString() ?? '';
+    final year = int.tryParse(date.substring(0, 4));
+    final yearsAgo = year == null ? '' : '${DateTime.now().year - year}年前';
+    final score = (m['emotion_type'] as num?)?.toInt() ?? 0;
+    final emoji = moodEmojis[score] ?? '';
+    final code = int.tryParse(m['weather_code']?.toString() ?? '');
+    final weatherText = weatherTextForCode(code);
+    final notes = (m['notes']?.toString() ?? '').trim();
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        MoodCardMaker.show(
+          context,
+          date: date,
+          moodLabel: moodLabels[score] ?? '',
+          moodScore: score,
+          text: notes,
+          tags: const [],
+          weatherText: weatherText,
+          cityName: '那年今日',
+        );
+      },
+      child: Text(
+        '$emoji 那年今日$yearsAgo${weatherText.isNotEmpty ? " · $weatherText" : ""} —— ${notes.isEmpty ? "只留下了一个心情" : notes}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: theme.textSecondary.withAlpha(210),
+          fontSize: 13,
         ),
       ),
+    );
+  }
+
+  /// 换城市：原内联搜索面板改为底部抽屉
+  Future<void> _openCitySheet() async {
+    final theme = context.read<ThemeState>();
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: _buildCitySearch(theme),
+        ),
       ),
     );
   }
 
   Widget _buildCitySearch(ThemeState theme) {
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.borderColor),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _citySearchCtrl,
-                  autofocus: true,
-                  onChanged: _onCitySearch,
-                  style: TextStyle(color: theme.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: '搜索城市...',
-                    hintStyle: TextStyle(
-                      color: theme.textSecondary.withAlpha(150),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      size: 20,
-                      color: theme.accentColor,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _citySearchCtrl,
+                autofocus: true,
+                onChanged: _onCitySearch,
+                style: TextStyle(color: theme.textPrimary),
+                decoration: InputDecoration(
+                  hintText: '搜索城市...',
+                  hintStyle: TextStyle(
+                    color: theme.textSecondary.withAlpha(150),
                   ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: BorderSide(color: theme.borderColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: BorderSide(color: theme.borderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: BorderSide(
+                      color: theme.accentColor,
+                      width: 1.2,
+                    ),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    size: 20,
+                    color: theme.accentColor,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
               ),
-              IconButton(
-                onPressed: () => setState(() => _showCitySearch = false),
-                icon: Icon(Icons.close, color: theme.textSecondary),
-              ),
-            ],
-          ),
-          if (_citySearchCtrl.text.isNotEmpty && _cityResults.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                '暂无结果，换个城市名试试',
-                style: TextStyle(color: theme.textSecondary, fontSize: 13),
-              ),
             ),
-          ..._cityResults.map(
-            (c) => ListTile(
-              title: Text(
-                c['name'] ?? '',
-                style: TextStyle(color: theme.textPrimary),
-              ),
-              subtitle: Text(
-                '${c['admin1'] ?? ''} ${c['country'] ?? ''}',
-                style: TextStyle(color: theme.textSecondary, fontSize: 12),
-              ),
-              trailing: Text(
-                '切换',
-                style: TextStyle(color: theme.gold, fontSize: 13),
-              ),
-              onTap: () => _pickCity(c),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.close, color: theme.textSecondary),
+            ),
+          ],
+        ),
+        if (_citySearchCtrl.text.isNotEmpty && _cityResults.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              '暂无结果，换个城市名试试',
+              style: TextStyle(color: theme.textSecondary, fontSize: 13),
             ),
           ),
-        ],
-      ),
+        ..._cityResults.map(
+          (c) => ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              c['name'] ?? '',
+              style: TextStyle(color: theme.textPrimary),
+            ),
+            subtitle: Text(
+              '${c['admin1'] ?? ''} ${c['country'] ?? ''}',
+              style: TextStyle(color: theme.textSecondary, fontSize: 12),
+            ),
+            trailing: Text(
+              '切换',
+              style: TextStyle(color: theme.accentColor, fontSize: 13),
+            ),
+            onTap: () => _pickCity(c),
+          ),
+        ),
+      ],
     );
   }
 }
 
-/// 手绘波浪线装饰
-class _HandWavePainter extends CustomPainter {
-  final Color color;
-  _HandWavePainter({required this.color});
+/// 江南远山：三层淡墨山形，随节气微变轮廓。
+/// 颜色只取主题 ink（低透明度分层表现远近），深浅主题自然成立。
+class _MountainPainter extends CustomPainter {
+  final Color ink;
+  final int seed;
+  _MountainPainter({required this.ink, required this.seed});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.8
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    final w = size.width;
-    final h = size.height;
-    final mid = h / 2;
-    final amp = h * 0.3;
-
-    path.moveTo(0, mid);
-    for (double x = 0; x <= w; x += 1) {
-      // 手绘感：微随机振幅 + 正弦波
-      final progress = x / w;
-      final y = mid +
-          amp * _handSine(progress * 3.5 * 3.14159) +
-          (x % 7 < 2 ? 0.6 : 0); // 微抖动
-      path.lineTo(x, y);
+    final rng = Random(seed);
+    // 远→近：透明度递增，山脊高度递减
+    const alphas = [10, 17, 26];
+    const baseRatios = [0.16, 0.30, 0.46];
+    for (int layer = 0; layer < 3; layer++) {
+      final paint = Paint()..color = ink.withAlpha(alphas[layer]);
+      final path = Path()..moveTo(0, size.height);
+      final base =
+          size.height * (1 - baseRatios[layer] - rng.nextDouble() * 0.06);
+      path.lineTo(0, base);
+      // 4-5 段山脊
+      final segments = 4 + rng.nextInt(2);
+      var x = 0.0;
+      var y = base;
+      for (int i = 0; i < segments; i++) {
+        final nx = size.width * (i + 1) / segments;
+        final peak = base -
+            size.height *
+                (0.10 + rng.nextDouble() * 0.16) *
+                (1 - layer * 0.15);
+        final midX = (x + nx) / 2;
+        path.quadraticBezierTo(midX, peak, nx, y + rng.nextDouble() * 12 - 6);
+        x = nx;
+      }
+      path.lineTo(size.width, size.height);
+      path.close();
+      canvas.drawPath(path, paint);
     }
-    canvas.drawPath(path, paint);
-  }
-
-  double _handSine(double v) {
-    final r = v % (2 * 3.14159);
-    return r < 3.14159 ? (r / 3.14159 - 0.5) * 2 : (1 - (r - 3.14159) / 3.14159) * -2;
   }
 
   @override
-  bool shouldRepaint(covariant _HandWavePainter old) => old.color != color;
+  bool shouldRepaint(covariant _MountainPainter old) =>
+      old.ink != ink || old.seed != seed;
 }
 
+/// 心情定位数据（素笺版首页内部使用）
 class _WeatherLocation {
   final double lat;
   final double lon;
   final String city;
   final String status;
   final bool cacheable;
-
   const _WeatherLocation({
     required this.lat,
     required this.lon,

@@ -11,6 +11,13 @@ class ThemeState extends ChangeNotifier {
   String get themeMode => _themeMode;
   bool get isDark => _themeMode == 'dark' || _themeMode == 'sujian_dark';
 
+  /// 可操作控件边框（输入框等，≥3:1）；border 仅作装饰分隔
+  Color get controlBorder => switch (_themeMode) {
+    'sujian' => XqColors.sujianControlBorder,
+    'sujian_dark' => XqColors.sujianDarkControlBorder,
+    _ => borderColor,
+  };
+
   /// 凹陷区（素笺：比纸深一层的标签/代码底），其余主题回退到卡片色
   Color get sunkenColor => switch (_themeMode) {
     'sujian' => XqColors.sujianSunken,

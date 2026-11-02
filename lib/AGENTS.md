@@ -34,4 +34,4 @@ Provider 状态管理；设计系统在 `theme/`；入口 `main.dart`。
 4. **树洞底部输入区**放 `Scaffold.bottomNavigationBar`，自动避键盘。
 5. **定位缓存版本**：`loc_cache_ver`（home_page）用于污染缓存整体失效，改定位逻辑时递增。
 6. **本地通知**：胶囊提醒 ID `700000 + capsuleId`、目标日 9:08、payload `{"type":"capsule","capsuleId":N}`；Android 14+ 先查 `canScheduleExactNotifications` 再降级 inexact。
-7. **主框架 5 Tab**：跨 Tab 跳转用 `MainScaffold.switchToTab(context, i)`，不要自己 Navigator 堆栈。
+7. **主框架 4 Tab**：主框架 4 Tab（天气/心情/城迹/我的）。跨 Tab 跳转用 `MainScaffold.switchToTab(context, i)`，不要自己 Navigator 堆栈。

@@ -63,7 +63,7 @@ class XinQingRiJiApp extends StatelessWidget {
             title: '拾晴日记',
             debugShowCheckedModeBanner: false,
             theme: XqTheme.forMode(theme.themeMode),
-            darkTheme: XqTheme.dark(),
+            darkTheme: XqTheme.forMode(theme.isDark ? theme.themeMode : 'dark'),
             themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
             // 主题切换时全 App 颜色平滑过渡，避免生硬跳变
             themeAnimationDuration: const Duration(milliseconds: 420),

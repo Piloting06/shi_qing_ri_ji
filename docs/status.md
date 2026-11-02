@@ -6,7 +6,7 @@
 
 | 项 | 值 |
 |---|---|
-| 当前版本 | **v2.13.0+25** |
+| 当前版本 | **v2.14.0+26（素笺 Token 层已落地，首页减法进行中）** |
 | 最新 APK | `拾晴日记_v2.13.0_20261102_1958.apk`（项目根目录） |
 | 仓库 | `github.com/Piloting06/shi_qing_ri_ji`（2026-11-02 由 xin_qing_ri_ji 改名，本地 remote 已同步） |
 
@@ -15,6 +15,11 @@
 - 服务端：`xqrj.glxgo.xin`（PM2 `xinqingriji`:3001 + nginx），v2.5.0 服务端优化已部署（防抖落盘/双备份/trust proxy/CORS 白名单）
 - v2.12.0 服务端：moods.city 列迁移完成、`/city/moodboard` 上线、POST /mood 写入城市+天气码
 - 每日数据库双备份运行中（`server/backups/` + `/root/db_backup/`）
+
+## 进行中：v2.14「素笺默认」
+
+- Token 层已落地：素笺纸墨（默认）/素笺夜墨 双主题入管线，默认迁移逻辑（未显式选过主题的用户自动迁到素笺），朱砂 sealColor Token
+- 下一步：首页彻底减法（时序问候+今日一行+「记一笔」+江南远山主视觉）、底部导航细线态、心情页表单刷新、骨架屏去 shimmer、宋体标题字阶、reduced-motion
 
 ## 已实现待真机验证
 

@@ -5,6 +5,7 @@ class StorageKeys {
   static const String phone = 'phone';
   static const String email = 'email';
   static const String themeMode = 'themeMode';
+  static const String themeExplicit = 'themeExplicit';
   static const String cityName = 'cityName';
   static const String cityLat = 'cityLat';
   static const String cityLon = 'cityLon';

@@ -10,6 +10,23 @@ class XqTheme {
 
   /// 根据模式返回对应 ThemeData
   static ThemeData forMode(String mode) {
+    if (mode == 'sujian_dark') {
+      return _build(
+        brightness: Brightness.dark,
+        overlay: SystemUiOverlayStyle.light,
+        bg: XqColors.sujianDarkBackground,
+        card: XqColors.sujianDarkCard,
+        accent: XqColors.sujianDarkAccent,
+        accentLight: XqColors.sujianDarkAccentLight,
+        border: XqColors.sujianDarkBorder,
+        focus: XqColors.sujianDarkBorderFocus,
+        text1: XqColors.sujianDarkTextPrimary,
+        text2: XqColors.sujianDarkTextSecondary,
+        text3: XqColors.sujianDarkTextTertiary,
+        onAccent: XqColors.sujianDarkTextOnAccent,
+        error: XqColors.sujianDarkError,
+      );
+    }
     if (mode == 'dark') {
       return _build(
         brightness: Brightness.dark,
@@ -168,49 +185,58 @@ class XqTheme {
   // ── Color resolvers (light themes only) ──
 
   static Color _bg(String m) => switch (m) {
+    'sujian' => XqColors.sujianBackground,
     'mint' => XqColors.mintBackground,
     'blush' => XqColors.blushBackground,
-    _ => XqColors.lightBackground,
+    _ => XqColors.sujianBackground,
   };
   static Color _card(String m) => switch (m) {
+    'sujian' => XqColors.sujianCard,
     'mint' => XqColors.mintCard,
     'blush' => XqColors.blushCard,
-    _ => XqColors.lightCard,
+    _ => XqColors.sujianCard,
   };
   static Color _accent(String m) => switch (m) {
+    'sujian' => XqColors.sujianAccent,
     'mint' => XqColors.mintAccent,
     'blush' => XqColors.blushAccent,
-    _ => XqColors.lightAccent,
+    _ => XqColors.sujianAccent,
   };
   static Color _accentLight(String m) => switch (m) {
+    'sujian' => XqColors.sujianAccentLight,
     'mint' => XqColors.mintAccentLight,
     'blush' => XqColors.blushAccentLight,
-    _ => XqColors.lightAccentLight,
+    _ => XqColors.sujianAccentLight,
   };
   static Color _border(String m) => switch (m) {
+    'sujian' => XqColors.sujianBorder,
     'mint' => XqColors.mintBorder,
     'blush' => XqColors.blushBorder,
-    _ => XqColors.lightBorder,
+    _ => XqColors.sujianBorder,
   };
   static Color _focus(String m) => switch (m) {
+    'sujian' => XqColors.sujianBorderFocus,
     'mint' => XqColors.mintBorderFocus,
     'blush' => XqColors.blushBorderFocus,
-    _ => XqColors.lightBorderFocus,
+    _ => XqColors.sujianBorderFocus,
   };
   static Color _textPrimary(String m) => switch (m) {
+    'sujian' => XqColors.sujianTextPrimary,
     'mint' => XqColors.mintTextPrimary,
     'blush' => XqColors.blushTextPrimary,
-    _ => XqColors.lightTextPrimary,
+    _ => XqColors.sujianTextPrimary,
   };
   static Color _textSecondary(String m) => switch (m) {
+    'sujian' => XqColors.sujianTextSecondary,
     'mint' => XqColors.mintTextSecondary,
     'blush' => XqColors.blushTextSecondary,
-    _ => XqColors.lightTextSecondary,
+    _ => XqColors.sujianTextSecondary,
   };
   static Color _textTertiary(String m) => switch (m) {
+    'sujian' => XqColors.sujianTextTertiary,
     'mint' => XqColors.mintTextTertiary,
     'blush' => XqColors.blushTextTertiary,
-    _ => XqColors.lightTextTertiary,
+    _ => XqColors.sujianTextTertiary,
   };
   static Color _textOnAccent() => const Color(0xFFFFFFFF);
   static Color _error() => XqColors.lightError;

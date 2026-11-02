@@ -113,7 +113,7 @@ class NoteCardTemplate {
                             style: TextStyle(
                               color: accent.withAlpha(145),
                               fontSize: 7.2,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -124,7 +124,7 @@ class NoteCardTemplate {
                           style: TextStyle(
                             color: accent.withAlpha(118),
                             fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 1.4,
                           ),
                         ),
@@ -186,7 +186,7 @@ class NoteCardTemplate {
                           style: TextStyle(
                             color: accent.withAlpha(82),
                             fontSize: 8.2,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing:
                                 data.watermark == 'sqrj' ? 1.5 : 1.15,
                           ),

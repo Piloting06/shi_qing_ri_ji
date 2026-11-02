@@ -177,7 +177,7 @@ extension _ProfilePageActions on _ProfilePageState {
           style: TextStyle(
             color: theme.errorColor,
             fontSize: 17,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         content: const Text('注销后会退出当前账号，并释放手机号。重新注册会创建一个全新账号。'),
@@ -254,7 +254,7 @@ extension _ProfilePageActions on _ProfilePageState {
                   style: TextStyle(
                     color: theme.textPrimary,
                     fontSize: 17,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 8),

@@ -85,7 +85,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                     style: TextStyle(
                       color: theme.textPrimary,
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -197,7 +197,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                 style: TextStyle(
                   color: theme.textPrimary,
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

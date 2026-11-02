@@ -99,7 +99,7 @@ class SunnyCardTemplate {
                             style: TextStyle(
                               color: p.accent.withAlpha(190),
                               fontSize: 8,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               letterSpacing: 0.6,
                             ),
                           ),
@@ -132,7 +132,7 @@ class SunnyCardTemplate {
                                 style: TextStyle(
                                   color: p.accent.withAlpha(150),
                                   fontSize: 9,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing: 2.2,
                                 ),
                               ),
@@ -188,7 +188,7 @@ class SunnyCardTemplate {
                           style: TextStyle(
                             color: p.accent.withAlpha(110),
                             fontSize: 8.2,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing:
                                 data.watermark == 'sqrj' ? 1.5 : 1.15,
                           ),

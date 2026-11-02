@@ -57,7 +57,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     if (_boundEmail.isNotEmpty) ...[
@@ -283,7 +283,7 @@ extension _ProfilePageSheets on _ProfilePageState {
           '修改昵称',
           style: TextStyle(
             color: theme.textPrimary,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         content: TextField(
@@ -372,7 +372,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                     style: TextStyle(
                       color: theme.textPrimary,
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -627,7 +627,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                           style: TextStyle(
                             color: _readableTextOn(colors[2]),
                             fontSize: 22,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -677,7 +677,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                           style: TextStyle(
                             color: _readableTextOn(colors[2]),
                             fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),

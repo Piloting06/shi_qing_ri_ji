@@ -152,7 +152,7 @@ class StickerCardTemplate {
                           style: TextStyle(
                             color: _ink.withAlpha(100),
                             fontSize: 8.2,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing:
                                 data.watermark == 'sqrj' ? 1.5 : 1.15,
                           ),

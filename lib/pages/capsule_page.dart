@@ -343,7 +343,7 @@ class _CapsulePageState extends State<CapsulePage> {
                                   child: Icon(b.icon, color: theme.accentColor, size: 26),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(b.name, style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+                                Text(b.name, style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                                 const SizedBox(height: 2),
                                 Text(b.system, style: TextStyle(color: theme.textTertiary, fontSize: 12)),
                                 const SizedBox(height: 20),
@@ -612,7 +612,7 @@ class _CapsulePageState extends State<CapsulePage> {
                 style: TextStyle(
                   color: theme.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
@@ -798,7 +798,7 @@ class _CapsulePageState extends State<CapsulePage> {
           style: TextStyle(
             color: active ? theme.accentColor : theme.textTertiary,
             fontSize: 12,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
       ),
@@ -865,7 +865,7 @@ class _CapsulePageState extends State<CapsulePage> {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),

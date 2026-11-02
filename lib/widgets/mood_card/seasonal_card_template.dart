@@ -76,7 +76,7 @@ class SeasonalCardTemplate {
                           style: TextStyle(
                             color: p.accent.withAlpha(140),
                             fontSize: 8,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 1.5,
                           ),
                         ),
@@ -157,7 +157,7 @@ class SeasonalCardTemplate {
                           style: TextStyle(
                             color: p.accent.withAlpha(110),
                             fontSize: 8.2,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing:
                                 data.watermark == 'sqrj' ? 1.5 : 1.15,
                           ),

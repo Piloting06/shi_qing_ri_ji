@@ -605,7 +605,7 @@ class _HomePageState extends State<HomePage> {
                                   fontWeight: FontWeight.w500,
                                   letterSpacing: 2,
                                   height: 1.2,
-                                  fontFamily: 'serif',
+                                  fontFamily: 'SerifSC',
                                   fontFamilyFallback: [
                                     'Noto Serif SC',
                                     'Source Han Serif SC',

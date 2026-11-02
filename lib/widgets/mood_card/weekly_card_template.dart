@@ -78,7 +78,7 @@ class WeeklyCardTemplate {
                   style: TextStyle(
                     color: _accent.withAlpha(150),
                     fontSize: 8,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 2,
                   ),
                 ),
@@ -133,7 +133,7 @@ class WeeklyCardTemplate {
                                     : _ink.withAlpha(100),
                                 fontSize: 9,
                                 fontWeight: day.isToday
-                                    ? FontWeight.w700
+                                    ? FontWeight.w600
                                     : FontWeight.w400,
                               ),
                             ),
@@ -176,7 +176,7 @@ class WeeklyCardTemplate {
                       style: TextStyle(
                         color: _accent.withAlpha(120),
                         fontSize: 8.2,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: data.watermark == 'sqrj' ? 1.5 : 1.15,
                       ),
                     ),

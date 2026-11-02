@@ -552,7 +552,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                     style: TextStyle(
                       color: sheetTheme.textPrimary,
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

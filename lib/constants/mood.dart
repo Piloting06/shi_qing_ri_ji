@@ -8,9 +8,16 @@ const Map<int, String> moodLabels = {
   5: '焦虑', 6: '疲惫', 7: '期待', 8: '思念',
 };
 
+/// 心情釉色：低饱和、入纸不喧哗（素笺规范：避免鲜艳配色）
 const Map<int, int> moodColors = {
-  1: 0xFFFFB74D, 2: 0xFF90A4AE, 3: 0xFF7E8CB0, 4: 0xFFEF5350,
-  5: 0xFFB39DDB, 6: 0xFFA5B89B, 7: 0xFFFFD54F, 8: 0xFF64B5F6,
+  1: 0xFFC0964C, // 开心 · 釉金
+  2: 0xFF7C918C, // 平静 · 青瓷
+  3: 0xFF5F6E80, // 难过 · 墨蓝
+  4: 0xFFB4574B, // 生气 · 砖红
+  5: 0xFF9B8291, // 焦虑 · 藕灰
+  6: 0xFF86937A, // 疲惫 · 苔灰
+  7: 0xFF5E8CA0, // 期待 · 天青
+  8: 0xFF8296B5, // 思念 · 雾蓝
 };
 
 final Map<int, List<Map<String, String>>> emotionTags = {

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -564,15 +564,15 @@ class _HomePageState extends State<HomePage> {
                   child: Stack(
                     children: [
                       // 江南远山：三层淡墨山形，随节气微变
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+                      Positioned.fill(
                         child: IgnorePointer(
                           child: CustomPaint(
-                            size: const Size(double.infinity, 200),
-                            painter: _MountainPainter(
+                            painter: _JiangnanScenePainter(
+                              paper: theme.backgroundColor,
+                              accent: theme.accentColor,
                               ink: theme.ink,
+                              surface: theme.cardColor,
+                              hour: now.hour,
                               seed: now.month * 2 + (now.day > 15 ? 1 : 0),
                             ),
                           ),
@@ -658,28 +658,39 @@ class _HomePageState extends State<HomePage> {
                             const SizedBox(height: 8),
                             StaggerIn(
                               index: 5,
-                              child: SizedBox(
-                                height: 48,
-                                child: FilledButton(
-                                  onPressed: _openMood,
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: theme.accentColor,
-                                    foregroundColor: theme.textOnAccent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.accentColor.withAlpha(70),
+                                      blurRadius: 18,
+                                      offset: const Offset(0, 6),
                                     ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 16,
-                                      letterSpacing: 8,
-                                      fontWeight: FontWeight.w600,
+                                  ],
+                                ),
+                                child: SizedBox(
+                                  height: 48,
+                                  child: FilledButton(
+                                    onPressed: _openMood,
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: theme.accentColor,
+                                      foregroundColor: theme.textOnAccent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 16,
+                                        letterSpacing: 8,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
+                                    child: const Text('记一笔'),
                                   ),
-                                  child: const Text('记一笔'),
                                 ),
                               ),
                             ),
                             // 远山留白区：山体不与文字重叠
-                            const SizedBox(height: 212),
+                            const SizedBox(height: 236),
                           ],
                         ),
                       ),
@@ -694,33 +705,61 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// 今日一行：天气以一行淡写呈现（素笺版不再做大卡）
+  /// 今日纸片：浮在烟雨山水之上的一枚信息笺
   Widget _buildTodayLine(ThemeState theme, dynamic cond, dynamic temp) {
-    if (_loading && _weather == null) {
-      return Text(
-        '天气正在路上…',
-        style: TextStyle(color: theme.textTertiary, fontSize: 15),
-      );
-    }
-    if (cond != null && temp != null) {
-      final city = _currentCity.isEmpty
-          ? '城市待确认'
-          : _currentCity.split('，').first;
-      return Text(
-        '$cond $temp° · $city',
-        style: TextStyle(
-          color: theme.textSecondary,
-          fontSize: 15,
-          letterSpacing: 0.5,
-          fontFeatures: const [FontFeature.tabularFigures()],
-        ),
-      );
-    }
-    return GestureDetector(
-      onTap: _loadWeather,
-      child: Text(
-        '天气未取到 · 点按重试',
-        style: TextStyle(color: theme.accentColor, fontSize: 14),
+    final body = _loading && _weather == null
+        ? Text('天气正在路上…',
+            style: TextStyle(color: theme.textTertiary, fontSize: 15))
+        : (cond != null && temp != null)
+            ? Text(
+                '$cond $temp° · ${_currentCity.isEmpty ? "城市待确认" : _currentCity.split("，").first}',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 15.5,
+                  letterSpacing: 0.5,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              )
+            : GestureDetector(
+                onTap: _loadWeather,
+                child: Text(
+                  '天气未取到 · 点按重试',
+                  style: TextStyle(color: theme.accentColor, fontSize: 14),
+                ),
+              );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: theme.cardColor.withAlpha(242),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.borderColor, width: 0.6),
+        boxShadow: [
+          BoxShadow(
+            color: theme.ink.withAlpha(14),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(child: body),
+          GestureDetector(
+            onTap: _openWeatherDetail,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('详情',
+                    style: TextStyle(
+                        color: theme.accentColor,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600)),
+                Icon(Icons.chevron_right_rounded,
+                    size: 15, color: theme.accentColor),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -751,13 +790,38 @@ class _HomePageState extends State<HomePage> {
           cityName: '那年今日',
         );
       },
-      child: Text(
-        '$emoji 那年今日$yearsAgo${weatherText.isNotEmpty ? " · $weatherText" : ""} —— ${notes.isEmpty ? "只留下了一个心情" : notes}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: theme.textSecondary.withAlpha(210),
-          fontSize: 13,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.cardColor.withAlpha(242),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: theme.borderColor.withAlpha(120), width: 0.6),
+          boxShadow: [
+            BoxShadow(
+              color: theme.ink.withAlpha(12),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 15)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '那年今日$yearsAgo —— ${notes.isEmpty ? "只留下了一个心情" : notes}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: theme.textSecondary, fontSize: 13),
+              ),
+            ),
+            if (weatherText.isNotEmpty)
+              Text(
+                weatherText,
+                style: TextStyle(color: theme.gold, fontSize: 11.5),
+              ),
+          ],
         ),
       ),
     );
@@ -860,49 +924,156 @@ class _HomePageState extends State<HomePage> {
 
 /// 江南远山：三层淡墨山形，随节气微变轮廓。
 /// 颜色只取主题 ink（低透明度分层表现远近），深浅主题自然成立。
-class _MountainPainter extends CustomPainter {
-  final Color ink;
+
+/// 江南烟雨全景（首页背景，分层纵深）：
+/// 纸纹 → 天光/淡月 → 三层黛青山 → 雾带遮山腰 → 石桥一座。
+/// 颜色全部取主题 Token；远山以黛青、近山以墨，透明度分层出空气透视。
+class _JiangnanScenePainter extends CustomPainter {
+  final Color paper; // 瓦白底
+  final Color accent; // 黛青
+  final Color ink; // 墨
+  final Color surface; // 雾带用（比纸浅一层）
+  final int hour; // 时辰：决定淡月或日晕
   final int seed;
-  _MountainPainter({required this.ink, required this.seed});
+
+  _JiangnanScenePainter({
+    required this.paper,
+    required this.accent,
+    required this.ink,
+    required this.surface,
+    required this.hour,
+    required this.seed,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rng = Random(seed);
-    // 远→近：透明度递增，山脊高度递减
-    const alphas = [10, 17, 26];
-    const baseRatios = [0.16, 0.30, 0.46];
-    for (int layer = 0; layer < 3; layer++) {
-      final paint = Paint()..color = ink.withAlpha(alphas[layer]);
-      final path = Path()..moveTo(0, size.height);
-      final base =
-          size.height * (1 - baseRatios[layer] - rng.nextDouble() * 0.06);
-      path.lineTo(0, base);
-      // 4-5 段山脊
-      final segments = 4 + rng.nextInt(2);
-      var x = 0.0;
-      var y = base;
-      for (int i = 0; i < segments; i++) {
-        final nx = size.width * (i + 1) / segments;
-        final peak = base -
-            size.height *
-                (0.10 + rng.nextDouble() * 0.16) *
-                (1 - layer * 0.15);
-        final midX = (x + nx) / 2;
-        path.quadraticBezierTo(midX, peak, nx, y + rng.nextDouble() * 12 - 6);
-        x = nx;
-      }
-      path.lineTo(size.width, size.height);
-      path.close();
-      canvas.drawPath(path, paint);
+    final rng = math.Random(seed);
+
+    // ── 纸纹：极淡的飞点（alpha≈4，阅读区不受干扰）──
+    final grain = Paint()..color = ink.withAlpha(5);
+    for (int i = 0; i < 130; i++) {
+      canvas.drawCircle(
+        Offset(rng.nextDouble() * size.width, rng.nextDouble() * size.height),
+        rng.nextDouble() * 0.9 + 0.2,
+        grain,
+      );
     }
+
+    // ── 天光：夜里一枚淡月，白天一痕日晕（右上角，含柔光晕）──
+    final isNight = hour >= 19 || hour < 5;
+    final orbC = Offset(size.width * 0.82, size.height * 0.16);
+    final orbR = size.shortestSide * (isNight ? 0.045 : 0.055);
+    canvas.drawCircle(
+      orbC,
+      orbR * 2.6,
+      Paint()
+        ..shader = RadialGradient(colors: [
+          (isNight ? ink : accent).withAlpha(isNight ? 26 : 16),
+          Colors.transparent,
+        ]).createShader(Rect.fromCircle(center: orbC, radius: orbR * 2.6)),
+    );
+    if (isNight) {
+      // 淡月（弯月：两圆相减的近似——画满月再用底色圆偏移遮出月牙）
+      canvas.drawCircle(orbC, orbR, Paint()..color = ink.withAlpha(38));
+      canvas.drawCircle(
+        orbC + Offset(orbR * 0.42, -orbR * 0.18),
+        orbR * 0.92,
+        Paint()..color = paper,
+      );
+    } else {
+      canvas.drawCircle(orbC, orbR * 0.72, Paint()..color = accent.withAlpha(14));
+    }
+
+    // ── 三层山：远(黛青淡) → 中(黛青) → 近(墨)，高度递增、透明度递增 ──
+    final h = size.height;
+    _ridge(canvas, size, rng, baseY: h * 0.46, amp: h * 0.10,
+        color: accent.withAlpha(26), segments: 3);
+    _ridge(canvas, size, rng, baseY: h * 0.56, amp: h * 0.12,
+        color: accent.withAlpha(42), segments: 4);
+
+    // ── 石桥一座：跨在中山与近山之间的水口（墨色剪影）──
+    _bridge(canvas, size,
+        cx: size.width * 0.68, deckY: h * 0.72, w: size.width * 0.22,
+        color: ink.withAlpha(120));
+
+    _ridge(canvas, size, rng, baseY: h * 0.70, amp: h * 0.14,
+        color: ink.withAlpha(56), segments: 3);
+
+    // ── 雾带：两条横向柔雾遮住山腰（纸色渐变，出烟雨气）──
+    for (final (y, hh, a) in [
+      (h * 0.52, h * 0.10, 110),
+      (h * 0.66, h * 0.12, 90),
+    ]) {
+      final rect = Rect.fromLTWH(0, y, size.width, hh);
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [surface.withAlpha(0), surface.withAlpha(a), surface.withAlpha(0)],
+          ).createShader(rect),
+      );
+    }
+
+    // ── 水口：山脚一条静水（比纸深半档的水平面）──
+    final water = Rect.fromLTWH(0, h * 0.78, size.width, h * 0.22);
+    canvas.drawRect(
+      water,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [accent.withAlpha(14), accent.withAlpha(4)],
+        ).createShader(water),
+    );
+  }
+
+  void _ridge(Canvas canvas, Size size, math.Random rng,
+      {required double baseY, required double amp, required Color color, required int segments}) {
+    final path = Path()..moveTo(0, size.height);
+    path.lineTo(0, baseY);
+    for (int i = 0; i < segments; i++) {
+      final x0 = size.width * i / segments;
+      final x1 = size.width * (i + 1) / segments;
+      final peak = baseY - amp * (0.55 + rng.nextDouble() * 0.6);
+      path.quadraticBezierTo((x0 + x1) / 2, peak, x1, baseY + rng.nextDouble() * amp * 0.2);
+    }
+    path.lineTo(size.width, size.height);
+    path.close();
+    canvas.drawPath(path, Paint());
+  }
+
+  void _bridge(Canvas canvas, Size size,
+      {required double cx, required double deckY, required double w, required Color color}) {
+    final paint = Paint()..color = color;
+    // 桥面
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(cx - w / 2, deckY, w, 5),
+        const Radius.circular(2),
+      ),
+      paint,
+    );
+    // 石拱（半圆环）
+    final archR = w * 0.30;
+    final archC = Offset(cx, deckY + 2);
+    canvas.drawArc(
+      Rect.fromCircle(center: archC, radius: archR),
+      0, math.pi, false,
+      Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 4,
+    );
+    // 桥墩两根
+    canvas.drawLine(Offset(cx - w / 2 + 3, deckY + 4), Offset(cx - w / 2 + 3, deckY + 14), paint..strokeWidth = 3);
+    canvas.drawLine(Offset(cx + w / 2 - 3, deckY + 4), Offset(cx + w / 2 - 3, deckY + 14), paint..strokeWidth = 3);
   }
 
   @override
-  bool shouldRepaint(covariant _MountainPainter old) =>
-      old.ink != ink || old.seed != seed;
+  bool shouldRepaint(covariant _JiangnanScenePainter old) =>
+      old.paper != paper || old.accent != accent || old.ink != ink || old.seed != seed;
 }
 
-/// 心情定位数据（素笺版首页内部使用）
+/// 心情定位数据（首页内部使用）
 class _WeatherLocation {
   final double lat;
   final double lon;

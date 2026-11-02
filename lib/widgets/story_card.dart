@@ -39,7 +39,25 @@ class StoryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: t.borderColor, width: 0.6),
       ),
-      child: Column(
+      child: Stack(
+        children: [
+          // 装裱内衬线（字画裱框意象）
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: t.borderColor.withAlpha(120),
+                      width: 0.6,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -128,6 +146,8 @@ class StoryCard extends StatelessWidget {
             ],
           ),
         ],
+        ),
+      ],
       ),
     );
   }
@@ -215,7 +235,17 @@ class _StoryCardPreviewPageState extends State<StoryCardPreviewPage> {
           style: XqTypography.headlineMedium.copyWith(color: t.textPrimary),
         ),
       ),
-      body: Center(
+      body: Stack(
+        children: [
+          // 窗棂底纹：低透明度细格，如窗下观笺
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _LatticePainter(line: t.borderColor),
+              ),
+            ),
+          ),
+          Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: RepaintBoundary(
@@ -227,6 +257,8 @@ class _StoryCardPreviewPageState extends State<StoryCardPreviewPage> {
             ),
           ),
         ),
+          ),
+        ],
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -274,4 +306,28 @@ class _StoryCardPreviewPageState extends State<StoryCardPreviewPage> {
       ),
     );
   }
+}
+
+
+/// 窗棂底纹：极淡细格线（装饰性背景，被卡片大面积遮挡）
+class _LatticePainter extends CustomPainter {
+  final Color line;
+  _LatticePainter({required this.line});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = line.withAlpha(60)
+      ..strokeWidth = 0.5;
+    const cell = 56.0;
+    for (double x = 0; x < size.width; x += cell) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += cell) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LatticePainter old) => old.line != line;
 }

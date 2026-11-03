@@ -76,7 +76,7 @@ class _MoodPageState extends State<MoodPage>
       if (e.statusCode == 401) return;
       if (mounted) XqToast.error(context, '加载心情统计失败：${e.message}');
     } catch (_) {
-      if (mounted) XqToast.error(context, '加载心情统计失败，请稍后重试');
+      if (mounted) XqToast.error(context, '没连上网络，稍后再试');
     }
   }
 
@@ -1474,7 +1474,7 @@ class _MoodPageState extends State<MoodPage>
   String _placeholderForScore(int score) {
     switch (score) {
       case 1:
-        return '太棒了！发生了什么好事呢？';
+        return '开心的事，记下来';
       case 2:
         return '这样的平静也很珍贵...';
       case 3:

@@ -950,7 +950,7 @@ class AboutPage extends StatelessWidget {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: const Text('谢谢你愿意告诉我们！每一条都会好好看'),
+                                        content: const Text('谢谢你愿意告诉我们，每一条都会认真看'),
                                         backgroundColor: theme.successColor,
                                         behavior: SnackBarBehavior.floating,
                                         shape: RoundedRectangleBorder(

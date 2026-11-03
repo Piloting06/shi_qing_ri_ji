@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,7 +82,7 @@ class OnboardingFlow {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '先给自己起一个名字吧～',
+                    '起个名字，好友会看到它。',
                     style: XqTypography.bodyMedium.copyWith(
                       color: theme.textSecondary,
                     ),
@@ -94,7 +95,7 @@ class OnboardingFlow {
                     textAlign: TextAlign.center,
                     cursorColor: theme.gold,
                     decoration: InputDecoration(
-                      hintText: '给自己取个名字吧',
+                      hintText: '名字',
                       hintStyle: TextStyle(
                         color: theme.textSecondary.withAlpha(120),
                       ),
@@ -146,21 +147,21 @@ class OnboardingFlow {
 
     final permissions = [
       {
-        'icon': Icons.location_on_outlined,
+        'icon': XqIcons.pin,
         'title': '定位',
-        'desc': '看看你窗外的天气，不用手动选城市',
+        'desc': '显示你所在城市的天气',
       },
       {
-        'icon': Icons.photo_library_outlined,
+        'icon': XqIcons.image,
         'title': '相册',
-        'desc': '上传心情照片——照片只存在你的手机本地，不上传服务器',
+        'desc': '给心情配照片。照片只存在手机里，不上传',
       },
       {
-        'icon': Icons.notifications_outlined,
+        'icon': XqIcons.bell,
         'title': '通知',
         'desc': '时光胶囊到期时通知你',
       },
-      {'icon': Icons.folder_outlined, 'title': '存储', 'desc': '保存天气心情卡和限定壁纸到本地'},
+      {'icon': XqIcons.folder, 'title': '存储', 'desc': '把心情卡片存到相册'},
     ];
 
     return showDialog<bool>(
@@ -200,7 +201,7 @@ class OnboardingFlow {
                 children: [
                   Center(
                     child: Text(
-                      '为了更好地陪伴你',
+                      '会用到这些权限',
                       style: XqTypography.headlineMedium.copyWith(
                         color: theme.gold,
                       ),
@@ -209,7 +210,7 @@ class OnboardingFlow {
                   const SizedBox(height: 6),
                   Center(
                     child: Text(
-                      '你的情绪数据只属于你自己',
+                      '你写的东西，没你同意别人看不到',
                       style: XqTypography.bodySmall.copyWith(
                         color: theme.textSecondary,
                       ),
@@ -236,8 +237,8 @@ class OnboardingFlow {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                p['icon'] as IconData,
+                              XqIcon(
+                                p['icon'] as XqIcons,
                                 size: 22,
                                 color: theme.gold,
                               ),

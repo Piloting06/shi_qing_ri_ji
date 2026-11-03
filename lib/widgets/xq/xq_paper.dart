@@ -147,39 +147,54 @@ Path deckleTopPath(Size size, {int seed = 3, double amp = 1.8}) {
   return path;
 }
 
-class _DeckleClipper extends CustomClipper<Path> {
+/// 毛边纸画笔：不裁剪子组件、不用模糊阴影（两者在 Impeller 上逐帧都贵）。
+/// 影子是毛边上方一条渐变带；纸面按毛边路径直接填色并铺纸纹着色器。
+class _DecklePaperPainter extends CustomPainter {
   final int seed;
-  const _DeckleClipper(this.seed);
-
-  @override
-  Path getClip(Size size) => deckleTopPath(size, seed: seed);
-
-  @override
-  bool shouldReclip(_DeckleClipper old) => old.seed != seed;
-}
-
-class _DeckleShadowPainter extends CustomPainter {
-  final int seed;
+  final Color color;
   final Color shadow;
+  final Color fiber;
+  final ui.Image? grain;
 
-  _DeckleShadowPainter(this.seed, this.shadow);
+  _DecklePaperPainter({
+    required this.seed,
+    required this.color,
+    required this.shadow,
+    required this.fiber,
+    required this.grain,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = deckleTopPath(size, seed: seed).shift(const Offset(0, -5));
-    canvas.drawPath(
-      path,
+    final band = Rect.fromLTWH(0, -14, size.width, 18);
+    canvas.drawRect(
+      band,
       Paint()
-        ..color = shadow
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [shadow.withAlpha(0), shadow],
+        ).createShader(band),
     );
+    final path = deckleTopPath(size, seed: seed);
+    canvas.drawPath(path, Paint()..color = color);
+    final img = grain;
+    if (img != null) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..shader = XqPaper.shader(img)
+          ..colorFilter = ColorFilter.mode(fiber, BlendMode.srcIn),
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(_DeckleShadowPainter old) => old.seed != seed || old.shadow != shadow;
+  bool shouldRepaint(_DecklePaperPainter old) =>
+      old.seed != seed || old.color != color || old.shadow != shadow || old.fiber != fiber || old.grain != grain;
 }
 
-/// L2 叠上来的一张纸：毛边顶 + 纸纹 + 向上的一道影（全 App 唯一的投影）
+/// L2 叠上来的一张纸：毛边顶 + 纸纹 + 毛边上方一道影（全 App 唯一的影）
 class XqDeckleSheet extends StatelessWidget {
   final Widget child;
   final Color? color;
@@ -197,20 +212,17 @@ class XqDeckleSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.watch<ThemeState>();
-    return CustomPaint(
-      painter: _DeckleShadowPainter(
-        seed,
-        (t.isDark ? Colors.black : const Color(0xFF3B2F22)).withAlpha(t.isDark ? 90 : 40),
-      ),
-      child: ClipPath(
-        clipper: _DeckleClipper(seed),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color ?? t.backgroundColor,
-            image: XqPaper.grain(t.paperFiber, strength: t.isDark ? 0.6 : 0.8),
-          ),
-          child: Padding(padding: padding, child: child),
+    return ValueListenableBuilder<ui.Image?>(
+      valueListenable: XqPaper.image,
+      builder: (context, img, _) => CustomPaint(
+        painter: _DecklePaperPainter(
+          seed: seed,
+          color: color ?? t.backgroundColor,
+          shadow: (t.isDark ? Colors.black : const Color(0xFF3B2F22)).withAlpha(t.isDark ? 70 : 26),
+          fiber: t.paperFiber.withAlpha(((t.isDark ? 0.6 : 0.8) * 44).round()),
+          grain: img,
         ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }

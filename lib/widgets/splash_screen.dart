@@ -6,8 +6,8 @@ import '../theme/xq_typography.dart';
 import 'weather_sky.dart';
 import 'xq/xq_kit.dart';
 
-/// 启动：一片晴天淡入（浅色晴昼、深色晴夜），朱砂「拾」与宋体书名随后浮现。
-/// 时长 1320ms 不变；只动 opacity/transform；减弱动效时直接呈现终态。
+/// 启动：一张空笺上，晴天按版序套印显影（浅色晴昼、深色晴夜），书名浮现，最后钤一枚「拾」。
+/// 1500ms；只动 opacity/transform；减弱动效时直接呈现终态。
 class InkSplashScreen extends StatefulWidget {
   final VoidCallback onComplete;
 
@@ -27,7 +27,7 @@ class _InkSplashScreenState extends State<InkSplashScreen>
     _ctrl =
         AnimationController(
           vsync: this,
-          duration: const Duration(milliseconds: 1320),
+          duration: const Duration(milliseconds: 1500),
         )..addStatusListener((status) {
           if (status == AnimationStatus.completed && mounted) {
             widget.onComplete();
@@ -55,15 +55,14 @@ class _InkSplashScreenState extends State<InkSplashScreen>
       SkyCondition.clear,
       theme.isDark ? SkyTime.night : SkyTime.day,
     );
-    final sky = RepaintBoundary(
-      child: CustomPaint(
-        painter: WeatherSkyPainter(
-          palette: palette,
-          condition: SkyCondition.clear,
-          paper: theme.backgroundColor,
-          seed: 3,
-        ),
-      ),
+    final sky = WeatherSkyScene(
+      palette: palette,
+      condition: SkyCondition.clear,
+      paper: theme.backgroundColor,
+      seed: 3,
+      fade: true,
+      reveal: true,
+      motif: skyMotifFor(SkyCondition.clear),
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -74,32 +73,40 @@ class _InkSplashScreenState extends State<InkSplashScreen>
           animation: _ctrl,
           child: sky,
           builder: (context, skyChild) {
-            final skyIn = _phase(0.0, 0.4);
-            final mark = _phase(0.28, 0.66);
-            final line = _phase(0.45, 0.85);
+            final title = _phase(0.35, 0.65);
+            final line = _phase(0.5, 0.8);
+            final stamp = _phase(0.72, 0.9);
             return Stack(
               fit: StackFit.expand,
               children: [
-                Opacity(opacity: skyIn, child: skyChild),
+                ?skyChild,
                 Align(
                   alignment: const Alignment(0, -0.32),
                   child: Opacity(
-                    opacity: mark,
+                    opacity: title,
                     child: Transform.translate(
-                      offset: Offset(0, (1 - mark) * 10),
+                      offset: Offset(0, (1 - title) * 10),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          XqSeal(
-                            char: '拾',
-                            color: theme.sealColor,
-                            size: 48,
+                          Opacity(
+                            opacity: stamp,
+                            child: Transform.scale(
+                              scale: 1.5 - 0.5 * stamp,
+                              child: XqSeal(
+                                char: '拾',
+                                color: theme.sealColor,
+                                size: 50,
+                                style: XqSealStyle.bai,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 18),
                           Text(
                             '拾晴日记',
                             style: XqTypography.splashTitle.copyWith(
                               color: palette.onSky,
+                              fontSize: 32,
                               letterSpacing: 8,
                             ),
                           ),

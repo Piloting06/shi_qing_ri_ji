@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 原生启动底色 = 素笺宣纸，避免进 Flutter 前闪白 -->
-    <color name="launch_background">#EDE8DD</color>
+    <color name="launch_background">#E6E0D3</color>
+    <color name="ic_launcher_background">#EDE8DC</color>
 </resources>

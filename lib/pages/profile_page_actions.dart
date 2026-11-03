@@ -97,7 +97,7 @@ extension _ProfilePageActions on _ProfilePageState {
       _setState(() => _avatarPath = dest.path);
       XqToast.success(context, '头像已保存');
     } catch (_) {
-      if (mounted) XqToast.error(context, '头像没存上，再试一次？');
+      if (mounted) XqToast.error(context, '头像没存上，再试一次');
     }
   }
 
@@ -130,7 +130,7 @@ extension _ProfilePageActions on _ProfilePageState {
       if (mounted) {
         context.read<AppState>().setDisplayName(name);
         _nameCtrl.clear();
-        XqToast.success(context, '新名字真好听～');
+        XqToast.success(context, '名字改好了');
       }
     } catch (_) {
       if (mounted) XqToast.error(context, '名字保存失败，请稍后重试');
@@ -241,8 +241,7 @@ extension _ProfilePageActions on _ProfilePageState {
                     color: theme.accentColor.withAlpha(22),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.logout_rounded,
+                  child: XqIcon(XqIcons.logout,
                     color: theme.accentColor,
                     size: 24,
                   ),
@@ -258,7 +257,7 @@ extension _ProfilePageActions on _ProfilePageState {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '退出后手机上的记录会被清理，重新登录就好',
+                  '退出后清掉这台手机上的缓存，记录还在账号里',
                   style: TextStyle(
                     color: theme.textSecondary,
                     fontSize: 13,
@@ -283,7 +282,7 @@ extension _ProfilePageActions on _ProfilePageState {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.swap_horiz_rounded, size: 18, color: theme.accentColor),
+                        XqIcon(XqIcons.swap, size: 18, color: theme.accentColor),
                         const SizedBox(width: 6),
                         Text(
                           '切换账号',
@@ -313,7 +312,7 @@ extension _ProfilePageActions on _ProfilePageState {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.power_settings_new_rounded, size: 18),
+                        const XqIcon(XqIcons.logout, size: 18),
                         const SizedBox(width: 6),
                         Text(
                           '退出当前账号',
@@ -426,7 +425,7 @@ extension _ProfilePageActions on _ProfilePageState {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          text: '拾晴日记 · $name主题\n$name — 记录天气，也记录你',
+          text: '拾晴日记 · $name',
         ),
       );
     } catch (e) {
@@ -436,55 +435,17 @@ extension _ProfilePageActions on _ProfilePageState {
 
   Map<String, String> _themeDetail(String mode) {
     return switch (mode) {
-      'warm' => {
-        'nickname': '晴日暖白',
-        'creator':
-            '我喜欢被阳光包裹的感觉。窗边那张桌子，一本摊开的日记本，笔尖在纸上沙沙地走，'
-            '旁边一杯热茶冒着气。这种温暖不是燥热，是让人忍不住想跟自己说几句话的那种安宁。'
-            '这是我给拾晴日记选的第一套颜色。',
-        'title': '不只是一种颜色',
-        'detail':
-            '暖白色不是白色加了黄，是一种被时间浸润后的纸张色。'
-            '它的温和不刺眼，适合长时间书写。棕色强调色像一杯手冲，'
-            '不过分甜，不刻意苦，刚好能托住情绪的起伏。'
-            '这大概是所有日记应用都想成为的样子：一个让你愿意坐下来、慢慢写的地方。',
-      },
-      'dark' => {
-        'nickname': '静夜深蓝',
-        'creator':
-            '有时候就是半夜才有话想说。白天的话是社交用的，夜里的话才是自己的。'
-            '关掉灯，只剩屏幕的光，指尖在暗色界面上敲字很安静，不会吵醒心里那些还没理清的念头。'
-            '我需要一个不怕黑的主题。',
-        'title': '黑夜是伴侣，不是敌人',
-        'detail':
-            '深蓝底色带一点紫调，避免了纯黑的压抑感，像是在月光下写字而不是在黑洞里。'
-            '薰衣草蓝的强调色保留了夜间的温柔，不会刺眼，不会让深夜的情绪觉得被冒犯。'
-            '这是一个为独处时刻准备的空间：不用假装开心，不用强撑白天的样子。',
-      },
-      'mint' => {
-        'nickname': '雾感薄荷',
-        'creator':
-            '有些早晨推开窗，空气里还有昨晚下雨的味道，凉凉的、带着植物的清新。'
-            '那种感觉应该被记录下来。我觉得写东西不一定要很沉重，'
-            '有时候就是随手记一个念头、一张喜欢的外卖单、一句路过听到的话。清爽就好。',
-        'title': '轻，但不轻薄',
-        'detail':
-            '低饱和的青碧绿像薄荷叶在杯底慢慢舒展，不是鲜艳夺目的荧光绿，'
-            '而是被水雾蒙了一层的那种温柔绿意。它让写日记这件事变得轻快起来，'
-            '像是在雨后林间散步，深呼吸一口，所有烦恼都能先放一放。',
+      'sujian_dark' => {
+        'nickname': '磁青',
+        'creator': '古人把纸用靛蓝染深，叫磁青纸，再用金粉调胶在上面写经。夜里用手机，深底比白底舒服。',
+        'title': '深青纸，泥金字',
+        'detail': '底色是偏青的深蓝，不是纯黑；按钮和日期用泥金色；正文是月白，不刺眼。印章仍然用朱砂。',
       },
       _ => {
-        'nickname': '豆沙柔粉',
-        'creator':
-            '这个颜色是我心里的隐藏款。有人说粉色太甜，那是没找到对的灰调。'
-            '豆沙粉像是冬天大衣口袋里的一颗糖果，或者咖啡馆角落里铺着的那种旧丝绒沙发。'
-            '它不张扬，但每次看到都会心里一动。我把它收在四个主题里，像是给懂的人留的小暗号。',
-        'title': '被低估的温柔力量',
-        'detail':
-            '灰调豆沙粉在哑光质感下呈现出一种成熟的浪漫：不是少女梦里的粉红泡泡，'
-            '而是成年后还愿意相信美好的那种笃定。暖棕色的强调色让整个界面有了温度，'
-            '像一封手写信的封蜡，或一杯温水，不惊艳，但能安抚你一天的疲惫。'
-            '这是一款值得细细品味的颜色，也是四款中最特别的存在。',
+        'nickname': '素笺',
+        'creator': '参照明代的《十竹斋笺谱》和荣宝斋的木版水印信笺。笺本来就是写字、寄信用的纸。',
+        'title': '每天一张笺',
+        'detail': '页面是裱绫，卡片是一张张笺，用细墨线框起来；颜色只有纸、墨、朱砂三样，心情用国画颜料。首页的天每天按天气和节气重新印一张。',
       },
     };
   }

@@ -119,13 +119,13 @@ class NotificationService {
         android: AndroidNotificationDetails(
           'capsule_reminders',
           '时光胶囊提醒',
-          channelDescription: '用于提醒你按时打开写给未来的胶囊',
+          channelDescription: '胶囊到期时提醒你',
           importance: Importance.max,
           priority: Priority.high,
           styleInformation: BigTextStyleInformation(
             preview,
-            contentTitle: '给未来自己的提醒卡片',
-            summaryText: '轻点一下，去看看那天的自己想说什么。',
+            contentTitle: '有一颗胶囊到期了',
+            summaryText: '到了约好的日子，可以打开了。',
           ),
         ),
         iOS: const DarwinNotificationDetails(),
@@ -140,7 +140,7 @@ class NotificationService {
 
       await _notifications.zonedSchedule(
         700000 + capsuleId,
-        '给未来自己的提醒卡片',
+        '有一颗胶囊到期了',
         preview,
         trigger,
         details,
@@ -234,13 +234,13 @@ class NotificationService {
     await _notifications.zonedSchedule(
       999999,
       '测试胶囊提醒',
-      '叮～通知成功啦！以后胶囊到期就能收到提醒了',
+      '通知正常。胶囊到期时会这样提醒你。',
       now,
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'capsule_reminders',
           '时光胶囊提醒',
-          channelDescription: '用于提醒你按时打开写给未来的胶囊',
+          channelDescription: '胶囊到期时提醒你',
           importance: Importance.max,
           priority: Priority.high,
         ),

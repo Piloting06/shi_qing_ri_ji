@@ -3,6 +3,8 @@ import '../widgets/ink_bloom.dart';
 import '../widgets/xq_empty_state.dart';
 import '../widgets/xq_toast.dart';
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +19,7 @@ import '../theme/xq_typography.dart';
 import '../widgets/ink_writing_loader.dart';
 
 class _BrandStep {
-  final IconData icon;
+  final XqIcons icon;
   final String title;
   final String desc;
   const _BrandStep(this.icon, this.title, this.desc);
@@ -26,7 +28,7 @@ class _BrandStep {
 class _BrandGuide {
   final String name;
   final String system;
-  final IconData icon;
+  final XqIcons icon;
   final List<_BrandStep> steps;
   const _BrandGuide({required this.name, required this.system, required this.icon, required this.steps});
 }
@@ -107,7 +109,7 @@ class _CapsulePageState extends State<CapsulePage> {
     }
     if (capsule == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('这张提醒卡对应的胶囊暂时没找到')),
+        const SnackBar(content: Text('没找到这颗胶囊')),
       );
       return;
     }
@@ -222,51 +224,51 @@ class _CapsulePageState extends State<CapsulePage> {
     _BrandGuide(
       name: 'OPPO / 一加 / realme',
       system: 'ColorOS',
-      icon: Icons.phone_android,
+      icon: XqIcons.phone,
       steps: [
-        _BrandStep(Icons.power_settings_new_rounded, '自启动', '设置 → 应用 → 应用管理 → 拾晴日记 → 打开「自启动」'),
-        _BrandStep(Icons.battery_charging_full_rounded, '电池优化', '设置 → 应用 → 应用管理 → 拾晴日记 → 耗电保护 → 选择「无限制」'),
-        _BrandStep(Icons.notifications_active_rounded, '通知', '设置 → 通知与状态栏 → 拾晴日记 → 允许通知'),
+        _BrandStep(XqIcons.logout, '自启动', '设置 → 应用 → 应用管理 → 拾晴日记 → 打开「自启动」'),
+        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 应用管理 → 拾晴日记 → 耗电保护 → 选择「无限制」'),
+        _BrandStep(XqIcons.bell, '通知', '设置 → 通知与状态栏 → 拾晴日记 → 允许通知'),
       ],
     ),
     _BrandGuide(
       name: '华为 / 荣耀',
       system: 'HarmonyOS',
-      icon: Icons.auto_awesome,
+      icon: XqIcons.spark,
       steps: [
-        _BrandStep(Icons.power_settings_new_rounded, '自启动', '手机管家 → 应用启动管理 → 拾晴日记 → 关闭「自动管理」→ 全部手动开启'),
-        _BrandStep(Icons.battery_charging_full_rounded, '电池优化', '设置 → 应用 → 拾晴日记 → 耗电详情 → 启动管理 → 手动管理'),
-        _BrandStep(Icons.notifications_active_rounded, '通知', '设置 → 通知和状态栏 → 拾晴日记 → 允许通知'),
+        _BrandStep(XqIcons.logout, '自启动', '手机管家 → 应用启动管理 → 拾晴日记 → 关闭「自动管理」→ 全部手动开启'),
+        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 拾晴日记 → 耗电详情 → 启动管理 → 手动管理'),
+        _BrandStep(XqIcons.bell, '通知', '设置 → 通知和状态栏 → 拾晴日记 → 允许通知'),
       ],
     ),
     _BrandGuide(
       name: '小米 / Redmi',
       system: 'HyperOS / MIUI',
-      icon: Icons.rocket_launch,
+      icon: XqIcons.spark,
       steps: [
-        _BrandStep(Icons.power_settings_new_rounded, '自启动', '设置 → 应用设置 → 拾晴日记 → 打开「自启动」'),
-        _BrandStep(Icons.battery_charging_full_rounded, '电池优化', '设置 → 应用设置 → 拾晴日记 → 省电策略 → 选择「无限制」'),
-        _BrandStep(Icons.notifications_active_rounded, '通知', '设置 → 通知管理 → 拾晴日记 → 允许通知'),
+        _BrandStep(XqIcons.logout, '自启动', '设置 → 应用设置 → 拾晴日记 → 打开「自启动」'),
+        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用设置 → 拾晴日记 → 省电策略 → 选择「无限制」'),
+        _BrandStep(XqIcons.bell, '通知', '设置 → 通知管理 → 拾晴日记 → 允许通知'),
       ],
     ),
     _BrandGuide(
       name: 'vivo / iQOO',
       system: 'Funtouch OS / OriginOS',
-      icon: Icons.flash_on,
+      icon: XqIcons.spark,
       steps: [
-        _BrandStep(Icons.power_settings_new_rounded, '自启动', 'i管家 → 应用管理 → 权限管理 → 拾晴日记 → 打开「自启动」'),
-        _BrandStep(Icons.battery_charging_full_rounded, '电池优化', '设置 → 应用 → 拾晴日记 → 电池 → 打开「允许后台高耗电」'),
-        _BrandStep(Icons.notifications_active_rounded, '通知', '设置 → 通知 → 拾晴日记 → 允许通知'),
+        _BrandStep(XqIcons.logout, '自启动', 'i管家 → 应用管理 → 权限管理 → 拾晴日记 → 打开「自启动」'),
+        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 拾晴日记 → 电池 → 打开「允许后台高耗电」'),
+        _BrandStep(XqIcons.bell, '通知', '设置 → 通知 → 拾晴日记 → 允许通知'),
       ],
     ),
     _BrandGuide(
       name: '其他 Android 手机',
       system: '通用设置',
-      icon: Icons.settings,
+      icon: XqIcons.tune,
       steps: [
-        _BrandStep(Icons.power_settings_new_rounded, '自启动', '安全中心或手机管家 → 应用管理 → 拾晴日记 → 允许自启动'),
-        _BrandStep(Icons.battery_charging_full_rounded, '电池优化', '设置 → 应用 → 拾晴日记 → 电池或耗电 → 设为不限制'),
-        _BrandStep(Icons.notifications_active_rounded, '通知', '设置 → 通知 → 拾晴日记 → 允许通知'),
+        _BrandStep(XqIcons.logout, '自启动', '安全中心或手机管家 → 应用管理 → 拾晴日记 → 允许自启动'),
+        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 拾晴日记 → 电池或耗电 → 设为不限制'),
+        _BrandStep(XqIcons.bell, '通知', '设置 → 通知 → 拾晴日记 → 允许通知'),
       ],
     ),
   ];
@@ -297,9 +299,9 @@ class _CapsulePageState extends State<CapsulePage> {
                     const SizedBox(height: 8),
                     Container(width: 36, height: 4, decoration: BoxDecoration(color: theme.borderColor, borderRadius: BorderRadius.circular(2))),
                     const SizedBox(height: 12),
-                    Text('别让未来的自己等太久', style: XqTypography.headlineMedium.copyWith(color: theme.textPrimary)),
+                    Text('让提醒准时到', style: XqTypography.headlineMedium.copyWith(color: theme.textPrimary)),
                     const SizedBox(height: 6),
-                    Text('左右滑动查看你的手机品牌', style: TextStyle(color: theme.textSecondary, fontSize: 13)),
+                    Text('左右滑，找你的手机品牌', style: TextStyle(color: theme.textSecondary, fontSize: 13)),
                     const SizedBox(height: 14),
                     // 品牌指示器
                     Row(
@@ -339,7 +341,7 @@ class _CapsulePageState extends State<CapsulePage> {
                                     color: theme.accentColor.withAlpha(18),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(b.icon, color: theme.accentColor, size: 26),
+                                  child: XqIcon(b.icon, color: theme.accentColor, size: 26),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(b.name, style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
@@ -358,7 +360,7 @@ class _CapsulePageState extends State<CapsulePage> {
                                           color: theme.accentColor.withAlpha(14),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: Icon(s.icon, color: theme.accentColor, size: 18),
+                                        child: XqIcon(s.icon, color: theme.accentColor, size: 18),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -387,14 +389,14 @@ class _CapsulePageState extends State<CapsulePage> {
                       children: [
                         IconButton(
                           onPressed: currentPage > 0 ? () => pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic) : null,
-                          icon: Icon(Icons.arrow_back_ios_rounded, size: 18, color: currentPage > 0 ? theme.accentColor : theme.borderColor),
+                          icon: XqIcon(XqIcons.back, size: 18, color: currentPage > 0 ? theme.accentColor : theme.borderColor),
                         ),
                         const SizedBox(width: 24),
                         Text('${currentPage + 1} / ${_brands.length}', style: TextStyle(color: theme.textTertiary, fontSize: 12)),
                         const SizedBox(width: 24),
                         IconButton(
                           onPressed: currentPage < _brands.length - 1 ? () => pageCtrl.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic) : null,
-                          icon: Icon(Icons.arrow_forward_ios_rounded, size: 18, color: currentPage < _brands.length - 1 ? theme.accentColor : theme.borderColor),
+                          icon: XqIcon(XqIcons.chevronRight, size: 18, color: currentPage < _brands.length - 1 ? theme.accentColor : theme.borderColor),
                         ),
                       ],
                     ),
@@ -406,8 +408,8 @@ class _CapsulePageState extends State<CapsulePage> {
                         height: 48,
                         child: FilledButton.icon(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.check, size: 18),
-                          label: const Text('设置好了，开始封存'),
+                          icon: const XqIcon(XqIcons.check, size: 18),
+                          label: const Text('设置好了'),
                           style: FilledButton.styleFrom(
                             backgroundColor: theme.accentColor,
                             foregroundColor: theme.textOnAccent,
@@ -456,10 +458,10 @@ class _CapsulePageState extends State<CapsulePage> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Icon(
+                    XqIcon(
                       fromReminder
-                          ? Icons.notifications_active_outlined
-                          : Icons.mark_email_read_outlined,
+                          ? XqIcons.bell
+                          : XqIcons.mail,
                       color: theme.accentColor,
                     ),
                     const SizedBox(width: 10),
@@ -511,7 +513,7 @@ class _CapsulePageState extends State<CapsulePage> {
       body: SafeArea(
         child: _loading
             ? Center(child: InkWritingLoader(inkColor: theme.gold, size: 40))
-            : RefreshIndicator(
+            : XqRefresh(
                 onRefresh: _load,
                 child: ListView(
                   padding: const EdgeInsets.all(16),
@@ -537,8 +539,7 @@ class _CapsulePageState extends State<CapsulePage> {
       children: [
         IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(
-            Icons.arrow_back_ios_new,
+          icon: XqIcon(XqIcons.back,
             color: theme.textPrimary,
             size: 20,
           ),
@@ -572,7 +573,7 @@ class _CapsulePageState extends State<CapsulePage> {
           ),
           const SizedBox(height: 6),
           Text(
-            '封好之后就不能偷看了哦，选一个日子再见面吧。',
+            '封好后，到日子才能打开。',
             style: TextStyle(color: theme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 14),
@@ -584,7 +585,7 @@ class _CapsulePageState extends State<CapsulePage> {
             style: TextStyle(color: theme.textPrimary, fontSize: 15),
             cursorColor: theme.accentColor,
             decoration: InputDecoration(
-              hintText: '未来的我，想对你说...',
+              hintText: '写给那天的自己…',
               hintStyle: TextStyle(color: theme.textSecondary.withAlpha(150)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -653,7 +654,7 @@ class _CapsulePageState extends State<CapsulePage> {
               children: [
                 Expanded(
                   child: Text(
-                    '到了那天，会有一条提醒把你带回来。',
+                    '到那天会提醒你。',
                     style: TextStyle(
                       color: theme.textTertiary,
                       fontSize: 12.5,
@@ -674,9 +675,9 @@ class _CapsulePageState extends State<CapsulePage> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: XqInkLoader(),
                     )
-                  : const Icon(Icons.lock_outline, size: 18),
+                  : const XqIcon(XqIcons.lock, size: 18),
               label: Text(_creating ? '封存中' : '确认封存'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.accentColor,
@@ -692,7 +693,7 @@ class _CapsulePageState extends State<CapsulePage> {
             height: 40,
             child: OutlinedButton.icon(
               onPressed: _testNotification,
-              icon: const Icon(Icons.timer_outlined, size: 16),
+              icon: const XqIcon(XqIcons.hourglass, size: 16),
               label: const Text('测试通知 — 1分钟后推送'),
             ),
           ),
@@ -724,7 +725,7 @@ class _CapsulePageState extends State<CapsulePage> {
       ),
       child: Column(
         children: [
-          Icon(Icons.error_outline, color: theme.errorColor),
+          XqIcon(XqIcons.alert, color: theme.errorColor),
           const SizedBox(height: 10),
           Text(_error!, style: TextStyle(color: theme.textPrimary)),
           const SizedBox(height: 12),
@@ -737,9 +738,9 @@ class _CapsulePageState extends State<CapsulePage> {
   Widget _capsuleList(ThemeState theme) {
     if (_capsules.isEmpty) {
       return XqEmptyState(
-        icon: Icons.hourglass_empty,
+        icon: XqIcons.hourglass,
         title: '还没有时光胶囊',
-        subtitle: '写一封信给未来的自己，到了那天再打开',
+        subtitle: '写几句给以后的自己，到日子再打开',
         iconColor: theme.accentColor.withAlpha(80),
       );
     }
@@ -804,12 +805,12 @@ class _CapsulePageState extends State<CapsulePage> {
               SizedBox(
                 width: 40,
                 height: 40,
-                child: Icon(
+                child: XqIcon(
                   opened
-                      ? Icons.mark_email_read_outlined
+                      ? XqIcons.mail
                       : canOpen
-                      ? Icons.lock_open_outlined
-                      : Icons.lock_clock_outlined,
+                      ? XqIcons.lock
+                      : XqIcons.lock,
                   color: opened || canOpen
                       ? theme.accentColor
                       : theme.textTertiary,
@@ -837,7 +838,7 @@ class _CapsulePageState extends State<CapsulePage> {
                       opened
                           ? (content.isEmpty ? '内容已开启' : content)
                           : canOpen
-                          ? '点开看看过去的自己说了什么'
+                          ? '点开看看'
                           : '还剩 ${daysLeft == null ? '--' : daysLeft.clamp(1, 999)} 天',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -849,13 +850,13 @@ class _CapsulePageState extends State<CapsulePage> {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: theme.textTertiary, size: 20),
+              XqIcon(XqIcons.chevronRight, color: theme.textTertiary, size: 20),
               if (opened)
                 GestureDetector(
                   onTap: () => _deleteCapsule(capsule),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: Icon(Icons.delete_outline, color: theme.errorColor.withAlpha(160), size: 18),
+                    child: XqIcon(XqIcons.trash, color: theme.errorColor.withAlpha(160), size: 18),
                   ),
                 ),
             ],
@@ -871,8 +872,8 @@ class _CapsulePageState extends State<CapsulePage> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: theme.cardColor,
-        title: Text('撤回内容', style: TextStyle(color: theme.textPrimary)),
-        content: const Text('确定删除这颗已打开的胶囊吗？此操作不可撤销。'),
+        title: Text('删除这颗胶囊', style: TextStyle(color: theme.textPrimary)),
+        content: const Text('删除后找不回来。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('取消', style: TextStyle(color: theme.textSecondary))),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('删除', style: TextStyle(color: Theme.of(ctx).colorScheme.error))),

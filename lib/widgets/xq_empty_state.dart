@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'xq/xq_icons.dart';
 
 class XqEmptyState extends StatelessWidget {
-  final IconData icon;
+  final XqIcons icon;
   final String title;
   final String subtitle;
   final String? actionLabel;
@@ -29,7 +30,7 @@ class XqEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: color),
+            XqIcon(icon, size: 48, color: color),
             const SizedBox(height: 16),
             Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
             const SizedBox(height: 6),

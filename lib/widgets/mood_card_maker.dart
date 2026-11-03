@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'xq/xq_icons.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
@@ -291,8 +292,8 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
       final file = File(p.join(dir.path, 'mood_card_share.png'));
       await file.writeAsBytes(byteData.buffer.asUint8List());
       final text = _shareWithQr
-          ? '拾晴日记 · ${widget.date}\n${widget.moodLabel} — ${widget.text.isNotEmpty ? widget.text : "记录天气，也记录你"}\n$_landingUrl'
-          : '拾晴日记 · ${widget.date}\n${widget.moodLabel} — ${widget.text.isNotEmpty ? widget.text : "记录天气，也记录你"}';
+          ? '拾晴日记 · ${widget.date}\n${widget.moodLabel} — ${widget.text.isNotEmpty ? widget.text : "天气加心情"}\n$_landingUrl'
+          : '拾晴日记 · ${widget.date}\n${widget.moodLabel} — ${widget.text.isNotEmpty ? widget.text : "天气加心情"}';
       await SharePlus.instance.share(
         ShareParams(files: [XFile(file.path)], text: text),
       );
@@ -406,7 +407,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
         ),
         child: active
             ? const Center(
-                child: Icon(Icons.check, size: 16, color: Colors.white),
+                child: XqIcon(XqIcons.check, size: 16, color: Colors.white),
               )
             : null,
       ),
@@ -558,8 +559,8 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                   width: 48,
                   child: IconButton(
                     onPressed: () => setState(() => _editMode = !_editMode),
-                    icon: Icon(
-                      _editMode ? Icons.check : Icons.edit_outlined,
+                    icon: XqIcon(
+                      _editMode ? XqIcons.check : XqIcons.write,
                       color: _editMode ? _accentColor : sheetTheme.textSecondary,
                       size: 22,
                     ),
@@ -570,8 +571,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                   width: 48,
                   child: IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close,
+                    icon: XqIcon(XqIcons.close,
                       color: sheetTheme.textSecondary,
                       size: 22,
                     ),
@@ -685,7 +685,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.auto_awesome,
+                              XqIcon(XqIcons.spark,
                                   size: 13, color: sheetTheme.gold),
                               const SizedBox(width: 3),
                               Text(
@@ -740,7 +740,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                             '${moodEmojis[_activeMoodScore] ?? ''} ${moodLabels[_activeMoodScore] ?? ''}',
                             style: TextStyle(color: _accentColor, fontSize: 13, fontWeight: FontWeight.w500),
                           ),
-                          Icon(_showEmojiPicker ? Icons.expand_less : Icons.expand_more, size: 18, color: sheetTheme.textTertiary),
+                          XqIcon(_showEmojiPicker ? XqIcons.chevronUp : XqIcons.chevronDown, size: 18, color: sheetTheme.textTertiary),
                         ]),
                       ),
                       if (_showEmojiPicker) ...[
@@ -786,7 +786,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                               fontSize: 12,
                             ),
                           ),
-                          Icon(_showTagPicker ? Icons.expand_less : Icons.expand_more, size: 18, color: sheetTheme.textTertiary),
+                          XqIcon(_showTagPicker ? XqIcons.chevronUp : XqIcons.chevronDown, size: 18, color: sheetTheme.textTertiary),
                         ]),
                       ),
                       if (_showTagPicker) ...[
@@ -832,10 +832,10 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                               fontSize: 11,
                             ),
                           ),
-                          Icon(
+                          XqIcon(
                             _shareWithQr
-                                ? Icons.qr_code_2_rounded
-                                : Icons.qr_code_rounded,
+                                ? XqIcons.qr
+                                : XqIcons.qr,
                             size: 18,
                             color: _shareWithQr ? _accentColor : sheetTheme.textTertiary,
                           ),
@@ -927,7 +927,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                           height: 48,
                           child: OutlinedButton.icon(
                             onPressed: _saving ? null : _save,
-                            icon: const Icon(Icons.download_rounded, size: 18),
+                            icon: const XqIcon(XqIcons.save, size: 18),
                             label: const Text('保存到相册'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: _accentColor,
@@ -947,7 +947,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                           height: 48,
                           child: FilledButton.icon(
                             onPressed: _saving ? null : _share,
-                            icon: const Icon(Icons.share_rounded, size: 18),
+                            icon: const XqIcon(XqIcons.share, size: 18),
                             label: const Text('分享给朋友'),
                             style: FilledButton.styleFrom(
                               backgroundColor: _accentColor,

@@ -196,10 +196,10 @@ class SeasonalCardTemplate {
   }
 
   static String _seasonGreeting(String season) => switch (season) {
-        'summer' => '夏木成荫，慢慢来',
-        'autumn' => '秋光正好，都记下来',
-        'winter' => '围炉煮茶，暖一点',
-        _ => '春风得意，事事顺遂',
+        'summer' => '夏天',
+        'autumn' => '秋天',
+        'winter' => '冬天',
+        _ => '春天',
       };
 }
 

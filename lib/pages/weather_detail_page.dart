@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../stores/theme_state.dart';
@@ -160,8 +161,7 @@ class WeatherDetailPage extends StatelessWidget {
                       IconButton(
                         tooltip: '返回',
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.arrow_back,
+                        icon: XqIcon(XqIcons.back,
                           color: palette.onSky,
                           size: 22,
                         ),

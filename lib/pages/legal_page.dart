@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:provider/provider.dart';
 import '../stores/theme_state.dart';
 
@@ -106,7 +107,7 @@ class LegalPage extends StatelessWidget {
         backgroundColor: theme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: theme.accentColor),
+          icon: XqIcon(XqIcons.back, color: theme.accentColor),
           onPressed: () => Navigator.pop(context),
         ),
       ),

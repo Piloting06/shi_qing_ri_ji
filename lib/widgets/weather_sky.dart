@@ -234,6 +234,9 @@ String chineseNumber(int n) {
   return '$n';
 }
 
+/// 计数用中文：2 读「两」（两笔、两天），其余同 [chineseNumber]
+String chineseCount(int n) => n == 2 ? '两' : chineseNumber(n);
+
 String chineseTemperature(int t) => '${chineseNumber(t)}度';
 
 /// 一句天气短句（水汽感，不说教、不卖萌）。同一天内稳定，按日轮换。
@@ -241,23 +244,23 @@ String skyLine(SkyCondition c, SkyTime t, {int dayOfYear = 0}) {
   final night = t == SkyTime.night;
   final lines = switch (c) {
     SkyCondition.clear => night
-        ? ['月亮出来了，早点睡。', '夜里晴，星星不多也不少。']
+        ? ['月亮出来了。', '晴夜，能看见几颗星。']
         : t == SkyTime.dusk
-        ? ['太阳落得慢，晚霞还在。', '天边染了一点杏色。']
+        ? ['太阳快落山了。', '天边有晚霞。']
         : t == SkyTime.dawn
-        ? ['天刚亮，今天是晴的。', '早上的光很干净。']
-        : ['天很高，适合出门走走。', '阳光正好，把被子晒一晒。', '晴，风也轻。'],
+        ? ['天刚亮，是个晴天。', '早上晴，空气凉。']
+        : ['天很高，出门走走。', '太阳好，可以晒被子。', '晴，风不大。'],
     SkyCondition.cloudy => night
-        ? ['云遮了一半月亮，夜色很软。']
-        : ['云走得慢，心也可以慢一点。', '多云，光是软的。', '云在天上写字，你在地上写。'],
+        ? ['云遮了半个月亮。']
+        : ['云走得很慢。', '多云，不晒。', '有云，光线柔和。'],
     SkyCondition.overcast => night
-        ? ['夜里阴，没有月亮也没关系。']
-        : ['天低低的，适合待在屋里。', '阴天，把灯开亮一点。'],
-    SkyCondition.fog => ['雾把远处藏起来了，看近一点。', '起雾了，路上慢些。'],
+        ? ['阴天，夜里看不见月亮。']
+        : ['天压得低，适合待在屋里。', '阴天，屋里开盏灯。'],
+    SkyCondition.fog => ['起雾了，远处看不清。', '有雾，路上慢点。'],
     SkyCondition.rain => night
-        ? ['夜雨，窗外有声音陪你。', '雨还在下，盖好被子。']
-        : ['下雨了，记得带伞。', '雨声很密，适合写几句。', '听雨的时候，什么都可以不想。'],
-    SkyCondition.snow => ['下雪了，走路慢一点。', '雪落无声，今天很安静。'],
+        ? ['夜里下雨，听得见雨声。', '雨还在下，盖好被子。']
+        : ['下雨了，出门带伞。', '雨下得密。', '下雨天，在屋里写几句。'],
+    SkyCondition.snow => ['下雪了，路滑。', '下雪了，外面很安静。'],
   };
   return lines[dayOfYear % lines.length];
 }
@@ -676,7 +679,11 @@ class WeatherSkyScene extends StatefulWidget {
     this.motif,
     this.motifAt = const Offset(0.27, 0.785),
     this.motifWidth = 0.2,
+    this.reveal = false,
   });
+
+  /// 进入时按版序「套印显影」（约 1.4s）；首页每天第一次打开时为 true
+  final bool reveal;
 
   @override
   State<WeatherSkyScene> createState() => _WeatherSkySceneState();
@@ -689,12 +696,24 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
   bool? _reduce;
   ui.Image? _motif;
   String? _motifAsset;
+  AnimationController? _reveal;
 
   @override
   void initState() {
     super.initState();
     XqPaper.ensureLoaded();
     _loadMotif();
+    if (widget.reveal) {
+      _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (MediaQuery.disableAnimationsOf(context)) {
+          _reveal!.value = 1;
+        } else {
+          _reveal!.forward();
+        }
+      });
+    }
   }
 
   void _loadMotif() {
@@ -743,12 +762,6 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
     }
   }
 
-  @override
-  void dispose() {
-    _drift?.dispose();
-    _fall?.dispose();
-    super.dispose();
-  }
 
   WeatherSkyPainter _painter(Set<SkyLayer> layers, {Animation<double>? phase, ui.Image? grain}) =>
       WeatherSkyPainter(
@@ -773,42 +786,102 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
     );
   }
 
-  Widget _scene(BuildContext context, ui.Image? grain) {
-    final sky = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.sky})));
-    final mountains = RepaintBoundary(
-      child: CustomPaint(painter: _painter({SkyLayer.mountains}, grain: grain)),
-    );
-    final clouds = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.clouds})));
-    final precip = widget.palette.precip == null
-        ? null
-        : CustomPaint(painter: _painter({SkyLayer.precip}, phase: _fall));
-    // 纸纹盖在整幅画上、不随视差走：画是印在纸上的
-    final paperGrain = RepaintBoundary(
-      child: IgnorePointer(
-        child: CustomPaint(
-          painter: XqGrainPainter(
-            image: grain,
-            tint: widget.palette.night ? const Color(0x0EE6ECF4) : const Color(0x14403020),
-          ),
-        ),
-      ),
-    );
+  // ── 静态层烘焙成位图：Impeller 没有光栅缓存，图层合成与纹理侵蚀若留在 CustomPaint 里会每帧重放 ──
+  final _baked = <SkyLayer, (String, ui.Image)>{};
 
+  ui.Image _bake(SkyLayer layer, String key, Size size, double scale, void Function(Canvas) paint) {
+    final hit = _baked[layer];
+    if (hit != null && hit.$1 == key) return hit.$2;
+    final rec = ui.PictureRecorder();
+    final canvas = Canvas(rec)..scale(scale);
+    paint(canvas);
+    final pic = rec.endRecording();
+    final img = pic.toImageSync(math.max(1, (size.width * scale).ceil()), math.max(1, (size.height * scale).ceil()));
+    pic.dispose();
+    hit?.$2.dispose(); // RawImage 持有的是 clone，旧图可以放心释放
+    _baked[layer] = (key, img);
+    return img;
+  }
+
+  String _key(Size size, double dpr, ui.Image? grain) {
+    final p = widget.palette;
+    return [
+      widget.condition.index, widget.seed, size.width.round(), size.height.round(), dpr,
+      p.top.toARGB32(), p.mid.toARGB32(), p.horizon.toARGB32(), p.ridge.toARGB32(), p.orb?.toARGB32(),
+      widget.orbAt, widget.motifAt, widget.motifWidth, widget.paper.toARGB32(),
+      identityHashCode(grain), identityHashCode(_motif),
+    ].join('|');
+  }
+
+  void _grainOver(Canvas canvas, Size size, ui.Image? grain, {bool atop = false}) {
+    if (grain == null) return;
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()
+        ..shader = XqPaper.shader(grain)
+        ..colorFilter = ColorFilter.mode(
+          widget.palette.night ? const Color(0x0EE6ECF4) : const Color(0x14403020),
+          BlendMode.srcIn,
+        )
+        ..blendMode = atop ? BlendMode.srcATop : BlendMode.srcOver,
+    );
+  }
+
+  @override
+  void dispose() {
+    for (final e in _baked.values) {
+      e.$2.dispose();
+    }
+    _reveal?.dispose();
+    _drift?.dispose();
+    _fall?.dispose();
+    super.dispose();
+  }
+
+  Widget _scene(BuildContext context, ui.Image? grain) {
     return LayoutBuilder(
       builder: (context, c) {
-        final w = c.maxWidth;
-        Widget drifting = clouds;
+        final size = Size(c.maxWidth, c.maxHeight);
+        if (size.isEmpty) return const SizedBox.shrink();
+        final w = size.width;
+        final dpr = math.min(MediaQuery.devicePixelRatioOf(context), 2.5);
+        final key = _key(size, dpr, grain);
+
+        // 天（含纸纹）、山（纸纹只落在山上）按屏幕密度烘焙；云本身是糊的，1 倍即可，宽两屏以便循环漂移
+        final skyImg = _bake(SkyLayer.sky, key, size, dpr, (cv) {
+          _painter({SkyLayer.sky}).paint(cv, size);
+          _grainOver(cv, size, grain);
+        });
+        final mountainImg = _bake(SkyLayer.mountains, key, size, dpr, (cv) {
+          _painter({SkyLayer.mountains}, grain: grain).paint(cv, size);
+          _grainOver(cv, size, grain, atop: true);
+        });
+        final cloudImg = _bake(SkyLayer.clouds, key, Size(w * 2, size.height), 1, (cv) {
+          _painter({SkyLayer.clouds}).paintClouds(cv, size, dx: 0);
+        });
+
+        Widget image(ui.Image img) => RawImage(image: img, fit: BoxFit.fill, filterQuality: FilterQuality.low);
+        final sky = SizedBox.expand(child: image(skyImg));
+        final mountains = SizedBox.expand(child: image(mountainImg));
+        Widget clouds = OverflowBox(
+          alignment: Alignment.topLeft,
+          maxWidth: w * 2,
+          minWidth: w * 2,
+          child: image(cloudImg),
+        );
         final drift = _drift;
         if (drift != null) {
-          drifting = AnimatedBuilder(
+          final still = clouds;
+          clouds = AnimatedBuilder(
             animation: drift,
-            child: clouds,
-            builder: (_, child) => Transform.translate(
-              offset: Offset(-drift.value * w, 0),
-              child: child,
-            ),
+            child: still,
+            builder: (_, child) => Transform.translate(offset: Offset(-drift.value * w, 0), child: child),
           );
         }
+        final precip = widget.palette.precip == null
+            ? null
+            : RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.precip}, phase: _fall)));
+
         final scroll = widget.scroll;
         Widget layer(double k, Widget child) {
           if (scroll == null) return child;
@@ -822,15 +895,29 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
           );
         }
 
+        // 套印显影：天 → 云 → 山（带一点对版的横移）→ 雨雪，依版序显出
+        final reveal = _reveal;
+        Widget print(double from, double to, Widget child, {double shift = 0}) {
+          if (reveal == null) return child;
+          final t = CurvedAnimation(parent: reveal, curve: Interval(from, to, curve: Curves.easeOutQuart));
+          return AnimatedBuilder(
+            animation: t,
+            child: child,
+            builder: (_, child) => Opacity(
+              opacity: t.value,
+              child: shift == 0 ? child : Transform.translate(offset: Offset((1 - t.value) * shift, 0), child: child),
+            ),
+          );
+        }
+
         return ClipRect(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              layer(0.25, sky),
-              layer(0.3, drifting),
-              layer(0.5, mountains),
-              ?precip,
-              paperGrain,
+              layer(0.25, print(0, 0.35, sky)),
+              layer(0.3, print(0.15, 0.5, clouds)),
+              layer(0.5, print(0.3, 0.75, mountains, shift: 4)),
+              if (precip != null) print(0.6, 1, precip),
               if (widget.fade)
                 IgnorePointer(child: CustomPaint(painter: _painter({SkyLayer.fade}))),
             ],

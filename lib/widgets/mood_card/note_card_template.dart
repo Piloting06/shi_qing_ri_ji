@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../xq/xq_icons.dart';
 import '../../theme/xq_decorations.dart';
 import '../../theme/xq_paper_textures.dart';
 import '../../theme/xq_typography.dart';
@@ -71,8 +72,7 @@ class NoteCardTemplate {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          Icon(
-                            Icons.wb_sunny_outlined,
+                          XqIcon(XqIcons.sunny,
                             size: 9,
                             color: accent.withAlpha(150),
                           ),

@@ -90,22 +90,22 @@ extension _ProfilePageSections on _ProfilePageState {
         _listTile(
           theme,
           icon: _checkedIn
-              ? Icons.check_circle_outline_rounded
-              : Icons.local_fire_department_outlined,
+              ? XqIcons.checkCircle
+              : XqIcons.flame,
           iconColor: _checkedIn ? theme.successColor : theme.accentColor,
           title: _checkedIn ? '今日已记录' : '今天还没记',
           subtitle: _checkedIn
               ? '连续 $_consecutive 天'
-              : (_checkingIn ? '正在记录' : '轻点签到'),
+              : (_checkingIn ? '正在记录' : '点一下签到'),
           onTap: (_checkedIn || _checkingIn) ? null : _doCheckin,
         ),
         Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.style_outlined,
+          icon: XqIcons.cards,
           iconColor: theme.gold,
           title: '卡片册',
-          subtitle: '你做过的所有心情卡片',
+          subtitle: '做过的卡片都在这',
           onTap: () {
             Navigator.push(
               context,
@@ -116,10 +116,10 @@ extension _ProfilePageSections on _ProfilePageState {
         Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.spa_outlined,
+          icon: XqIcons.leaf,
           iconColor: theme.accentColor,
           title: '素笺',
-          subtitle: '写一篇故事，或让节气替你起个头',
+          subtitle: '写长文，或从节气起个头',
           onTap: () {
             Navigator.push(
               context,
@@ -130,7 +130,7 @@ extension _ProfilePageSections on _ProfilePageState {
         Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.hourglass_empty_rounded,
+          icon: XqIcons.hourglass,
           iconColor: theme.accentColor,
           title: '时光胶囊',
           subtitle: _capsuleNotify ? '提醒已开启' : '提醒未开启',
@@ -142,10 +142,10 @@ extension _ProfilePageSections on _ProfilePageState {
         Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.people_outline_rounded,
+          icon: XqIcons.people,
           iconColor: theme.accentColor,
           title: '好友心情',
-          subtitle: '看看朋友近况',
+          subtitle: '朋友最近的心情',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const FriendsPage()),
@@ -157,7 +157,7 @@ extension _ProfilePageSections on _ProfilePageState {
 
   Widget _listTile(
     ThemeState theme, {
-    required IconData icon,
+    required XqIcons icon,
     required Color iconColor,
     required String title,
     required String subtitle,
@@ -171,15 +171,9 @@ extension _ProfilePageSections on _ProfilePageState {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
           child: Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: theme.sunkenColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: theme.textSecondary, size: 19),
+              SizedBox(
+                width: 24,
+                child: XqIcon(icon, color: theme.textSecondary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -204,8 +198,7 @@ extension _ProfilePageSections on _ProfilePageState {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              XqIcon(XqIcons.chevronRight,
                 color: theme.borderColor,
                 size: 20,
               ),
@@ -223,18 +216,18 @@ extension _ProfilePageSections on _ProfilePageState {
         children: [
           _infoRow(
             theme,
-            icon: Icons.badge_outlined,
+            icon: XqIcons.badge,
             title: '昵称',
             subtitle: appState.displayName.isNotEmpty
                 ? appState.displayName
-                : '点击设置你的日记署名',
+                : '设置署名',
             trailing: '修改',
             onTap: () => _showNicknameDialog(theme, appState),
           ),
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.email_outlined,
+            icon: XqIcons.mail,
             title: _boundEmail.isEmpty ? '绑定邮箱' : '邮箱',
             subtitle: _boundEmail.isEmpty ? '绑定后可用邮箱登录' : _boundEmail,
             trailing: _boundEmail.isEmpty ? '绑定' : '更换',
@@ -258,7 +251,7 @@ extension _ProfilePageSections on _ProfilePageState {
             children: [
               Expanded(
                 child: Text(
-                  '再点一次已选中的主题，可以看它的由来',
+                  '再点一次当前主题，看它的来历',
                   style: TextStyle(
                     color: theme.textTertiary,
                     fontSize: 12,
@@ -273,8 +266,7 @@ extension _ProfilePageSections on _ProfilePageState {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
-                Icons.notifications_none_rounded,
+              XqIcon(XqIcons.bell,
                 size: 20,
                 color: theme.textSecondary,
               ),
@@ -317,7 +309,7 @@ extension _ProfilePageSections on _ProfilePageState {
                     if (!granted) {
                       // 被拒绝，提示去设置开启
                       if (mounted) {
-                        XqToast.info(context, '需要通知权限才能提醒你，去设置里打开吧～');
+                        XqToast.info(context, '要先在系统设置里打开通知');
                       }
                       return;
                     }
@@ -395,8 +387,7 @@ extension _ProfilePageSections on _ProfilePageState {
                                 ),
                             const Spacer(),
                             if (active)
-                              Icon(
-                                Icons.check,
+                              XqIcon(XqIcons.check,
                                 color: colors[0],
                                 size: 16,
                               ),
@@ -442,7 +433,7 @@ extension _ProfilePageSections on _ProfilePageState {
       theme,
       child: _infoRow(
         theme,
-        icon: Icons.lock_outline_rounded,
+        icon: XqIcons.lock,
         title: '修改密码',
         subtitle: '更改当前登录密码',
         trailing: '修改',
@@ -458,7 +449,7 @@ extension _ProfilePageSections on _ProfilePageState {
         children: [
           _infoRow(
             theme,
-            icon: Icons.info_outline_rounded,
+            icon: XqIcons.info,
             title: '关于拾晴日记',
             subtitle: '版本、合规、开源许可',
             trailing: '查看',
@@ -470,7 +461,7 @@ extension _ProfilePageSections on _ProfilePageState {
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.description_outlined,
+            icon: XqIcons.doc,
             title: '隐私政策',
             subtitle: '查看数据和隐私说明',
             trailing: '查看',
@@ -484,7 +475,7 @@ extension _ProfilePageSections on _ProfilePageState {
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.article_outlined,
+            icon: XqIcons.doc,
             title: '用户协议',
             subtitle: '查看使用约定',
             trailing: '查看',
@@ -498,9 +489,9 @@ extension _ProfilePageSections on _ProfilePageState {
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.chat_bubble_outline_rounded,
+            icon: XqIcons.chat,
             title: '加入交流群',
-            subtitle: '和更多用户一起聊聊',
+            subtitle: 'QQ 群',
             trailing: '加入',
             onTap: _openQqGroup,
           ),
@@ -549,7 +540,7 @@ extension _ProfilePageSections on _ProfilePageState {
 
   Widget _infoRow(
     ThemeState theme, {
-    required IconData icon,
+    required XqIcons icon,
     required String title,
     required String subtitle,
     required String trailing,
@@ -564,15 +555,9 @@ extension _ProfilePageSections on _ProfilePageState {
           padding: const EdgeInsets.symmetric(vertical: 7),
           child: Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: theme.sunkenColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: theme.textSecondary, size: 19),
+              SizedBox(
+                width: 24,
+                child: XqIcon(icon, color: theme.textSecondary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -612,8 +597,7 @@ extension _ProfilePageSections on _ProfilePageState {
               ),
               if (onTap != null) ...[
                 const SizedBox(width: 2),
-                Icon(
-                  Icons.chevron_right_rounded,
+                XqIcon(XqIcons.chevronRight,
                   color: theme.borderColor,
                   size: 18,
                 ),

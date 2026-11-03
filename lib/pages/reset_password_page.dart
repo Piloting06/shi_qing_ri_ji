@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
@@ -185,8 +186,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new,
+          icon: XqIcon(XqIcons.back,
             color: theme.textPrimary,
             size: 18,
           ),
@@ -218,7 +218,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         XqAuthHero(
                           theme: theme,
                           title: '重置密码',
-                          icon: Icons.lock_reset_outlined,
+                          icon: XqIcons.lock,
                         ),
                         SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.3),
                         const SizedBox(height: 22),
@@ -256,16 +256,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.info_outline,
+                                    XqIcon(XqIcons.info,
                                       size: 16,
                                       color: theme.gold,
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        '短信功能还在准备中，暂时可以用邮箱登录哦。'
-                                        '有问题随时在交流群里找我们～',
+                                        '短信验证码暂时用不了，可以先用邮箱登录。'
+                                        '有问题可以在 QQ 群里问。',
                                         style: TextStyle(
                                           color: theme.gold,
                                           fontSize: 11,
@@ -281,7 +280,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 controller: _phoneCtrl,
                                 label: '手机号',
                                 hint: '请输入 11 位手机号',
-                                icon: Icons.phone_iphone_rounded,
+                                icon: XqIcons.phone,
                                 keyboardType: TextInputType.phone,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly,
@@ -296,7 +295,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                       controller: _codeCtrl,
                                       label: '验证码',
                                       hint: '6位数字',
-                                      icon: Icons.pin_outlined,
+                                      icon: XqIcons.lock,
                                       keyboardType: TextInputType.number,
                                       inputFormatters: [
                                         FilteringTextInputFormatter.digitsOnly,
@@ -348,15 +347,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 controller: _pwCtrl,
                                 label: '新密码',
                                 hint: '至少 6 位',
-                                icon: Icons.lock_outline_rounded,
+                                icon: XqIcons.lock,
                                 obscure: _obscure,
                                 suffix: IconButton(
                                   onPressed: () =>
                                       setState(() => _obscure = !_obscure),
-                                  icon: Icon(
+                                  icon: XqIcon(
                                     _obscure
-                                        ? Icons.visibility_off_rounded
-                                        : Icons.visibility_rounded,
+                                        ? XqIcons.eyeOff
+                                        : XqIcons.eye,
                                     color: theme.textSecondary,
                                   ),
                                 ),
@@ -366,15 +365,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 controller: _pw2Ctrl,
                                 label: '确认新密码',
                                 hint: '再次输入新密码',
-                                icon: Icons.lock_outline_rounded,
+                                icon: XqIcons.lock,
                                 obscure: _obscure2,
                                 suffix: IconButton(
                                   onPressed: () =>
                                       setState(() => _obscure2 = !_obscure2),
-                                  icon: Icon(
+                                  icon: XqIcon(
                                     _obscure2
-                                        ? Icons.visibility_off_rounded
-                                        : Icons.visibility_rounded,
+                                        ? XqIcons.eyeOff
+                                        : XqIcons.eye,
                                     color: theme.textSecondary,
                                   ),
                                 ),

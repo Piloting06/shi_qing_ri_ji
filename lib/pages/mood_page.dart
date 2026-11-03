@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import '../theme/xq_typography.dart';
 import '../theme/xq_paper_textures.dart';
@@ -65,7 +66,7 @@ class _MoodPageState extends State<MoodPage> {
       if (e.statusCode == 401) return;
       if (mounted) XqToast.error(context, '加载心情统计失败：${e.message}');
     } catch (_) {
-      if (mounted) XqToast.error(context, '没连上网络，稍后再试');
+      if (mounted) XqToast.error(context, '没连上网，等会儿再试');
     }
   }
 
@@ -123,7 +124,7 @@ class _MoodPageState extends State<MoodPage> {
       _hydrating = false;
 
       if (showSnack && mounted) {
-        final msg = moods.isEmpty ? '该日期暂无记录' : '已加载 $date 的 ${moods.length} 条记录';
+        final msg = moods.isEmpty ? '这天没有记录' : '这天有 ${moods.length} 条';
         XqToast.info(context, msg);
       }
     } on ApiException catch (e) {
@@ -132,7 +133,7 @@ class _MoodPageState extends State<MoodPage> {
       if (mounted) XqToast.error(context, '加载心情失败：${e.message}');
     } catch (_) {
       _hydrating = false;
-      if (mounted) XqToast.error(context, '加载心情失败，请稍后重试');
+      if (mounted) XqToast.error(context, '没加载出来，等会儿再试');
     }
   }
 
@@ -221,7 +222,7 @@ class _MoodPageState extends State<MoodPage> {
         if (!hasSaved) {
           await prefs.setBool('mood_has_saved', true);
           Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) XqToast.info(context, '试试把心情制成卡片分享给朋友吧 →');
+            if (mounted) XqToast.info(context, '这一笔可以做成卡片，发给朋友。');
           });
         }
       }
@@ -375,7 +376,7 @@ class _MoodPageState extends State<MoodPage> {
       bottomNavigationBar: _buildInlineSaveBar(t),
       body: XqPaperPage(
         child: SafeArea(
-        child: RefreshIndicator(
+        child: XqRefresh(
           onRefresh: () async {
             await _loadAllMoods();
             if (!context.mounted) return;
@@ -458,7 +459,7 @@ class _MoodPageState extends State<MoodPage> {
     final term = currentSolarTerm(date.add(const Duration(hours: 12)));
     final sub = '周${_weekdayNames[date.weekday - 1]} · $term第${chineseNumber(daysIntoSolarTerm(date))}天';
 
-    Widget arrow(IconData icon, String label, VoidCallback? onTap) => Semantics(
+    Widget arrow(XqIcons icon, String label, VoidCallback? onTap) => Semantics(
           button: true,
           label: label,
           child: InkResponse(
@@ -467,7 +468,7 @@ class _MoodPageState extends State<MoodPage> {
             child: SizedBox(
               width: 40,
               height: 44,
-              child: Icon(
+              child: XqIcon(
                 icon,
                 size: 20,
                 color: onTap == null ? t.borderColor : t.textSecondary,
@@ -491,7 +492,7 @@ class _MoodPageState extends State<MoodPage> {
           ],
         ),
         const Spacer(),
-        arrow(Icons.chevron_left, '前一天', () {
+        arrow(XqIcons.back, '前一天', () {
           final d = date.subtract(const Duration(days: 1));
           _changeDate(DateFormat('yyyy-MM-dd').format(d));
         }),
@@ -520,7 +521,7 @@ class _MoodPageState extends State<MoodPage> {
           ),
         ),
         arrow(
-          Icons.chevron_right,
+          XqIcons.chevronRight,
           '后一天',
           canNext
               ? () {
@@ -748,7 +749,7 @@ class _MoodPageState extends State<MoodPage> {
           onTap: _dayMoods.isEmpty ? _scrollToEmotions : null,
           child: _dayMoods.isEmpty
               ? Text(
-                  isToday ? '还空着。选一个此刻的心情，写下第一笔。' : '这一天没有留下记录。',
+                  isToday ? '还没写。先选个心情。' : '这天没有记录。',
                   style: TextStyle(color: t.textTertiary, fontSize: 14),
                 )
               : Column(
@@ -958,18 +959,18 @@ class _MoodPageState extends State<MoodPage> {
     void go(Widget page) =>
         Navigator.push(context, MaterialPageRoute(builder: (_) => page));
     return XqGroup(
-      title: '再多写一点',
+      title: '别的写法',
       children: [
         XqRow(
-          icon: Icons.edit_note_rounded,
+          icon: XqIcons.write,
           title: '素笺',
-          subtitle: '写一篇长一点的故事',
+          subtitle: '写长一点的',
           onTap: () => go(const StoryListPage()),
         ),
         XqRow(
-          icon: Icons.forest_outlined,
+          icon: XqIcons.leaf,
           title: '树洞',
-          subtitle: '说给不认识的人听',
+          subtitle: '匿名写给陌生人',
           onTap: () => go(const TreeholePage()),
         ),
       ],
@@ -1167,21 +1168,21 @@ class _MoodPageState extends State<MoodPage> {
   String _placeholderForScore(int score) {
     switch (score) {
       case 1:
-        return '开心的事，记下来';
+        return '什么事让你开心';
       case 2:
-        return '平静的一天，也值得写两句';
+        return '今天过得怎么样';
       case 3:
-        return '难过的话，写下来会轻一点';
+        return '发生了什么';
       case 4:
         return '是什么让你生气了';
       case 5:
-        return '把担心的事写下来';
+        return '在担心什么';
       case 6:
-        return '累了，写一句就好';
+        return '累的话，写一句也行';
       case 7:
         return '在期待什么';
       case 8:
-        return '想念谁，写给 Ta';
+        return '想谁了';
       default:
         return '今天发生了什么';
     }

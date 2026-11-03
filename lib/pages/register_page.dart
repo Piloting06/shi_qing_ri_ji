@@ -1,5 +1,7 @@
 import '../widgets/xq_toast.dart';
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
@@ -325,8 +327,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               const SizedBox(height: 6),
                               Text(
                                 _useEmail
-                                    ? '用邮箱注册，给心情找一个安心的地方。'
-                                    : '一个手机号就够了，帮你记住每一天的自己。',
+                                    ? '用邮箱注册。'
+                                    : '用手机号注册。',
                                 style: XqTypography.bodySmall.copyWith(
                                   color: theme.textSecondary,
                                 ),
@@ -354,7 +356,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   controller: _emailCtrl,
                                   label: '邮箱',
                                   hint: '请输入邮箱地址',
-                                  icon: Icons.email_outlined,
+                                  icon: XqIcons.mail,
                                   keyboardType: TextInputType.emailAddress,
                                 ),
                                 const SizedBox(height: 14),
@@ -365,7 +367,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         controller: _emailCodeCtrl,
                                         label: '验证码',
                                         hint: '6位验证码',
-                                        icon: Icons.pin_outlined,
+                                        icon: XqIcons.lock,
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [
                                           FilteringTextInputFormatter
@@ -411,8 +413,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   width: 16,
                                                   height: 16,
                                                   child:
-                                                      CircularProgressIndicator(
-                                                        strokeWidth: 2,
+                                                      XqInkLoader(
                                                       ),
                                                 )
                                               : const Text(
@@ -429,7 +430,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   controller: _phoneCtrl,
                                   label: '手机号',
                                   hint: '请输入 11 位手机号',
-                                  icon: Icons.phone_iphone_rounded,
+                                  icon: XqIcons.phone,
                                   keyboardType: TextInputType.phone,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
@@ -441,15 +442,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: _pwCtrl,
                                 label: '密码',
                                 hint: '至少 6 位',
-                                icon: Icons.lock_outline_rounded,
+                                icon: XqIcons.lock,
                                 obscure: _obscure,
                                 suffix: IconButton(
                                   onPressed: () =>
                                       setState(() => _obscure = !_obscure),
-                                  icon: Icon(
+                                  icon: XqIcon(
                                     _obscure
-                                        ? Icons.visibility_off_rounded
-                                        : Icons.visibility_rounded,
+                                        ? XqIcons.eyeOff
+                                        : XqIcons.eye,
                                     color: theme.textSecondary,
                                   ),
                                 ),
@@ -459,15 +460,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: _pw2Ctrl,
                                 label: '确认密码',
                                 hint: '再次输入密码',
-                                icon: Icons.lock_outline_rounded,
+                                icon: XqIcons.lock,
                                 obscure: _obscure2,
                                 suffix: IconButton(
                                   onPressed: () =>
                                       setState(() => _obscure2 = !_obscure2),
-                                  icon: Icon(
+                                  icon: XqIcon(
                                     _obscure2
-                                        ? Icons.visibility_off_rounded
-                                        : Icons.visibility_rounded,
+                                        ? XqIcons.eyeOff
+                                        : XqIcons.eye,
                                     color: theme.textSecondary,
                                   ),
                                 ),
@@ -546,7 +547,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            '用于以后找回账号，请选择一个自己记得住的答案。',
+            '找回账号时要用，选一个你记得住的。',
             style: XqTypography.bodySmall.copyWith(
               color: theme.textSecondary,
               height: 1.35,
@@ -586,7 +587,7 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: _pickDate,
-              icon: const Icon(Icons.calendar_month_outlined, size: 18),
+              icon: const XqIcon(XqIcons.calendar, size: 18),
               label: Text(
                 _dateAnswer == null
                     ? '选择日期'
@@ -603,14 +604,14 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _customQuestionCtrl,
               label: '自定义问题',
               hint: '比如：我最怕什么动物？',
-              icon: Icons.help_outline_rounded,
+              icon: XqIcons.info,
             ),
             const SizedBox(height: 10),
             XqAuthInput(
               controller: _customAnswerCtrl,
               label: '答案',
-              hint: '只有你知道的答案',
-              icon: Icons.edit_note_rounded,
+              hint: '答案',
+              icon: XqIcons.write,
             ),
           ],
         ],

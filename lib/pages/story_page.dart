@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../constants/mood.dart';
@@ -64,7 +66,7 @@ class _StoryListPageState extends State<StoryListPage> {
       final chapter = generateSeasonChapter(moods, DateTime.now());
       if (!mounted) return;
       if (chapter == null) {
-        XqToast.info(context, '这个节气还没有记录，先写一篇心情吧');
+        XqToast.info(context, '这个节气还没有心情记录，先记几笔再来');
         return;
       }
       HapticFeedback.selectionClick();
@@ -95,7 +97,7 @@ class _StoryListPageState extends State<StoryListPage> {
         centerTitle: false,
         title: Text(
           '素笺',
-          style: XqTypography.headlineLarge.copyWith(color: t.textPrimary),
+          style: XqTypography.displayMedium.copyWith(color: t.textPrimary, fontSize: 26, letterSpacing: 2),
         ),
         actions: [
           TextButton(
@@ -107,24 +109,24 @@ class _StoryListPageState extends State<StoryListPage> {
           ),
           IconButton(
             onPressed: () => _openEditor(),
-            icon: Icon(Icons.edit_note_rounded, color: t.textPrimary),
+            icon: XqIcon(XqIcons.write, color: t.textPrimary),
             tooltip: '写一篇',
           ),
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          ? const Center(child: XqInkLoader())
           : _entries.isEmpty
               ? Center(
                   child: XqEmptyState(
-                    icon: Icons.spa_outlined,
+                    icon: XqIcons.leaf,
                     title: '纸上还空着',
-                    subtitle: '写一篇故事，或让节气替你起个头',
+                    subtitle: '写长文，或从节气起个头',
                     actionLabel: '写一篇',
                     onAction: () => _openEditor(),
                   ),
                 )
-              : RefreshIndicator(
+              : XqRefresh(
                   onRefresh: _load,
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -334,13 +336,13 @@ class _StoryEditPageState extends State<StoryEditPage> {
                 ),
               );
             },
-            icon: Icon(Icons.style_outlined, size: 20, color: t.textPrimary),
+            icon: XqIcon(XqIcons.cards, size: 20, color: t.textPrimary),
             tooltip: '制成故事卡',
           ),
           if (widget.entry != null)
             IconButton(
               onPressed: _delete,
-              icon: Icon(Icons.delete_outline_rounded,
+              icon: XqIcon(XqIcons.trash,
                   size: 20, color: Colors.red.withAlpha(180)),
               tooltip: '删除',
             ),
@@ -401,7 +403,7 @@ class _StoryEditPageState extends State<StoryEditPage> {
                     ),
                     cursorColor: t.accentColor,
                     decoration: InputDecoration(
-                      hintText: '写下来，晴天多记一笔',
+                      hintText: '从这里开始写',
                       hintStyle: XqTypography.handwrittenBody.copyWith(
                         color: t.textTertiary.withAlpha(120),
                         fontSize: 16.5,
@@ -427,7 +429,7 @@ class _StoryEditPageState extends State<StoryEditPage> {
             child: Row(
               children: [
                 Text(
-                  _dirty ? '落笔中…' : (_savedAt == null ? '素笺' : '已收好'),
+                  _dirty ? '保存中…' : (_savedAt == null ? '素笺' : '已保存'),
                   style: TextStyle(
                     color: t.textTertiary,
                     fontSize: 12,

@@ -67,4 +67,10 @@ void main() {
       }
     }
   });
+
+  test('计数用「两」', () {
+    expect(chineseCount(2), '两');
+    expect(chineseCount(3), '三');
+    expect(chineseCount(12), '十二');
+  });
 }

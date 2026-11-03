@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,7 +67,15 @@ class XinQingRiJiApp extends StatelessWidget {
             title: '拾晴日记',
             debugShowCheckedModeBanner: false,
             theme: XqTheme.forMode(theme.themeMode),
-            darkTheme: XqTheme.forMode(theme.isDark ? theme.themeMode : 'dark'),
+            darkTheme: XqTheme.forMode('sujian_dark'),
+            // 中文本地化：日期选择、文本选择菜单（复制/粘贴）等系统文案
+            locale: const Locale('zh', 'CN'),
+            supportedLocales: const [Locale('zh', 'CN')],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
             // 主题切换时全 App 颜色平滑过渡，避免生硬跳变
             themeAnimationDuration: const Duration(milliseconds: 420),

@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -115,16 +117,16 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          ? const Center(child: XqInkLoader())
           : _entries.isEmpty
               ? Center(
                   child: XqEmptyState(
-                    icon: Icons.style_outlined,
+                    icon: XqIcons.cards,
                     title: '卡片册还是空的',
                     subtitle: '在心情页保存或分享卡片后，会自动收进这里',
                   ),
                 )
-              : RefreshIndicator(
+              : XqRefresh(
                   onRefresh: _load,
                   child: GridView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -166,7 +168,7 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
                                         color: t.surfaceAlpha,
                                         child: const Center(
                                           child:
-                                              Icon(Icons.broken_image_outlined),
+                                              XqIcon(XqIcons.image),
                                         ),
                                       ),
                                     );
@@ -285,7 +287,7 @@ class _CardViewerState extends State<_CardViewer> {
           children: [
             TextButton.icon(
               onPressed: () => widget.onShare(widget.entries[_index]),
-              icon: const Icon(Icons.share_rounded,
+              icon: const XqIcon(XqIcons.share,
                   color: Colors.white, size: 18),
               label: const Text('分享', style: TextStyle(color: Colors.white)),
             ),
@@ -296,7 +298,7 @@ class _CardViewerState extends State<_CardViewer> {
                 await widget.onDelete(widget.entries[_index]);
                 navigator.pop();
               },
-              icon: Icon(Icons.delete_outline_rounded,
+              icon: XqIcon(XqIcons.trash,
                   color: Colors.red.withAlpha(200), size: 18),
               label:
                   Text('删除', style: TextStyle(color: Colors.red.withAlpha(200))),

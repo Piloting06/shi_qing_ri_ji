@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
@@ -219,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                '欢迎回来，今天想记点什么？',
+                                '登录后接着写。',
                                 style: TextStyle(color: theme.textSecondary, fontSize: 13),
                               ),
                               const SizedBox(height: 16),
@@ -245,7 +246,7 @@ class _LoginPageState extends State<LoginPage> {
                                   controller: _emailCtrl,
                                   label: '邮箱',
                                   hint: '请输入邮箱地址',
-                                  icon: Icons.email_outlined,
+                                  icon: XqIcons.mail,
                                   keyboardType: TextInputType.emailAddress,
                                 ),
                                 const SizedBox(height: 14),
@@ -253,16 +254,16 @@ class _LoginPageState extends State<LoginPage> {
                                   controller: _emailPwCtrl,
                                   label: '密码',
                                   hint: '请输入密码',
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: XqIcons.lock,
                                   obscure: _emailObscure,
                                   suffix: IconButton(
                                     onPressed: () => setState(
                                       () => _emailObscure = !_emailObscure,
                                     ),
-                                    icon: Icon(
+                                    icon: XqIcon(
                                       _emailObscure
-                                          ? Icons.visibility_off_rounded
-                                          : Icons.visibility_rounded,
+                                          ? XqIcons.eyeOff
+                                          : XqIcons.eye,
                                       color: theme.textSecondary,
                                     ),
                                   ),
@@ -273,7 +274,7 @@ class _LoginPageState extends State<LoginPage> {
                                   controller: _phoneCtrl,
                                   label: '手机号',
                                   hint: '请输入 11 位手机号',
-                                  icon: Icons.phone_iphone_rounded,
+                                  icon: XqIcons.phone,
                                   keyboardType: TextInputType.phone,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
@@ -285,15 +286,15 @@ class _LoginPageState extends State<LoginPage> {
                                   controller: _pwCtrl,
                                   label: '密码',
                                   hint: '请输入密码',
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: XqIcons.lock,
                                   obscure: _obscure,
                                   suffix: IconButton(
                                     onPressed: () =>
                                         setState(() => _obscure = !_obscure),
-                                    icon: Icon(
+                                    icon: XqIcon(
                                       _obscure
-                                          ? Icons.visibility_off_rounded
-                                          : Icons.visibility_rounded,
+                                          ? XqIcons.eyeOff
+                                          : XqIcons.eye,
                                       color: theme.textSecondary,
                                     ),
                                   ),

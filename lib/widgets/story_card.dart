@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'xq/xq_icons.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gal/gal.dart';
 import 'package:path/path.dart' as p;
@@ -270,7 +271,7 @@ class _StoryCardPreviewPageState extends State<StoryCardPreviewPage> {
                   height: 48,
                   child: OutlinedButton.icon(
                     onPressed: _busy ? null : _save,
-                    icon: const Icon(Icons.download_rounded, size: 18),
+                    icon: const XqIcon(XqIcons.save, size: 18),
                     label: const Text('保存到相册'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: t.accentColor,
@@ -288,7 +289,7 @@ class _StoryCardPreviewPageState extends State<StoryCardPreviewPage> {
                   height: 48,
                   child: FilledButton.icon(
                     onPressed: _busy ? null : _share,
-                    icon: const Icon(Icons.share_rounded, size: 18),
+                    icon: const XqIcon(XqIcons.share, size: 18),
                     label: const Text('分享'),
                     style: FilledButton.styleFrom(
                       backgroundColor: t.accentColor,

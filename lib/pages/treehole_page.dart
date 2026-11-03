@@ -4,6 +4,8 @@ import '../utils/time_utils.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../utils/helpers.dart';
@@ -225,7 +227,7 @@ class _TreeholePageState extends State<TreeholePage>
                   ? Center(
                       child: InkWritingLoader(inkColor: theme.gold, size: 40),
                     )
-                  : RefreshIndicator(
+                  : XqRefresh(
                       onRefresh: _refresh,
                       child: _content(theme),
                     ),
@@ -253,13 +255,15 @@ class _TreeholePageState extends State<TreeholePage>
               children: [
                 Text(
                   '树洞',
-                  style: XqTypography.headlineLarge.copyWith(
+                  style: XqTypography.displayMedium.copyWith(
                     color: theme.textPrimary,
+                    fontSize: 30,
+                    letterSpacing: 2,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '匿名说出来，轻一点放下。',
+                  '匿名写，没人知道是你。',
                   style: XqTypography.bodySmall.copyWith(
                     color: theme.textSecondary,
                   ),
@@ -272,7 +276,7 @@ class _TreeholePageState extends State<TreeholePage>
             builder: (context, child) => Transform.rotate(
               angle: _refreshCtrl.value * 2 * math.pi,
               child: IconButton(
-                icon: Icon(Icons.refresh, color: theme.accentColor, size: 22),
+                icon: XqIcon(XqIcons.refresh, color: theme.accentColor, size: 22),
                 onPressed: _refresh,
               ),
             ),
@@ -325,9 +329,9 @@ class _TreeholePageState extends State<TreeholePage>
         children: [
           const SizedBox(height: 56),
           XqEmptyState(
-            icon: Icons.forest_outlined,
+            icon: XqIcons.leaf,
             title: '还没有留言',
-            subtitle: '不用写很多，一句就够了。今天就做第一个吧。',
+            subtitle: '还没人写。写一句就行。',
             iconColor: theme.accentColor.withAlpha(80),
           ),
         ],
@@ -350,7 +354,7 @@ class _TreeholePageState extends State<TreeholePage>
       ),
       child: Column(
         children: [
-          Icon(Icons.error_outline, color: theme.errorColor),
+          XqIcon(XqIcons.alert, color: theme.errorColor),
           const SizedBox(height: 10),
           Text(_error!, style: TextStyle(color: theme.textPrimary)),
           const SizedBox(height: 12),
@@ -412,7 +416,7 @@ class _TreeholePageState extends State<TreeholePage>
             children: [
               _interactionChip(
                 theme,
-                Icons.volunteer_activism_outlined,
+                XqIcons.heart,
                 readInt(message['cloud_hugs']) ?? 0,
                 _hasInteracted(message, 'cloud_hug'),
                 id == null
@@ -424,7 +428,7 @@ class _TreeholePageState extends State<TreeholePage>
               const SizedBox(width: 8),
               _interactionChip(
                 theme,
-                Icons.local_cafe_outlined,
+                XqIcons.cup,
                 readInt(message['cloud_coffees']) ?? 0,
                 _hasInteracted(message, 'cloud_coffee'),
                 id == null
@@ -451,7 +455,7 @@ class _TreeholePageState extends State<TreeholePage>
       builder: (ctx) => AlertDialog(
         backgroundColor: theme.cardColor,
         title: Text('撤回内容', style: TextStyle(color: theme.textPrimary)),
-        content: const Text('确定撤回这条树洞留言吗？此操作不可撤销。'),
+        content: const Text('撤回后找不回来。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('取消', style: TextStyle(color: theme.textSecondary))),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('撤回', style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
@@ -486,8 +490,8 @@ class _TreeholePageState extends State<TreeholePage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  expanded ? Icons.expand_less : Icons.chat_bubble_outline,
+                XqIcon(
+                  expanded ? XqIcons.chevronUp : XqIcons.chat,
                   size: 14,
                   color: theme.textSecondary,
                 ),
@@ -512,7 +516,7 @@ class _TreeholePageState extends State<TreeholePage>
                 padding: const EdgeInsets.all(12),
                 child: SizedBox(
                   width: 16, height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: theme.accentColor),
+                  child: XqInkLoader( color: theme.accentColor),
                 ),
               ),
             )
@@ -542,8 +546,8 @@ class _TreeholePageState extends State<TreeholePage>
                   width: 36, height: 36,
                   child: IconButton(
                     icon: _commentPosting.contains(msgId)
-                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.send_rounded, size: 16),
+                        ? const SizedBox(width: 14, height: 14, child: XqInkLoader())
+                        : const XqIcon(XqIcons.send, size: 16),
                     color: theme.accentColor,
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -574,8 +578,8 @@ class _TreeholePageState extends State<TreeholePage>
               color: isOwn ? theme.accentColor.withAlpha(22) : theme.surfaceAlpha,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              isOwn ? Icons.person_outline : Icons.visibility_off_outlined,
+            child: XqIcon(
+              isOwn ? XqIcons.person : XqIcons.eyeOff,
               size: 12,
               color: isOwn ? theme.accentColor : theme.textTertiary,
             ),
@@ -608,7 +612,7 @@ class _TreeholePageState extends State<TreeholePage>
 
   void _showAlreadyInteracted() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已经送过啦'), duration: Duration(seconds: 1)),
+      const SnackBar(content: Text('送过了'), duration: Duration(seconds: 1)),
     );
   }
 
@@ -680,7 +684,7 @@ class _TreeholePageState extends State<TreeholePage>
 
   Widget _interactionChip(
     ThemeState theme,
-    IconData icon,
+    XqIcons icon,
     int count,
     bool active,
     VoidCallback? onTap,
@@ -694,7 +698,7 @@ class _TreeholePageState extends State<TreeholePage>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 17, color: color),
+            XqIcon(icon, size: 17, color: color),
             const SizedBox(width: 5),
             Text(
               '$count',
@@ -758,9 +762,9 @@ class _TreeholePageState extends State<TreeholePage>
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: XqInkLoader(),
                           )
-                        : const Icon(Icons.send_rounded, size: 18),
+                        : const XqIcon(XqIcons.send, size: 18),
                     color: theme.accentColor,
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -828,13 +832,13 @@ class _TreeholePageState extends State<TreeholePage>
 
   String _dailyPrompt() {
     const prompts = [
-      '今天最想轻轻放下什么？',
-      '今天有没有一句话，留给没人认识的地方？',
-      '如果把今天写成一张小纸条，你会写什么？',
-      '今天最想谢谢谁，或者最想对谁说一句话？',
-      '这一天里，哪一刻最值得被树洞接住？',
-      '如果把今天的天气也写进一句心事里，会是什么样？',
-      '今天最想安静记下的一点情绪是什么？',
+      '今天有什么想放下的？',
+      '有什么话，不想让认识的人看到？',
+      '用一句话说说今天。',
+      '今天想谢谢谁？',
+      '今天哪个时刻你还记得？',
+      '今天的天气，和你的心情像吗？',
+      '今天心里在想什么？',
     ];
     return prompts[DateTime.now().weekday % prompts.length];
   }

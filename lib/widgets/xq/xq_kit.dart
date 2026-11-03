@@ -15,7 +15,7 @@ class XqButton extends StatelessWidget {
   final XqButtonType type;
   final double height;
   final bool loading;
-  final dynamic icon; // XqIcons 或 Material IconData
+  final dynamic icon; // XqIcons 或 Material XqIcons
   final bool expand; // 是否通栏
 
   const XqButton({
@@ -59,16 +59,13 @@ class XqButton extends StatelessWidget {
         ? SizedBox(
             width: 18,
             height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2, color: fg),
+            child: XqInkLoader( color: fg),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                if (icon is XqIcons)
-                  XqIcon(icon as XqIcons, size: 18, color: fg)
-                else
-                  Icon(icon as IconData?, size: 18, color: fg),
+                XqIcon(icon as XqIcons, size: 18, color: fg),
                 const SizedBox(width: 8),
               ],
               Text(
@@ -307,12 +304,13 @@ class _SealPainter extends CustomPainter {
 
   void _paintChars(Canvas canvas, double s, Color c) {
     final chars = char.characters.toList();
-    final n = chars.length >= 4 ? 4 : (chars.length >= 2 ? 2 : 1);
-    final fontSize = switch (n) { 1 => s * 0.58, 2 => s * 0.4, _ => s * 0.36 };
+    final n = chars.length >= 4 ? 4 : chars.length.clamp(1, 3);
+    final fontSize = switch (n) { 1 => s * 0.58, 2 => s * 0.4, 3 => s * 0.28, _ => s * 0.36 };
     // 每格中心：单字居中；两字竖排；四字右起两列（先右列上下，再左列上下）
     final cells = switch (n) {
       1 => [Offset(s / 2, s / 2)],
       2 => [Offset(s / 2, s * 0.3), Offset(s / 2, s * 0.7)],
+      3 => [Offset(s / 2, s * 0.24), Offset(s / 2, s * 0.5), Offset(s / 2, s * 0.76)],
       _ => [Offset(s * 0.7, s * 0.3), Offset(s * 0.7, s * 0.7), Offset(s * 0.3, s * 0.3), Offset(s * 0.3, s * 0.7)],
     };
     for (var i = 0; i < n; i++) {
@@ -410,6 +408,119 @@ class XqCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: card,
+    );
+  }
+}
+
+/// 三点墨：取代系统转圈。三粒墨点依次由淡转浓，循环 900ms；减弱动效时静止。
+class XqInkLoader extends StatefulWidget {
+  final Color? color;
+  final double dot;
+
+  const XqInkLoader({super.key, this.color, this.dot = 4.5});
+
+  @override
+  State<XqInkLoader> createState() => _XqInkLoaderState();
+}
+
+class _XqInkLoaderState extends State<XqInkLoader> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _c.stop();
+      _c.value = 0.5;
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.color ?? Theme.of(context).colorScheme.primary;
+    return Semantics(
+      label: '加载中',
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final d = c.hasBoundedWidth ? math.min(widget.dot, c.maxWidth / 5) : widget.dot;
+          return Center(
+            child: AnimatedBuilder(
+              animation: _c,
+              builder: (_, _) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < 3; i++) ...[
+                    if (i > 0) SizedBox(width: d * 0.8),
+                    Opacity(
+                      opacity: 0.25 + 0.75 * (0.5 + 0.5 * math.cos((_c.value - i / 3) * 2 * math.pi)),
+                      child: Container(
+                        width: d,
+                        height: d,
+                        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// 下拉刷新：手势沿用系统（noSpinner），指示换成顶部一行三点墨。
+class XqRefresh extends StatefulWidget {
+  final Future<void> Function() onRefresh;
+  final Widget child;
+  final double edgeOffset;
+
+  const XqRefresh({super.key, required this.onRefresh, required this.child, this.edgeOffset = 0});
+
+  @override
+  State<XqRefresh> createState() => _XqRefreshState();
+}
+
+class _XqRefreshState extends State<XqRefresh> {
+  RefreshIndicatorStatus? _status;
+
+  @override
+  Widget build(BuildContext context) {
+    final show = switch (_status) {
+      RefreshIndicatorStatus.armed || RefreshIndicatorStatus.snap || RefreshIndicatorStatus.refresh => true,
+      _ => false,
+    };
+    return Stack(
+      children: [
+        RefreshIndicator.noSpinner(
+          onRefresh: widget.onRefresh,
+          onStatusChange: (s) {
+            if (mounted && s != _status) setState(() => _status = s);
+          },
+          child: widget.child,
+        ),
+        Positioned(
+          top: widget.edgeOffset + 14,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: show ? 1 : 0,
+              duration: const Duration(milliseconds: 160),
+              child: const SizedBox(height: 12, child: XqInkLoader()),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

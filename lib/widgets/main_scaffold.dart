@@ -33,7 +33,8 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   late int _currentIndex;
-  late final PageController _pageController;
+  // 访问过的 Tab 常驻（Offstage 保活，不再销毁重建、不再重复拉数据）
+  final _visited = <int>{};
   bool _onboardingChecked = false;
   bool _lockoutHandled = false;
   DateTime? _lastBackPress;
@@ -42,7 +43,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex.clamp(0, 3);
-    _pageController = PageController(initialPage: _currentIndex);
+    _visited.add(_currentIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_onboardingChecked && mounted) {
         _onboardingChecked = true;
@@ -50,12 +51,6 @@ class _MainScaffoldState extends State<MainScaffold> {
       }
       _rescheduleCapsuleReminders();
     });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 
   Future<void> _rescheduleCapsuleReminders() async {
@@ -82,13 +77,11 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   void goToTab(int i) {
     if (_currentIndex == i) return;
-    HapticFeedback.lightImpact();
-    _pageController.animateToPage(
-      i,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-    setState(() => _currentIndex = i);
+    HapticFeedback.selectionClick();
+    setState(() {
+      _currentIndex = i;
+      _visited.add(i);
+    });
   }
 
   void _onTabTap(int i) {
@@ -121,7 +114,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           (_) => false,
         );
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('登录过期了，重新登一下吧')),
+          const SnackBar(content: Text('登录已过期，请重新登录')),
         );
       });
     }
@@ -152,10 +145,9 @@ class _MainScaffoldState extends State<MainScaffold> {
         body: Column(
           children: [
             Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (i) => setState(() => _currentIndex = i),
-                // 非当前 Tab 暂停动画（首页天色的云与雨雪）
+              // 切 Tab：只淡入当前页（160ms），其余页 Offstage 保活、暂停动画、不参与绘制
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
                   for (final (i, page) in const [
                     HomePage(),
@@ -163,7 +155,8 @@ class _MainScaffoldState extends State<MainScaffold> {
                     CityMapPage(),
                     ProfilePage(),
                   ].indexed)
-                    TickerMode(enabled: i == _currentIndex, child: page),
+                    if (_visited.contains(i))
+                      _TabSlot(key: ValueKey(i), active: i == _currentIndex, child: page),
                 ],
               ),
             ),
@@ -291,6 +284,63 @@ class _SujianBottomBar extends StatelessWidget {
                 ),
               );
             }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 一个 Tab 的槽位：当前页淡入；离开后淡出完毕即 Offstage（保留状态，不绘制、不跑动画）
+class _TabSlot extends StatefulWidget {
+  final bool active;
+  final Widget child;
+
+  const _TabSlot({super.key, required this.active, required this.child});
+
+  @override
+  State<_TabSlot> createState() => _TabSlotState();
+}
+
+class _TabSlotState extends State<_TabSlot> with SingleTickerProviderStateMixin {
+  late final AnimationController _fade = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 160),
+    value: widget.active ? 1 : 0,
+  )..addStatusListener((_) => setState(() {}));
+
+  @override
+  void didUpdateWidget(_TabSlot old) {
+    super.didUpdateWidget(old);
+    if (old.active == widget.active) return;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _fade.value = widget.active ? 1 : 0;
+    } else if (widget.active) {
+      _fade.forward();
+    } else {
+      // 离开的页立即让出：不做淡出，避免两页同时绘制
+      _fade.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _fade.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = !widget.active && _fade.isDismissed;
+    return Offstage(
+      offstage: hidden,
+      child: TickerMode(
+        enabled: widget.active,
+        child: IgnorePointer(
+          ignoring: !widget.active,
+          child: FadeTransition(
+            opacity: CurvedAnimation(parent: _fade, curve: Curves.easeOutQuart),
+            child: widget.child,
           ),
         ),
       ),

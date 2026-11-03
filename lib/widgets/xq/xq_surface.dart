@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../stores/theme_state.dart';
@@ -151,7 +152,7 @@ class XqGroup extends StatelessWidget {
 
 /// 列表行（乌丝栏目录）：前置线描小图标（不加底块）· 标题/说明 · 右侧值或细箭头。高 ≥ 60。
 class XqRow extends StatelessWidget {
-  final IconData? icon;
+  final XqIcons? icon;
   final Widget? leading;
   final String title;
   final String? subtitle;
@@ -183,7 +184,7 @@ class XqRow extends StatelessWidget {
             ? null
             : SizedBox(
                 width: 22,
-                child: Icon(icon, size: 20, color: destructive ? t.errorColor : t.textSecondary),
+                child: XqIcon(icon!, size: 20, color: destructive ? t.errorColor : t.textSecondary),
               ));
     return Semantics(
       button: onTap != null,
@@ -233,7 +234,7 @@ class XqRow extends StatelessWidget {
                 if (trailing != null) ...[const SizedBox(width: 12), trailing!],
                 if (onTap != null && chevron) ...[
                   const SizedBox(width: 6),
-                  Icon(Icons.chevron_right_rounded, size: 18, color: t.textTertiary.withAlpha(120)),
+                  XqIcon(XqIcons.chevronRight, size: 18, color: t.textTertiary.withAlpha(120)),
                 ],
               ],
             ),

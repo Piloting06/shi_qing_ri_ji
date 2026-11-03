@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'xq/xq_kit.dart';
+import 'xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../stores/theme_state.dart';
@@ -52,14 +54,14 @@ class XqAuthBackdrop extends StatelessWidget {
 class XqAuthHero extends StatelessWidget {
   final ThemeState theme;
   final String title;
-  final IconData icon;
+  final XqIcons icon;
   final double size;
 
   const XqAuthHero({
     super.key,
     required this.theme,
     required this.title,
-    this.icon = Icons.auto_stories_outlined,
+    this.icon = XqIcons.book,
     this.size = 68,
   });
 
@@ -133,7 +135,7 @@ class XqAuthInput extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
-  final IconData icon; // 兼容旧调用签名，不再渲染
+  final XqIcons icon; // 兼容旧调用签名，不再渲染
   final bool obscure;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
@@ -224,8 +226,7 @@ class XqAuthButton extends StatelessWidget {
             ? SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                child: XqInkLoader(
                   color: theme.textOnAccent,
                 ),
               )

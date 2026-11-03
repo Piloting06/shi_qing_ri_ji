@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
@@ -8,6 +9,7 @@ import '../stores/theme_state.dart';
 import '../widgets/city_comment_sheet.dart';
 import '../widgets/xq/xq_icons.dart';
 import '../widgets/xq/xq_surface.dart';
+import '../widgets/xq/xq_paper.dart';
 import '../theme/xq_decorations.dart';
 import '../theme/xq_typography.dart';
 import '../widgets/xq_toast.dart';
@@ -71,21 +73,19 @@ class _CityMapPageState extends State<CityMapPage>
     if (map.loading) {
       return Scaffold(
         backgroundColor: theme.backgroundColor,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 1.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '正在看各城的天气与心情…',
-                style: TextStyle(color: theme.textSecondary, fontSize: 14),
-              ),
-            ],
+        body: XqPaperPage(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(width: 20, height: 20, child: XqInkLoader()),
+                const SizedBox(height: 16),
+                Text(
+                  '正在翻各城的足迹…',
+                  style: TextStyle(color: theme.textSecondary, fontSize: 14),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -102,91 +102,109 @@ class _CityMapPageState extends State<CityMapPage>
     var filtered = _search.trim().isEmpty
         ? allCities
         : allCities
-            .where((c) =>
-                c.name.contains(_search.trim()) ||
-                c.province.contains(_search.trim()))
-            .toList();
+              .where(
+                (c) =>
+                    c.name.contains(_search.trim()) ||
+                    c.province.contains(_search.trim()),
+              )
+              .toList();
 
     // Filter by mood
     if (_moodFilter != 'all') {
-      filtered =
-          filtered.where((c) => map.cityMood(c.code) == _moodFilter).toList();
+      filtered = filtered
+          .where((c) => map.cityMood(c.code) == _moodFilter)
+          .toList();
     }
 
     final browsing = _search.trim().isEmpty && _moodFilter == 'all';
-    final activeCities =
-        filtered.where((c) => map.cityCommentCount(c.code) > 0).toList();
-    final quietCities =
-        filtered.where((c) => map.cityCommentCount(c.code) == 0).toList();
+    final activeCities = filtered
+        .where((c) => map.cityCommentCount(c.code) > 0)
+        .toList();
+    final quietCities = filtered
+        .where((c) => map.cityCommentCount(c.code) == 0)
+        .toList();
 
     // 整段城市列表装进一张卡（L1），行间内缩细线
     Widget cityList(List<CityData> cities) => DecoratedSliver(
-          decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
-          sliver: SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) => _cityRow(cities[i], map, theme, last: i == cities.length - 1),
-                childCount: cities.length,
-              ),
-            ),
+      decoration: XqDecorations.surface(
+        theme.cardColor,
+        dark: theme.isDark,
+        edge: theme.frameColor,
+        grain: XqPaper.grain(
+          theme.paperFiber,
+          strength: theme.isDark ? 0.6 : 0.8,
+        ),
+      ),
+      sliver: SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (_, i) =>
+                _cityRow(cities[i], map, theme, last: i == cities.length - 1),
+            childCount: cities.length,
           ),
-        );
+        ),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: theme.backgroundColor,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await _map.refresh();
-            final f = _loadMoodboard();
-            setState(() => _moodboard = f);
-            await f;
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _pageHeader(theme)),
-              SliverToBoxAdapter(child: _searchBar(theme)),
-              SliverToBoxAdapter(child: _filterChips(map, theme)),
-              if (browsing) SliverToBoxAdapter(child: _statsHeader(map, theme)),
-              if (browsing) SliverToBoxAdapter(child: _moodboardSection(theme)),
-              if (filtered.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _emptySearch(theme),
-                )
-              else if (!browsing)
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  sliver: cityList(filtered),
-                )
-              else ...[
-                if (activeCities.isNotEmpty) ...[
-                  SliverToBoxAdapter(
-                    child: _sectionTitle(theme, '正在说话的城市', activeCities.length),
-                  ),
+      body: XqPaperPage(
+        child: SafeArea(
+          child: XqRefresh(
+            onRefresh: () async {
+              await _map.refresh();
+              final f = _loadMoodboard();
+              setState(() => _moodboard = f);
+              await f;
+            },
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _pageHeader(theme)),
+                SliverToBoxAdapter(child: _searchBar(theme)),
+                SliverToBoxAdapter(child: _filterChips(map, theme)),
+                if (browsing)
+                  SliverToBoxAdapter(child: _statsHeader(map, theme)),
+                if (browsing)
+                  SliverToBoxAdapter(child: _moodboardSection(theme)),
+                if (filtered.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _emptySearch(theme),
+                  )
+                else if (!browsing)
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 18),
-                    sliver: cityList(activeCities),
-                  ),
+                    sliver: cityList(filtered),
+                  )
+                else ...[
+                  if (activeCities.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: _sectionTitle(theme, '有人写过', activeCities.length),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      sliver: cityList(activeCities),
+                    ),
+                  ],
+                  if (quietCities.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: _sectionTitle(theme, '还没人写', quietCities.length),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      sliver: cityList(quietCities),
+                    ),
+                  ],
                 ],
-                if (quietCities.isNotEmpty) ...[
-                  SliverToBoxAdapter(
-                    child: _sectionTitle(theme, '还在等第一个人', quietCities.length),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                    child: _buildFooter(map, theme),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    sliver: cityList(quietCities),
-                  ),
-                ],
-              ],
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: _buildFooter(map, theme),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -195,23 +213,33 @@ class _CityMapPageState extends State<CityMapPage>
 
   Widget _pageHeader(ThemeState theme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 12, 12),
+      padding: const EdgeInsets.fromLTRB(24, 20, 10, 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '城迹',
-            style: XqTypography.displayMedium.copyWith(color: theme.textPrimary),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '各城此刻的心情',
-            style: TextStyle(color: theme.textTertiary, fontSize: 13),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '城迹',
+                style: XqTypography.displayMedium.copyWith(
+                  color: theme.textPrimary,
+                  fontSize: 32,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '各地的人，今天写了什么',
+                style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+              ),
+            ],
           ),
           const Spacer(),
           IconButton(
             tooltip: '排序',
             onPressed: () => _showSortSheet(theme),
-            icon: Icon(Icons.sort_rounded, color: theme.textSecondary, size: 22),
+            icon: XqIcon(XqIcons.tune, color: theme.textSecondary, size: 22),
           ),
         ],
       ),
@@ -220,21 +248,13 @@ class _CityMapPageState extends State<CityMapPage>
 
   Widget _sectionTitle(ThemeState theme, String title, int n) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 28, 22, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            title,
-            style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary),
-          ),
-          const Spacer(),
-          Text(
-            '$n 座',
-            style: TextStyle(color: theme.textTertiary, fontSize: 12),
-          ),
-        ],
+      padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+      child: XqSectionTitle(
+        title,
+        trailing: Text(
+          '$n 座',
+          style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+        ),
       ),
     );
   }
@@ -244,9 +264,11 @@ class _CityMapPageState extends State<CityMapPage>
   void _sortCities(List<CityData> cities, MapState map) {
     switch (_sortBy) {
       case 'hot':
-        cities.sort((a, b) => map
-            .cityCommentCount(b.code)
-            .compareTo(map.cityCommentCount(a.code)));
+        cities.sort(
+          (a, b) => map
+              .cityCommentCount(b.code)
+              .compareTo(map.cityCommentCount(a.code)),
+        );
       case 'near':
         if (map.myCity != null) {
           cities.sort((a, b) {
@@ -291,13 +313,10 @@ class _CityMapPageState extends State<CityMapPage>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (key != 'all') ...[
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                            ),
+                          XqPigmentDab(
+                            color: color,
+                            size: 11,
+                            seed: key.length,
                           ),
                           const SizedBox(width: 5),
                         ],
@@ -305,8 +324,12 @@ class _CityMapPageState extends State<CityMapPage>
                           label,
                           style: TextStyle(
                             fontSize: 14,
-                            color: active ? theme.textPrimary : theme.textTertiary,
-                            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                            color: active
+                                ? theme.textPrimary
+                                : theme.textTertiary,
+                            fontWeight: active
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                       ],
@@ -315,8 +338,8 @@ class _CityMapPageState extends State<CityMapPage>
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: active ? 16 : 0,
-                      height: 1.5,
-                      color: theme.accentColor,
+                      height: 1.2,
+                      color: theme.textPrimary,
                     ),
                   ],
                 ),
@@ -328,137 +351,146 @@ class _CityMapPageState extends State<CityMapPage>
     );
   }
 
-  // ── 城市心晴榜：排名文字，无底卡 ──
+  // ── 心晴榜：张榜。一张笺上五列，竖排城名，汉字名次，栏间界线 ──
 
   Widget _moodboardSection(ThemeState theme) {
+    const ranks = ['一', '二', '三', '四', '五'];
     return FutureBuilder<Map<String, dynamic>?>(
       future: _moodboard,
       builder: (context, snap) {
         final board =
-            (snap.data?['board'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            ((snap.data?['board'] as List?)?.cast<Map<String, dynamic>>() ?? [])
+                .take(5)
+                .toList();
         if (board.isEmpty) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 28, 22, 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    '城市心晴榜',
-                    style: XqTypography.headlineSmall
-                        .copyWith(color: theme.textPrimary),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '最近七天',
-                    style: TextStyle(color: theme.textTertiary, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 112,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
-                itemCount: board.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 10),
-                itemBuilder: (context, i) {
-                  final item = board[i];
-                  final city = (item['city']?.toString() ?? '').split('，').first;
-                  final mood = (item['top_mood'] as num?)?.toInt() ?? 0;
-                  final count = (item['count'] as num?)?.toInt() ?? 0;
-                  final color = Color(moodColors[mood] ?? 0xFF7C918C);
-                  return XqSurface(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 18, 12),
-                    child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              XqSectionTitle('心晴榜', caption: '近七天，写得最多的城'),
+              XqSurface(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        (i + 1).toString().padLeft(2, '0'),
-                        style: TextStyle(
-                          color: i < 3 ? theme.gold : theme.textTertiary,
-                          fontSize: 13,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                      for (var i = 0; i < board.length; i++) ...[
+                        if (i > 0)
+                          Container(width: 0.6, color: theme.borderColor),
+                        Expanded(
+                          child: _boardColumn(theme, board[i], ranks[i], i),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            city,
-                            style: XqTypography.headlineSmall.copyWith(
-                              color: theme.textPrimary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                '${moodLabels[mood] ?? ''} · $count 笔',
-                                style: TextStyle(
-                                  color: theme.textTertiary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      ],
+                      for (var i = board.length; i < 5; i++) ...[
+                        Container(width: 0.6, color: theme.borderColor),
+                        const Expanded(child: SizedBox()),
+                      ],
                     ],
                   ),
-                  );
-                },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 
+  Widget _boardColumn(
+    ThemeState theme,
+    Map<String, dynamic> item,
+    String rank,
+    int i,
+  ) {
+    final city = (item['city']?.toString() ?? '').split('，').first;
+    final mood = (item['top_mood'] as num?)?.toInt() ?? 0;
+    final count = (item['count'] as num?)?.toInt() ?? 0;
+    return Semantics(
+      label: '第$rank，$city，多是${moodLabels[mood] ?? ''}，$count 笔',
+      excludeSemantics: true,
+      child: Column(
+        children: [
+          Text(
+            rank,
+            style: XqTypography.headlineSmall.copyWith(
+              color: i < 3 ? theme.gold : theme.textTertiary,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 10),
+          for (final ch in city.characters.take(4))
+            Text(
+              ch,
+              style: XqTypography.headlineLarge.copyWith(
+                color: theme.textPrimary,
+                fontSize: 19,
+                height: 1.2,
+              ),
+            ),
+          const SizedBox(height: 10),
+          XqPigmentDab(
+            color: Color(moodColors[mood] ?? 0xFF7A7871),
+            size: 14,
+            seed: mood + i,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '$count 笔',
+            style: TextStyle(
+              color: theme.textTertiary,
+              fontSize: 12,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _searchBar(ThemeState theme) {
+    final line = UnderlineInputBorder(
+      borderSide: BorderSide(color: theme.frameColor, width: 0.8),
+    );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
       child: TextField(
         controller: _searchCtrl,
         onChanged: (v) => setState(() => _search = v),
         style: TextStyle(color: theme.textPrimary, fontSize: 15),
         cursorColor: theme.accentColor,
         decoration: InputDecoration(
-          hintText: '找一座城市',
+          hintText: '找一座城',
           isDense: true,
+          filled: false,
+          border: line,
+          enabledBorder: line,
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: theme.textPrimary, width: 1),
+          ),
           prefixIcon: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(0, 12, 10, 12),
             child: XqIcon(XqIcons.search, size: 18, color: theme.textTertiary),
           ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 42),
+          prefixIconConstraints: const BoxConstraints(minWidth: 28),
           suffixIcon: _search.isNotEmpty
               ? IconButton(
                   tooltip: '清空',
-                  icon: XqIcon(XqIcons.close, size: 16, color: theme.textTertiary),
+                  icon: XqIcon(
+                    XqIcons.close,
+                    size: 16,
+                    color: theme.textTertiary,
+                  ),
                   onPressed: () {
                     _searchCtrl.clear();
                     setState(() => _search = '');
                   },
                 )
               : null,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 0,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -467,11 +499,7 @@ class _CityMapPageState extends State<CityMapPage>
   // ── Sort Sheet ──
 
   void _showSortSheet(ThemeState theme) {
-    final options = [
-      ('hot', '足迹最多'),
-      ('near', '离我最近'),
-      ('alpha', '按名称'),
-    ];
+    final options = [('hot', '足迹最多'), ('near', '离我最近'), ('alpha', '按名称')];
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -483,7 +511,9 @@ class _CityMapPageState extends State<CityMapPage>
             children: [
               Text(
                 '排序',
-                style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary),
+                style: XqTypography.headlineSmall.copyWith(
+                  color: theme.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               ...options.map((opt) {
@@ -498,7 +528,11 @@ class _CityMapPageState extends State<CityMapPage>
                     ),
                   ),
                   trailing: active
-                      ? Icon(Icons.check, size: 18, color: theme.accentColor)
+                      ? XqIcon(
+                          XqIcons.check,
+                          size: 18,
+                          color: theme.accentColor,
+                        )
                       : null,
                   onTap: () {
                     setState(() => _sortBy = key);
@@ -513,68 +547,116 @@ class _CityMapPageState extends State<CityMapPage>
     );
   }
 
-  // ── 所在城市：一行字 + 写足迹 ──
+  // ── 地名笺：城名刻成白文朱印 + 这座城的气质（楷）+ 写足迹 ──
 
   Widget _statsHeader(MapState map, ThemeState theme) {
     final myCity = map.myCity;
     final totalActive = MapState.allCityList
         .where((c) => map.cityCommentCount(c.code) > 0)
         .length;
+    final intro = myCity == null ? null : CityIntroData.get(myCity.code);
+    final mine = myCity == null ? 0 : map.cityCommentCount(myCity.code);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
       child: XqSurface(
-      padding: const EdgeInsets.fromLTRB(20, 16, 14, 16),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: theme.sunkenColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(child: XqIcon(XqIcons.locate, size: 20, color: theme.accentColor)),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  myCity != null ? '你在${myCity.name}' : '还不知道你在哪座城',
-                  style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  totalActive > 0
-                      ? '$totalActive 座城市有人在说话'
-                      : '各城都还安静，做第一个说话的人',
-                  style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+                if (myCity != null)
+                  XqSeal(
+                    char: myCity.name,
+                    color: theme.sealColor,
+                    size: 58,
+                    style: XqSealStyle.bai,
+                    angle: -0.04,
+                  )
+                else
+                  XqSeal(
+                    char: '城',
+                    color: theme.textTertiary,
+                    size: 58,
+                    angle: -0.04,
+                  ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        myCity != null ? '你在${myCity.name}' : '还不知道你在哪',
+                        style: XqTypography.headlineLarge.copyWith(
+                          color: theme.textPrimary,
+                          fontSize: 21,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        intro?.vibe ??
+                            (myCity == null
+                                ? '打开定位后，这里会显示你所在的城。'
+                                : myCity.province),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: XqTypography.content,
+                          fontFamilyFallback: XqTypography.contentFallback,
+                          color: theme.textSecondary,
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-          if (myCity != null)
-            FilledButton(
-              onPressed: () {
-                map.selectCityCode(myCity.code);
-                CityCommentSheet.show(context);
-              },
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(72, 40),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              child: const Text('写足迹'),
+            const SizedBox(height: 14),
+            Container(height: 0.6, color: theme.borderColor),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    [
+                      if (myCity != null) mine > 0 ? '这里有 $mine 条足迹' : '这里还没人写',
+                      '共 $totalActive 座城有人写过',
+                    ].join(' · '),
+                    style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+                  ),
+                ),
+                if (myCity != null)
+                  FilledButton(
+                    onPressed: () {
+                      map.selectCityCode(myCity.code);
+                      CityCommentSheet.show(context);
+                    },
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(84, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: const Text('写足迹'),
+                  ),
+              ],
             ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
 
   // ── 城市行：宋体城名 + 省份距离 + 一句气质；右侧足迹数与釉色点 ──
 
-  Widget _cityRow(CityData city, MapState map, ThemeState theme, {required bool last}) {
+  Widget _cityRow(
+    CityData city,
+    MapState map,
+    ThemeState theme, {
+    required bool last,
+  }) {
     final isMe = map.myCity != null && map.myCity!.code == city.code;
     final count = map.cityCommentCount(city.code);
     final mood = map.cityMood(city.code);
@@ -599,7 +681,7 @@ class _CityMapPageState extends State<CityMapPage>
     ].join(' · ');
     final line = hasActivity
         ? (intro?.vibe ?? _moodLine(mood, city.name, count))
-        : (intro?.vibe ?? '还在等第一个说话的人');
+        : (intro?.vibe ?? '还没人写');
 
     return Semantics(
       button: true,
@@ -620,7 +702,9 @@ class _CityMapPageState extends State<CityMapPage>
           decoration: BoxDecoration(
             border: last
                 ? null
-                : Border(bottom: BorderSide(color: theme.borderColor, width: 0.6)),
+                : Border(
+                    bottom: BorderSide(color: theme.borderColor, width: 0.6),
+                  ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -637,18 +721,18 @@ class _CityMapPageState extends State<CityMapPage>
                           city.name,
                           style: XqTypography.headlineLarge.copyWith(
                             color: theme.textPrimary,
-                            fontSize: 18,
+                            fontSize: 20,
+                            letterSpacing: 1,
                           ),
                         ),
                         if (isMe) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '所在',
-                            style: TextStyle(
-                              color: theme.accentColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          const SizedBox(width: 6),
+                          XqSeal(
+                            char: '在',
+                            color: theme.sealColor,
+                            size: 18,
+                            style: XqSealStyle.bai,
+                            angle: 0.05,
                           ),
                         ],
                         const SizedBox(width: 10),
@@ -671,8 +755,12 @@ class _CityMapPageState extends State<CityMapPage>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: hasActivity ? theme.textSecondary : theme.textTertiary,
-                        fontSize: 13.5,
+                        fontFamily: XqTypography.content,
+                        fontFamilyFallback: XqTypography.contentFallback,
+                        color: hasActivity
+                            ? theme.textSecondary
+                            : theme.textTertiary,
+                        fontSize: 15,
                       ),
                     ),
                   ],
@@ -684,13 +772,10 @@ class _CityMapPageState extends State<CityMapPage>
                 child: hasActivity
                     ? Row(
                         children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: _moodColor(mood),
-                              shape: BoxShape.circle,
-                            ),
+                          XqPigmentDab(
+                            color: _moodColor(mood),
+                            size: 13,
+                            seed: count,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -698,12 +783,18 @@ class _CityMapPageState extends State<CityMapPage>
                             style: TextStyle(
                               color: theme.textPrimary,
                               fontSize: 15,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
                           ),
                         ],
                       )
-                    : Icon(Icons.chevron_right, size: 18, color: theme.borderColor),
+                    : XqIcon(
+                        XqIcons.chevronRight,
+                        size: 16,
+                        color: theme.frameColor,
+                      ),
               ),
             ],
           ),
@@ -732,18 +823,13 @@ class _CityMapPageState extends State<CityMapPage>
 
   Widget _buildFooter(MapState map, ThemeState theme) {
     final total = MapState.allCityList.length;
-    final quotes = [
-      '$total 座城市 · 每座都有人在想事情',
-      '$total 座城市 · 此刻有人和你看同一片天',
-      '$total 座城市 · 总有一座懂你的心情',
-      '$total 座城市 · 今天你在哪里？',
-    ];
-    final quote = quotes[DateTime.now().day % quotes.length];
+    final quote = '共收 $total 座城';
 
     final quietCities = MapState.allCityList
         .where((c) => map.cityCommentCount(c.code) == 0)
         .toList();
-    final showEgg = quietCities.isNotEmpty &&
+    final showEgg =
+        quietCities.isNotEmpty &&
         DateTime.now().millisecondsSinceEpoch % 3 == 0;
     final eggCity = showEgg
         ? quietCities[DateTime.now().day % quietCities.length]
@@ -761,7 +847,7 @@ class _CityMapPageState extends State<CityMapPage>
             child: Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                '也许你想去${eggCity.name}看看',
+                '随手翻一座：${eggCity.name}',
                 style: TextStyle(color: theme.accentColor, fontSize: 13),
               ),
             ),
@@ -772,7 +858,7 @@ class _CityMapPageState extends State<CityMapPage>
           child: Text(
             quote,
             textAlign: TextAlign.center,
-            style: TextStyle(color: theme.textTertiary, fontSize: 11),
+            style: TextStyle(color: theme.textTertiary, fontSize: 12),
           ),
         ),
       ],
@@ -794,15 +880,17 @@ class _CityMapPageState extends State<CityMapPage>
     return Color(moodColors[score]!);
   }
 
+  /// 没有城市简介时的一句：只说数据里有的事
   String _moodLine(String? mood, String name, int count) {
-    if (count > 0 && mood == null) return '有人在$name留下了足迹';
-    return switch (mood) {
-      'warm' => '有人在这里被陌生人撑了伞',
-      'sad' => '凌晨的$name，有人在想家',
-      'anxious' => '这里的人说「干就完了」',
-      'calm' => '有人坐在街边发了一下午呆',
-      'excited' => '昨晚有人在这里庆祝到凌晨',
-      _ => '$name还在等第一个说话的人',
+    final label = switch (mood) {
+      'warm' => '温暖',
+      'sad' => '忧伤',
+      'anxious' => '焦虑',
+      'calm' => '平静',
+      'excited' => '兴奋',
+      _ => null,
     };
+    if (count == 0) return '还没人写';
+    return label == null ? '$count 条足迹' : '$count 条足迹，多是$label';
   }
 }

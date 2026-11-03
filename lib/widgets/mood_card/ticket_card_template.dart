@@ -187,7 +187,7 @@ class TicketCardTemplate {
                       ),
                     const Spacer(),
                     Text(
-                      '凭此票回忆今日',
+                      '当日有效',
                       style: TextStyle(
                         color: _ink.withAlpha(90),
                         fontSize: 7.5,

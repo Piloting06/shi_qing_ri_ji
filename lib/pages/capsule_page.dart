@@ -559,12 +559,7 @@ class _CapsulePageState extends State<CapsulePage> {
 
   Widget _createCard(ThemeState theme) {
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.borderColor),
-      ),
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -650,24 +645,18 @@ class _CapsulePageState extends State<CapsulePage> {
             ],
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.surfaceAlpha,
-              borderRadius: BorderRadius.circular(8),
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.notifications_active_outlined, color: theme.gold, size: 18),
-                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '到了那天，我们会用一张提醒卡把你带回来。点开卡片，就能直接进入这颗胶囊。',
+                    '到了那天，会有一条提醒把你带回来。',
                     style: TextStyle(
-                      color: theme.textPrimary,
-                      fontSize: 12,
-                      height: 1.45,
+                      color: theme.textTertiary,
+                      fontSize: 12.5,
+                      height: 1.5,
                     ),
                   ),
                 ),
@@ -803,31 +792,20 @@ class _CapsulePageState extends State<CapsulePage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
         onTap: () => _open(capsule),
+        // 胶囊 = 细线下一行：状态图标 · 开封日（宋）· 剩余天数
         child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
           decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-            border: Border.all(
-              color: canOpen
-                  ? theme.accentColor.withAlpha(140)
-                  : theme.borderColor,
+            border: Border(
+              bottom: BorderSide(color: theme.borderColor, width: 0.6),
             ),
           ),
           child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color:
-                      (opened || canOpen ? theme.accentColor : theme.textTertiary)
-                          .withAlpha(22),
-                  shape: BoxShape.circle,
-                ),
+              SizedBox(
+                width: 40,
+                height: 40,
                 child: Icon(
                   opened
                       ? Icons.mark_email_read_outlined

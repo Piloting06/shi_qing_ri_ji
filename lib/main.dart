@@ -8,6 +8,7 @@ import 'stores/app_state.dart';
 import 'stores/theme_state.dart';
 import 'stores/map_state.dart';
 import 'theme/xq_theme.dart';
+import 'theme/xq_colors.dart';
 import 'widgets/splash_screen.dart';
 import 'pages/login_page.dart';
 import 'widgets/main_scaffold.dart';
@@ -143,7 +144,7 @@ class _SplashGateState extends State<SplashGate> {
   Widget build(BuildContext context) {
     if (!_ready) {
       return const Scaffold(
-        backgroundColor: Color(0xFFFBF7F0),
+        backgroundColor: XqColors.sujianBackground,
         body: Center(child: SizedBox.shrink()),
       );
     }

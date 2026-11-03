@@ -542,14 +542,10 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
+  /// 页头：宋体页题 + 一行计数；「添加」为文字按钮，不用底卡
   Widget _header(ThemeState theme) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-        border: Border.all(color: theme.borderColor.withAlpha(80)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
       child: Row(
         children: [
           Expanded(
@@ -558,7 +554,7 @@ class _FriendsPageState extends State<FriendsPage> {
               children: [
                 Text(
                   '好友',
-                  style: XqTypography.headlineLarge.copyWith(
+                  style: XqTypography.displayMedium.copyWith(
                     color: theme.textPrimary,
                   ),
                 ),
@@ -575,18 +571,9 @@ class _FriendsPageState extends State<FriendsPage> {
             children: [
               SizedBox(
                 height: 44,
-                child: FilledButton.icon(
+                child: OutlinedButton(
                   onPressed: _openAddFriendSheet,
-                  icon: const Icon(Icons.person_add_alt_1, size: 17),
-                  label: const Text('添加'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: theme.accentColor,
-                    foregroundColor: theme.textOnAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                  child: const Text('添加好友'),
                 ),
               ),
               if (_requests.isNotEmpty) ...[
@@ -825,18 +812,17 @@ class _FriendsPageState extends State<FriendsPage> {
     final latestNoteIsMine = friend['latest_note_is_mine'] == true;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.zero,
       child: Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
         onTap: () => _openFriend(friend),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
           decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-            border: Border.all(color: theme.borderColor.withAlpha(80)),
+            border: Border(
+              bottom: BorderSide(color: theme.borderColor, width: 0.6),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

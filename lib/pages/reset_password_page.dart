@@ -179,6 +179,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     final theme = context.watch<ThemeState>();
     return Scaffold(
       backgroundColor: theme.backgroundColor,
+      // 天铺到返回栏下
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -192,16 +194,20 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ),
       ),
       body: SafeArea(
+        top: false,
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Stack(
             children: [
               XqAuthBackdrop(theme: theme),
-              Center(
+              Align(
+                alignment: Alignment.topCenter,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 24,
+                  padding: EdgeInsets.fromLTRB(
+                    22,
+                    MediaQuery.paddingOf(context).top + kToolbarHeight,
+                    22,
+                    24,
                   ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 420),
@@ -214,6 +220,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           title: '重置密码',
                           icon: Icons.lock_reset_outlined,
                         ),
+                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.3),
                         const SizedBox(height: 22),
                         XqAuthCard(
                           theme: theme,

@@ -282,47 +282,29 @@ class _TreeholePageState extends State<TreeholePage>
     );
   }
 
+  /// 今日轻主题：一句宋体引题，不用卡片
   Widget _themeCard(ThemeState theme) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.borderColor),
-      ),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            alignment: Alignment.center,
-            child: Icon(Icons.edit_note_outlined, color: theme.gold, size: 20),
+          Text(
+            '今日一问',
+            style: TextStyle(
+              color: theme.gold,
+              fontSize: 12,
+              letterSpacing: 2,
+            ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '今日轻主题',
-                  style: TextStyle(
-                    color: theme.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _dailyPrompt(),
-                  style: TextStyle(
-                    color: theme.textSecondary,
-                    fontSize: 13,
-                    height: 1.45,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 6),
+          Text(
+            _dailyPrompt(),
+            style: XqTypography.headlineSmall.copyWith(
+              color: theme.textPrimary,
+              fontWeight: FontWeight.w500,
+              fontSize: 17,
+              height: 1.6,
             ),
           ),
         ],

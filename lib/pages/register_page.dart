@@ -298,17 +298,19 @@ class _RegisterPageState extends State<RegisterPage> {
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 24,
+                padding: EdgeInsets.fromLTRB(
+                  22,
+                  XqAuthBackdrop.skyHeight(context) * 0.1,
+                  22,
+                  24,
                 ),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 440),
                     child: Column(
                       children: [
-                        XqAuthHero(theme: theme, title: '欢迎来到拾晴日记', size: 58),
-                        const SizedBox(height: 20),
+                        XqAuthHero(theme: theme, title: '拾晴日记', size: 58),
+                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.5),
                         XqAuthCard(
                           theme: theme,
                           child: Column(

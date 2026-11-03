@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_info.dart';
 import '../theme/xq_typography.dart';
+import '../widgets/xq/xq_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -154,27 +155,8 @@ class AboutPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          // App 图标
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.accentColor.withAlpha(200),
-                  theme.accentColor.withAlpha(140),
-                ],
-              ),
-            ),
-            child: const Icon(
-              Icons.water_drop_rounded,
-              color: Colors.white,
-              size: 36,
-            ),
-          ),
+          // 品牌印：与登录页同一方朱砂「拾」
+          XqSeal(char: '拾', color: theme.sealColor, size: 64),
           const SizedBox(height: 14),
           Text(
             '拾晴日记',
@@ -266,14 +248,10 @@ class AboutPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
-              Container(
+              SizedBox(
                 width: 38,
                 height: 38,
-                decoration: BoxDecoration(
-                  color: theme.accentColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: theme.accentColor, size: 18),
+                child: Icon(icon, color: theme.textSecondary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(

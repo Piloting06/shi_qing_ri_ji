@@ -187,17 +187,23 @@ class _LoginPageState extends State<LoginPage> {
     final theme = context.watch<ThemeState>();
     return Scaffold(
       backgroundColor: theme.backgroundColor,
+      // 天铺到状态栏下：SafeArea 不让顶，内容自己让出状态栏
       body: SafeArea(
+        top: false,
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Stack(
             children: [
               XqAuthBackdrop(theme: theme),
-              Center(
+              Align(
+                alignment: Alignment.topCenter,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 24,
+                  padding: EdgeInsets.fromLTRB(
+                    22,
+                    MediaQuery.paddingOf(context).top +
+                        XqAuthBackdrop.skyHeight(context) * 0.16,
+                    22,
+                    24,
                   ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 420),
@@ -205,7 +211,8 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         XqAuthHero(theme: theme, title: '拾晴日记'),
-                        const SizedBox(height: 22),
+                        // 表单让到远山之下
+                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.5),
                         XqAuthCard(
                           theme: theme,
                           child: Column(

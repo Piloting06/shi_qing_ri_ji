@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色系统下的原生启动底色 = 夜墨 -->
+    <color name="launch_background">#161513</color>
+</resources>

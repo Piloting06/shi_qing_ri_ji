@@ -422,6 +422,7 @@ class _TreeholePageState extends State<TreeholePage>
             message['content']?.toString() ?? '',
             style: TextStyle(
               fontFamily: XqTypography.content,
+              fontFamilyFallback: XqTypography.contentFallback,
               color: theme.textPrimary,
               fontSize: 16,
               height: 1.75,

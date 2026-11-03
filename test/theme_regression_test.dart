@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xin_qing_ri_ji/theme/xq_colors.dart';
 import 'package:xin_qing_ri_ji/theme/xq_theme.dart';
 
 /// 回归：6 套主题（素笺/夜墨/暖笺/黛笺/青笺/藕笺）管线全覆盖。
@@ -25,8 +26,8 @@ void main() {
 
   test('全部 6 套主题都能产出 ThemeData 且背景色正确', () {
     final expectedBg = {
-      'sujian': const Color(0xFFEFEFE9), // 瓦白
-      'sujian_dark': const Color(0xFF141719), // 黛夜
+      'sujian': XqColors.sujianBackground, // 宣纸
+      'sujian_dark': XqColors.sujianDarkBackground, // 夜墨
       'warm': const Color(0xFFFAF4EC),
       'dark': const Color(0xFF0E1222),
       'mint': const Color(0xFFDDEBE3),
@@ -39,21 +40,48 @@ void main() {
     }
   });
 
-  test('素笺烟雨：正文与辅助文字对比度达标', () {
-    const paper = Color(0xFFEFEFE9);
-    expect(contrast(const Color(0xFF262B2E), paper), greaterThanOrEqualTo(4.5),
-        reason: '正文墨色对比度不足');
-    expect(contrast(const Color(0xFF55524A), paper), greaterThanOrEqualTo(4.5),
-        reason: '次要文字对比度不足');
-    expect(contrast(const Color(0xFF5D656B), paper), greaterThanOrEqualTo(3.0),
-        reason: '辅助文字对比度不足 3:1');
+  // 文字色在 paper / surface / sunken 三种底上都要达标
+  void checkContrast(String name, List<Color> grounds, Map<String, (Color, double)> inks) {
+    for (final g in grounds) {
+      inks.forEach((label, spec) {
+        final (c, min) = spec;
+        expect(contrast(c, g), greaterThanOrEqualTo(min),
+            reason: '$name：$label 在 $g 上对比度不足 $min');
+      });
+    }
+  }
+
+  test('素笺宣纸：文字与控件对比度达标', () {
+    checkContrast('素笺', [
+      XqColors.sujianBackground,
+      XqColors.sujianCard,
+      XqColors.sujianSunken,
+    ], {
+      '正文': (XqColors.sujianTextPrimary, 4.5),
+      '次要': (XqColors.sujianTextSecondary, 4.5),
+      '辅助': (XqColors.sujianTextTertiary, 4.5),
+      '交互色': (XqColors.sujianAccent, 4.5),
+      '赭': (XqColors.sujianGold, 4.5),
+      '朱砂': (XqColors.sujianSeal, 4.5),
+    });
+    expect(contrast(XqColors.sujianControlBorder, XqColors.sujianBackground),
+        greaterThanOrEqualTo(3.0));
   });
 
-  test('素笺夜雨：正文对比度达标', () {
-    const paper = Color(0xFF141719);
-    expect(contrast(const Color(0xFFE2E6E1), paper), greaterThanOrEqualTo(4.5),
-        reason: '夜雨正文对比度不足');
-    expect(contrast(const Color(0xFF8AACAE), paper), greaterThanOrEqualTo(3.0),
-        reason: '夜雨交互色对比度不足 3:1');
+  test('素笺夜墨：文字与控件对比度达标', () {
+    checkContrast('夜墨', [
+      XqColors.sujianDarkBackground,
+      XqColors.sujianDarkCard,
+      XqColors.sujianDarkSunken,
+    ], {
+      '正文': (XqColors.sujianDarkTextPrimary, 4.5),
+      '次要': (XqColors.sujianDarkTextSecondary, 4.5),
+      '辅助': (XqColors.sujianDarkTextTertiary, 4.5),
+      '交互色': (XqColors.sujianDarkAccent, 4.5),
+      '赭': (XqColors.sujianDarkGold, 4.5),
+      '朱砂': (XqColors.sujianDarkSeal, 4.5),
+    });
+    expect(contrast(XqColors.sujianDarkControlBorder, XqColors.sujianDarkBackground),
+        greaterThanOrEqualTo(3.0));
   });
 }

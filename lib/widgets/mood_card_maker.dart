@@ -861,7 +861,10 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                     key: i == _templateIndex ? _repaintKey : GlobalKey(),
                     // 卡片属内容层：整张卡默认楷体，与界面黑体分开
                     child: DefaultTextStyle.merge(
-                      style: const TextStyle(fontFamily: XqTypography.content),
+                      style: const TextStyle(
+                        fontFamily: XqTypography.content,
+                        fontFamilyFallback: XqTypography.contentFallback,
+                      ),
                       child: moodCardTemplates[i].buildCard(_cardDataFor(cardHeight)),
                     ),
                   );

@@ -803,6 +803,7 @@ class _MoodPageState extends State<MoodPage> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontFamily: XqTypography.content,
+                            fontFamilyFallback: XqTypography.contentFallback,
                             color: t.textSecondary,
                             fontSize: 15,
                             height: 1.6,

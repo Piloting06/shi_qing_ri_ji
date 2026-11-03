@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../api/api_client.dart';
 import '../services/notification_service.dart';
 import '../stores/theme_state.dart';
+import '../theme/xq_colors.dart';
 import '../stores/app_state.dart';
 import '../widgets/xq/xq_icons.dart';
 import '../widgets/xq_toast.dart';
@@ -191,13 +192,13 @@ class _MainScaffoldState extends State<MainScaffold> {
 
 /// 系统导航栏颜色 — 匹配页面背景（胶囊半透明，底部统一）
 Color _navBarColor(String theme) => switch (theme) {
-  'sujian' => const Color(0xFFF7F7F2), // 素笺通栏 surface
-  'sujian_dark' => const Color(0xFF1B1F21),
+  'sujian' => XqColors.sujianCard, // 素笺通栏 surface
+  'sujian_dark' => XqColors.sujianDarkCard,
   'warm' => const Color(0xFFFAF4EC),
   'dark' => const Color(0xFF0E1222),
   'mint' => const Color(0xFFDDEBE3),
   'blush' => const Color(0xFFF2DED8),
-  _ => const Color(0xFFF7F7F2),
+  _ => XqColors.sujianCard,
 };
 
 /// 素笺贴底通栏导航：surface 底、顶部 1px 线、选中项 accent + 2px 顶线。

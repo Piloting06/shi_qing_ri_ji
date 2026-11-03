@@ -190,60 +190,70 @@ class XqTheme {
 
   static Color _bg(String m) => switch (m) {
     'sujian' => XqColors.sujianBackground,
+    'warm' => XqColors.lightBackground,
     'mint' => XqColors.mintBackground,
     'blush' => XqColors.blushBackground,
     _ => XqColors.sujianBackground,
   };
   static Color _card(String m) => switch (m) {
     'sujian' => XqColors.sujianCard,
+    'warm' => XqColors.lightCard,
     'mint' => XqColors.mintCard,
     'blush' => XqColors.blushCard,
     _ => XqColors.sujianCard,
   };
   static Color _accent(String m) => switch (m) {
     'sujian' => XqColors.sujianAccent,
+    'warm' => XqColors.lightAccent,
     'mint' => XqColors.mintAccent,
     'blush' => XqColors.blushAccent,
     _ => XqColors.sujianAccent,
   };
   static Color _accentLight(String m) => switch (m) {
     'sujian' => XqColors.sujianAccentLight,
+    'warm' => XqColors.lightAccentLight,
     'mint' => XqColors.mintAccentLight,
     'blush' => XqColors.blushAccentLight,
     _ => XqColors.sujianAccentLight,
   };
   static Color _controlBorder(String m) => switch (m) {
     'sujian' => XqColors.sujianControlBorder,
+    'warm' => XqColors.lightTextTertiary,
     'mint' => XqColors.mintTextTertiary,
     'blush' => XqColors.blushTextTertiary,
     _ => XqColors.lightTextTertiary,
   };
   static Color _border(String m) => switch (m) {
     'sujian' => XqColors.sujianBorder,
+    'warm' => XqColors.lightBorder,
     'mint' => XqColors.mintBorder,
     'blush' => XqColors.blushBorder,
     _ => XqColors.sujianBorder,
   };
   static Color _focus(String m) => switch (m) {
     'sujian' => XqColors.sujianBorderFocus,
+    'warm' => XqColors.lightBorderFocus,
     'mint' => XqColors.mintBorderFocus,
     'blush' => XqColors.blushBorderFocus,
     _ => XqColors.sujianBorderFocus,
   };
   static Color _textPrimary(String m) => switch (m) {
     'sujian' => XqColors.sujianTextPrimary,
+    'warm' => XqColors.lightTextPrimary,
     'mint' => XqColors.mintTextPrimary,
     'blush' => XqColors.blushTextPrimary,
     _ => XqColors.sujianTextPrimary,
   };
   static Color _textSecondary(String m) => switch (m) {
     'sujian' => XqColors.sujianTextSecondary,
+    'warm' => XqColors.lightTextSecondary,
     'mint' => XqColors.mintTextSecondary,
     'blush' => XqColors.blushTextSecondary,
     _ => XqColors.sujianTextSecondary,
   };
   static Color _textTertiary(String m) => switch (m) {
     'sujian' => XqColors.sujianTextTertiary,
+    'warm' => XqColors.lightTextTertiary,
     'mint' => XqColors.mintTextTertiary,
     'blush' => XqColors.blushTextTertiary,
     _ => XqColors.sujianTextTertiary,

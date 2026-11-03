@@ -5,13 +5,49 @@ import 'xq_colors.dart';
 class XqDecorations {
   XqDecorations._();
 
-  // ── 圆角（微信风格：克制、精确）──
-  static const radiusSmall = 4.0;
-  static const radiusMedium = 8.0;
-  static const radiusCard = 8.0;
-  static const radiusLarge = 8.0;
-  static const radiusHero = 8.0;
-  static const radiusSheet = 8.0;
+  // ── 圆角：三层表面各有其形（L0 页面 / L1 卡片 16 / L2 面板 24），控件 12、标签 8 ──
+  static const radiusSmall = 8.0;
+  static const radiusMedium = 12.0;
+  static const radiusCard = 16.0;
+  static const radiusLarge = 16.0;
+  static const radiusHero = 20.0;
+  static const radiusSheet = 24.0;
+
+  // ── 抬升：暖墨色双层柔影（大而淡的环境影 + 小而实的接触影）──
+  static const _warmInk = Color(0xFF3B2F22);
+
+  /// L1 卡片
+  static List<BoxShadow> lift({bool dark = false}) => [
+    BoxShadow(
+      color: (dark ? Colors.black : _warmInk).withAlpha(dark ? 70 : 18),
+      blurRadius: 28,
+      spreadRadius: -6,
+      offset: const Offset(0, 10),
+    ),
+    BoxShadow(
+      color: (dark ? Colors.black : _warmInk).withAlpha(dark ? 50 : 10),
+      blurRadius: 3,
+      offset: const Offset(0, 1),
+    ),
+  ];
+
+  /// L2 面板（自下而上覆盖天色的那张纸）
+  static List<BoxShadow> sheetLift({bool dark = false}) => [
+    BoxShadow(
+      color: (dark ? Colors.black : _warmInk).withAlpha(dark ? 110 : 34),
+      blurRadius: 36,
+      offset: const Offset(0, -8),
+    ),
+  ];
+
+  /// L1 卡片装饰（深色下补一道极细的亮边，阴影在暗底上看不见）
+  static BoxDecoration surface(Color card, {bool dark = false, Color? edge, double radius = radiusCard}) =>
+      BoxDecoration(
+        color: card,
+        borderRadius: BorderRadius.circular(radius),
+        border: dark ? Border.all(color: edge ?? const Color(0xFF2E2B27), width: 0.6) : null,
+        boxShadow: lift(dark: dark),
+      );
 
   // ── 阴影 ──
   static List<BoxShadow> shadowSubtle({bool dark = false}) => [
@@ -55,19 +91,14 @@ class XqDecorations {
   //  卡片模式
   // ═══════════════════════════════════════
 
-  // 素笺规范：界面卡片只靠 surface 底 + 细线分层，不加阴影、渐变与光晕。
-  // 下列助手保留原签名（多处调用），一律产出扁平样式；阴影只留给浮层与卡片模板（内容层）。
+  // 三个历史卡片助手保留签名，统一产出 L1 卡片（圆角 16 + 暖色柔影）
 
   /// 高级卡片（天气轮播等）
   static BoxDecoration elevatedCard(
     Color cardElevated,
     Color accent, {
     bool dark = false,
-  }) => BoxDecoration(
-    color: cardElevated,
-    borderRadius: BorderRadius.circular(radiusLarge),
-    border: borderThin(accent.withAlpha(70)),
-  );
+  }) => surface(cardElevated, dark: dark);
 
   /// Hero 卡片（天气、语录、档案）
   static BoxDecoration heroCard(
@@ -76,11 +107,7 @@ class XqDecorations {
     Color border, {
     bool dark = false,
     Color? glow,
-  }) => BoxDecoration(
-    color: start,
-    borderRadius: BorderRadius.circular(radiusHero),
-    border: borderThin(border),
-  );
+  }) => surface(start, dark: dark, edge: border, radius: radiusHero);
 
   /// 操作卡片（快捷入口、反馈）
   static BoxDecoration actionCard(
@@ -88,11 +115,7 @@ class XqDecorations {
     Color border, {
     bool dark = false,
     Color? accent,
-  }) => BoxDecoration(
-    color: card,
-    borderRadius: BorderRadius.circular(radiusLarge),
-    border: borderThin(border),
-  );
+  }) => surface(card, dark: dark, edge: border);
 
   /// Sheet 表面（底部弹层）
   static BoxDecoration sheetSurface(

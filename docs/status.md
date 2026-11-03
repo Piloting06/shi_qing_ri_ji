@@ -6,10 +6,10 @@
 
 | 项 | 值 |
 |---|---|
-| 当前版本 | **v2.18.0+40（P7 天色主视觉 + 全季式暖色重做，待真机验收）** |
-| 最新 APK | 项目根目录最新的 `拾晴日记_v2.18.0_p7_*.apk` |
+| 当前版本 | **v2.19.0+41（P8 层级与动态天色，待真机验收）** |
+| 最新 APK | 项目根目录最新的 `拾晴日记_v2.19.0_p8_*.apk` |
 | 仓库 | `github.com/Piloting06/shi_qing_ri_ji`（2026-11-02 由 xin_qing_ri_ji 改名） |
-| 分支 | `master`（v2.15.1 基线）← `feat/jiangnan-visual`（v2.16.0，PR#1）← `fix/p0-visual`（PR#2）← `feat/p1-typography`（PR#3）← `feat/p2-components`（PR#4）← `feat/p3-sample`（PR#5，含 P4/P5）← `feat/p6-refine`（PR#6，P6 精修 + P7 天色）——**堆叠 PR，按序合并** |
+| 分支 | `master`（v2.15.1 基线）← `feat/jiangnan-visual`（v2.16.0，PR#1）← `fix/p0-visual`（PR#2）← `feat/p1-typography`（PR#3）← `feat/p2-components`（PR#4）← `feat/p3-sample`（PR#5，含 P4/P5）← `feat/p6-refine`（PR#6，P6 精修 + P7 天色 + P8 层级）——**堆叠 PR，按序合并** |
 
 ## 已上线（生产验证）
 
@@ -46,6 +46,15 @@
 - 好友 / 树洞 / 胶囊 / 关于：去卡片与图标底块，改细线行与宋体页题；关于页品牌印「拾」
 - 霞鹜文楷缺「」『』“”：内容层统一回退宋体子集
 - `lib/widgets/jiangnan_scene.dart` 已无页面使用（仅黄金基准测试引用），待决定是否移除
+
+## P8 层级与动态天色（本分支已实现，离屏截图自检，待真机验证）
+
+- 起因（用户反馈）：像网站不像 App；首页上下硬切；缺视觉震撼；组件看不出层级
+- 三层表面：L0 页面底压暗、L1 卡片（`XqSurface` 圆角 16 + 暖色柔影）、L2 面板（圆角 24–28 + 向上柔影）；新组件 `lib/widgets/xq/xq_surface.dart`（XqSurface / XqSectionTitle / XqGroup / XqRow）
+- 首页：天色改为固定背景，纸面面板自下而上覆盖（不再上下拼接）；滚动视差；竖排题款 + 节气印；温度大字 68；今天卡、主按钮、三个快捷入口、那年今日卡
+- 天色会动（`WeatherSkyScene`）：云漂、雨落、雪飘；只重绘雨雪层；离屏 Tab 用 TickerMode 暂停；减弱动效时静止
+- 底栏浮起 + 选中底块；按钮/输入/弹层圆角与高度统一（12–16 / 52）
+- 心情 / 城迹 / 我的 / 天气详情 / 好友 / 树洞 / 胶囊 / 登录注册：按层级重排（分组卡片、卡片列表、表单卡浮在远山前）
 
 ## 待办
 

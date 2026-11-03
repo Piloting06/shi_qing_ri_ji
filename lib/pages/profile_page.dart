@@ -21,6 +21,7 @@ import '../services/notification_service.dart';
 import '../widgets/xq_toast.dart';
 import '../widgets/glow_switch.dart';
 import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_surface.dart';
 import 'capsule_page.dart';
 import 'friends_page.dart';
 import 'legal_page.dart';
@@ -92,32 +93,27 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
           children: [
             _profileHeader(theme, appState),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
 
             _sectionTitle('记录', theme),
-            const SizedBox(height: 6),
             _card(theme, child: _recordsGroup(theme)),
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
 
             _sectionTitle('个人资料', theme),
-            const SizedBox(height: 6),
             _profileSettingsGroup(theme, appState),
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
 
             _sectionTitle('外观与偏好', theme),
-            const SizedBox(height: 6),
             _appearanceGroup(theme),
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
 
             _sectionTitle('账号与安全', theme),
-            const SizedBox(height: 6),
             _securityGroup(theme),
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
 
             _sectionTitle('关于与帮助', theme),
-            const SizedBox(height: 6),
             _aboutGroup(theme),
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
 
             // 退出登录（低调 footer 样式）
             Center(

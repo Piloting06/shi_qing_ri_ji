@@ -310,7 +310,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       children: [
                         XqAuthHero(theme: theme, title: '拾晴日记', size: 58),
-                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.5),
+                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.3),
                         XqAuthCard(
                           theme: theme,
                           child: Column(

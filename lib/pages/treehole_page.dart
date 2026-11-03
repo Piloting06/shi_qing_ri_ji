@@ -285,7 +285,7 @@ class _TreeholePageState extends State<TreeholePage>
   /// 今日轻主题：一句宋体引题，不用卡片
   Widget _themeCard(ThemeState theme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+      padding: const EdgeInsets.fromLTRB(22, 4, 22, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -365,16 +365,13 @@ class _TreeholePageState extends State<TreeholePage>
     final isOwn = message['is_own'] == true;
     final stamp = _displayTime(message['created_at']?.toString());
 
-    // 一张纸条 = 细线下的一段楷体字（内容层），不用底色卡片
+    // 一张纸条 = 一张卡（L1）里的一段楷体字（内容层）
     return GestureDetector(
       onLongPress: isOwn ? () => _deleteTreehole(id ?? 0) : null,
       child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: theme.borderColor, width: 0.6),
-        ),
-      ),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+      decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

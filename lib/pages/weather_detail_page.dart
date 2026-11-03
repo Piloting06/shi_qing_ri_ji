@@ -7,6 +7,8 @@ import '../utils/weather_utils.dart';
 import '../widgets/stagger_in.dart';
 import '../widgets/weather_feedback_bar.dart';
 import '../widgets/weather_sky.dart';
+import '../widgets/xq/xq_surface.dart';
+import '../theme/xq_decorations.dart';
 
 enum WeatherDetailAction { relocate, chooseCity }
 
@@ -52,7 +54,7 @@ class WeatherDetailPage extends StatelessWidget {
     final time = skyTimeFor(now, sunrise: sunrise, sunset: sunset);
     final palette = SkyPalette.of(condition, time);
     final city = cityName.isEmpty ? '当前位置' : cityName.split('，').first;
-    final skyH = (media.size.height * 0.42).clamp(320.0, 420.0).toDouble();
+    final skyH = (media.size.height * 0.4).clamp(300.0, 400.0).toDouble();
 
     final days = [
       ('今天', today),
@@ -106,162 +108,166 @@ class WeatherDetailPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.backgroundColor,
-      body: ListView(
-        padding: EdgeInsets.zero,
+      body: Stack(
         children: [
-          AnnotatedRegion<SystemUiOverlayStyle>(
-            value: palette.darkText ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
-            child: SizedBox(
-              height: skyH,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  RepaintBoundary(
-                    child: CustomPaint(
-                      painter: WeatherSkyPainter(
-                        palette: palette,
-                        condition: condition,
-                        paper: theme.backgroundColor,
-                        seed: now.month * 31 + now.day,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: skyH + 80,
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: palette.darkText ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+              child: WeatherSkyScene(
+                palette: palette,
+                condition: condition,
+                paper: theme.backgroundColor,
+                seed: now.month * 31 + now.day,
+                orbAt: const Offset(0.78, 0.2),
+              ),
+            ),
+          ),
+          ListView(
+            padding: EdgeInsets.zero,
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            children: [
+              SizedBox(
+                height: skyH,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(12, media.padding.top + 4, 24, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        tooltip: '返回',
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.arrow_back, color: palette.onSky, size: 22),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, top: 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$city · ${weatherUpdatedText(updatedAt)}',
+                              style: TextStyle(color: palette.onSkySoft, fontSize: 13, letterSpacing: 1),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              currentTemp == null ? weatherText : chineseTemperature(currentTemp),
+                              style: XqTypography.displayLarge.copyWith(
+                                color: palette.onSky,
+                                fontSize: 52,
+                                height: 1.12,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              [
+                                weatherText,
+                                if (high != null && low != null) '最低 $low° · 最高 $high°',
+                              ].join('　'),
+                              style: XqTypography.headlineSmall.copyWith(
+                                color: palette.onSkySoft,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.backgroundColor,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  boxShadow: XqDecorations.sheetLift(dark: theme.isDark),
+                ),
+                constraints: BoxConstraints(minHeight: media.size.height - skyH),
+                padding: const EdgeInsets.fromLTRB(18, 26, 18, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    StaggerIn(
+                      index: 0,
+                      child: _section(theme, '接下来', [
+                        for (final (label, d) in days) _dayRow(theme, label, d),
+                      ]),
+                    ),
+                    const SizedBox(height: 28),
+                    if (facts.isNotEmpty)
+                      StaggerIn(
+                        index: 1,
+                        child: _section(theme, '此刻', [
+                          for (final f in facts) _factRow(theme, f.$1, f.$2, f.$3),
+                        ]),
+                      ),
+                    const SizedBox(height: 28),
+                    StaggerIn(
+                      index: 2,
+                      child: WeatherFeedbackBar(
+                        weatherText: weatherText,
+                        currentTemp: currentTemp,
+                        high: high,
+                        low: low,
+                        cityName: cityName,
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(12, media.padding.top + 4, 24, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 20),
+                    Row(
                       children: [
-                        IconButton(
-                          tooltip: '返回',
-                          onPressed: () => Navigator.pop(context),
-                          icon: Icon(Icons.arrow_back, color: palette.onSky, size: 22),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, WeatherDetailAction.relocate),
+                            child: const Text('重新定位'),
+                          ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16, top: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '$city · ${weatherUpdatedText(updatedAt)}',
-                                style: TextStyle(
-                                  color: palette.onSkySoft,
-                                  fontSize: 13,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                currentTemp == null ? weatherText : chineseTemperature(currentTemp),
-                                style: XqTypography.displayLarge.copyWith(
-                                  color: palette.onSky,
-                                  fontSize: 46,
-                                  height: 1.15,
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                [
-                                  weatherText,
-                                  if (high != null && low != null) '最低 $low° · 最高 $high°',
-                                ].join('　'),
-                                style: XqTypography.headlineSmall.copyWith(
-                                  color: palette.onSkySoft,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, WeatherDetailAction.chooseCity),
+                            child: const Text('换个城市'),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 8, 28, 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                StaggerIn(
-                  index: 0,
-                  child: _section(
-                    theme,
-                    '接下来',
-                    [
-                      for (final (label, d) in days) _dayRow(theme, label, d),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-                if (facts.isNotEmpty)
-                  StaggerIn(
-                    index: 1,
-                    child: _section(
-                      theme,
-                      '此刻',
-                      [for (final f in facts) _factRow(theme, f.$1, f.$2, f.$3)],
-                    ),
-                  ),
-                const SizedBox(height: 40),
-                StaggerIn(
-                  index: 2,
-                  child: WeatherFeedbackBar(
-                    weatherText: weatherText,
-                    currentTemp: currentTemp,
-                    high: high,
-                    low: low,
-                    cityName: cityName,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, WeatherDetailAction.relocate),
-                      child: const Text('重新定位'),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, WeatherDetailAction.chooseCity),
-                      child: const Text('换个城市'),
-                    ),
-                    const Spacer(),
-                    Text(
-                      locationStatus,
-                      style: TextStyle(color: theme.textTertiary, fontSize: 12),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Text(
+                        locationStatus,
+                        style: TextStyle(color: theme.textTertiary, fontSize: 12),
+                      ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  /// 标题在外、行装在一张卡里
   Widget _section(ThemeState theme, String title, List<Widget> rows) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(title, style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary)),
-        const SizedBox(height: 8),
-        for (var i = 0; i < rows.length; i++)
-          Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: theme.borderColor, width: 0.6),
-                bottom: i == rows.length - 1
-                    ? BorderSide(color: theme.borderColor, width: 0.6)
-                    : BorderSide.none,
-              ),
-            ),
-            child: rows[i],
+        XqSectionTitle(title),
+        XqSurface(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+          child: Column(
+            children: [
+              for (var i = 0; i < rows.length; i++) ...[
+                rows[i],
+                if (i < rows.length - 1) Container(height: 0.6, color: theme.borderColor),
+              ],
+            ],
           ),
+        ),
       ],
     );
   }

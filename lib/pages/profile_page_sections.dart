@@ -7,8 +7,8 @@ extension _ProfilePageSections on _ProfilePageState {
     final accountText = _phone.isEmpty ? '已登录' : _phone;
     final initial = name.characters.first;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+    return XqSurface(
+      padding: const EdgeInsets.fromLTRB(22, 22, 20, 22),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -99,7 +99,7 @@ extension _ProfilePageSections on _ProfilePageState {
               : (_checkingIn ? '正在记录' : '轻点签到'),
           onTap: (_checkedIn || _checkingIn) ? null : _doCheckin,
         ),
-        Divider(height: 1, color: theme.borderColor),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
           icon: Icons.style_outlined,
@@ -113,7 +113,7 @@ extension _ProfilePageSections on _ProfilePageState {
             );
           },
         ),
-        Divider(height: 1, color: theme.borderColor),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
           icon: Icons.spa_outlined,
@@ -127,7 +127,7 @@ extension _ProfilePageSections on _ProfilePageState {
             );
           },
         ),
-        Divider(height: 1, color: theme.borderColor),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
           icon: Icons.hourglass_empty_rounded,
@@ -139,7 +139,7 @@ extension _ProfilePageSections on _ProfilePageState {
             MaterialPageRoute(builder: (_) => const CapsulePage()),
           ),
         ),
-        Divider(height: 1, color: theme.borderColor),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
           icon: Icons.people_outline_rounded,
@@ -168,14 +168,18 @@ extension _ProfilePageSections on _ProfilePageState {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
           child: Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 34,
+                height: 34,
                 alignment: Alignment.center,
-                child: Icon(icon, color: theme.textSecondary, size: 21),
+                decoration: BoxDecoration(
+                  color: theme.sunkenColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: theme.textSecondary, size: 19),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -247,6 +251,7 @@ extension _ProfilePageSections on _ProfilePageState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 10),
           _themeSelectorGrid(theme),
           const SizedBox(height: 10),
           Row(
@@ -526,50 +531,18 @@ extension _ProfilePageSections on _ProfilePageState {
 
   // ── Reusable components ──
 
-  Widget _sectionTitle(String text, ThemeState theme, {String? subtitle}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            text,
-            style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: theme.textTertiary, fontSize: 12),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+  Widget _sectionTitle(String text, ThemeState theme, {String? subtitle}) =>
+      XqSectionTitle(text, caption: subtitle);
 
-  /// 分组：上下细线夹一段，不用卡片底
-  Widget _card(ThemeState theme, {required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        border: Border.symmetric(
-          horizontal: BorderSide(color: theme.borderColor, width: 0.8),
-        ),
-      ),
-      child: child,
-    );
-  }
+  /// 分组卡片（L1）
+  Widget _card(ThemeState theme, {required Widget child}) => XqSurface(
+        padding: const EdgeInsets.fromLTRB(16, 6, 14, 6),
+        child: child,
+      );
 
   Widget _divider(ThemeState theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.only(left: 50),
       child: Divider(color: theme.borderColor, height: 1),
     );
   }
@@ -592,10 +565,14 @@ extension _ProfilePageSections on _ProfilePageState {
           child: Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 34,
+                height: 34,
                 alignment: Alignment.center,
-                child: Icon(icon, color: theme.textSecondary, size: 21),
+                decoration: BoxDecoration(
+                  color: theme.sunkenColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: theme.textSecondary, size: 19),
               ),
               const SizedBox(width: 12),
               Expanded(

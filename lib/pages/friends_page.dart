@@ -818,12 +818,9 @@ class _FriendsPageState extends State<FriendsPage> {
       child: InkWell(
         onTap: () => _openFriend(friend),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: theme.borderColor, width: 0.6),
-            ),
-          ),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+          decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

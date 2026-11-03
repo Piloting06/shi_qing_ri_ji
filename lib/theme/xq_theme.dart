@@ -125,8 +125,7 @@ class XqTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: border, width: 0.5),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
       listTileTheme: ListTileThemeData(
@@ -140,9 +139,9 @@ class XqTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         modalElevation: 0,
-        showDragHandle: false,
+        showDragHandle: false, // 各弹层自带拖拽条，主题不重复加
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       popupMenuTheme: PopupMenuThemeData(
@@ -150,7 +149,7 @@ class XqTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: border, width: 0.5),
         ),
         textStyle: XqTypography.bodyLarge.copyWith(color: text1),
@@ -161,17 +160,17 @@ class XqTheme {
           foregroundColor: onAccent,
           disabledBackgroundColor: border,
           disabledForegroundColor: text3,
-          minimumSize: const Size(64, 48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          minimumSize: const Size(64, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: XqTypography.button,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: accent,
-          minimumSize: const Size(64, 48),
+          minimumSize: const Size(64, 52),
           side: BorderSide(color: control, width: 0.8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: XqTypography.button,
         ),
       ),
@@ -179,7 +178,7 @@ class XqTheme {
         style: TextButton.styleFrom(
           foregroundColor: accent,
           minimumSize: const Size(44, 44),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: XqTypography.labelLarge,
         ),
       ),
@@ -199,15 +198,15 @@ class XqTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: control),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: BorderSide(color: control, width: 0.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: control.withAlpha(150), width: 0.8),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: focus, width: 1.2),
         ),
         contentPadding:
@@ -223,9 +222,9 @@ class XqTheme {
           disabledBackgroundColor: border,
           disabledForegroundColor: text3,
           elevation: 0,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: XqTypography.button,
         ),
@@ -247,13 +246,13 @@ class XqTheme {
       snackBarTheme: SnackBarThemeData(
         backgroundColor: card,
         contentTextStyle: XqTypography.bodyMedium.copyWith(color: text1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: card,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle:
             XqTypography.headlineMedium.copyWith(color: text1),
         contentTextStyle: XqTypography.bodyMedium.copyWith(color: text2),

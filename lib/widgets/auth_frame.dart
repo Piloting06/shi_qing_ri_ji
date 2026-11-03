@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_typography.dart';
 import 'weather_sky.dart';
+import '../theme/xq_decorations.dart';
 
 /// 登录/注册共用组件（素笺规范）：
 /// 无外层大卡片、无金色图标；品牌 = 朱砂小印 + 宋体名；
@@ -105,7 +106,7 @@ class XqAuthHero extends StatelessWidget {
   }
 }
 
-/// 表单容器：素笺无外层卡片，仅保留布局分组语义。
+/// 表单卡：浮在远山前的一张纸（L1，圆角 24），与首页面板同一层级语言。
 class XqAuthCard extends StatelessWidget {
   final ThemeState theme;
   final Widget child;
@@ -114,7 +115,16 @@ class XqAuthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return child;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+      decoration: XqDecorations.surface(
+        theme.cardColor,
+        dark: theme.isDark,
+        edge: theme.borderColor,
+        radius: XqDecorations.radiusSheet,
+      ),
+      child: child,
+    );
   }
 }
 

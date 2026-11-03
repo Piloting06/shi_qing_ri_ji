@@ -559,7 +559,8 @@ class _CapsulePageState extends State<CapsulePage> {
 
   Widget _createCard(ThemeState theme) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -795,12 +796,9 @@ class _CapsulePageState extends State<CapsulePage> {
         onTap: () => _open(capsule),
         // 胶囊 = 细线下一行：状态图标 · 开封日（宋）· 剩余天数
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: theme.borderColor, width: 0.6),
-            ),
-          ),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
           child: Row(
             children: [
               SizedBox(

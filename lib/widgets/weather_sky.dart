@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// 天色：首页主视觉。随真实天气（6 种）与时辰（4 段）变化的一幅水墨天。
@@ -257,27 +258,43 @@ String skyLine(SkyCondition c, SkyTime t, {int dayOfYear = 0}) {
   return lines[dayOfYear % lines.length];
 }
 
-/// 水墨天色画笔：渐变天 → 日月星 → 云 → 三层远山（浓脊淡脚）+ 雾 → 雨雪 → 淡入纸面
+/// 天色分层：静态层只画一次，云整层平移，雨雪逐帧
+enum SkyLayer { sky, clouds, mountains, precip, fade }
+
+/// 水墨天色画笔：渐变天 → 日月星 → 云 → 三层远山（浓脊淡脚）+ 雾 → 雨雪 → 淡入纸面。
+/// [layers] 选择要画的层；每层用各自的随机种子，单画某层时位置与整画一致。
 class WeatherSkyPainter extends CustomPainter {
   final SkyPalette palette;
   final SkyCondition condition;
   final Color paper; // 底部淡入的页面纸色
   final int seed;
+  final Set<SkyLayer> layers;
+  final Offset orbAt; // 日月位置（占画布比例）
+  final Animation<double>? phase; // 雨雪下落相位（0..1 循环）
 
   WeatherSkyPainter({
     required this.palette,
     required this.condition,
     required this.paper,
     this.seed = 7,
-  });
+    this.layers = const {...SkyLayer.values},
+    this.orbAt = const Offset(0.8, 0.3),
+    this.phase,
+  }) : super(repaint: phase);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
-    final rng = math.Random(seed);
-    final p = palette;
+    if (layers.contains(SkyLayer.sky)) _paintSky(canvas, size);
+    if (layers.contains(SkyLayer.clouds)) paintClouds(canvas, size, dx: 0);
+    if (layers.contains(SkyLayer.mountains)) _paintMountains(canvas, size);
+    if (layers.contains(SkyLayer.precip)) _paintPrecip(canvas, size, phase?.value ?? 0);
+    if (layers.contains(SkyLayer.fade)) _paintFade(canvas, size);
+  }
 
-    // 天
+  void _paintSky(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    final p = palette;
+    final rng = math.Random(seed * 7 + 1);
     canvas.drawRect(
       Offset.zero & size,
       Paint()
@@ -289,18 +306,16 @@ class WeatherSkyPainter extends CustomPainter {
         ).createShader(Offset.zero & size),
     );
 
-    // 星（晴夜）
     if (p.night && condition == SkyCondition.clear) {
       final star = Paint()..color = p.orb!.withAlpha(150);
-      for (var i = 0; i < 22; i++) {
+      for (var i = 0; i < 26; i++) {
         final o = Offset(rng.nextDouble() * w, rng.nextDouble() * h * 0.42);
         canvas.drawCircle(o, 0.5 + rng.nextDouble() * 0.8, star);
       }
     }
 
-    // 日 / 月
     if (p.orb != null) {
-      final c = Offset(w * 0.8, h * (p.night ? 0.22 : 0.3));
+      final c = Offset(w * orbAt.dx, h * (p.night ? orbAt.dy * 0.75 : orbAt.dy));
       final r = w * (p.night ? 0.05 : 0.068);
       final glowAlpha = condition == SkyCondition.cloudy ? 40 : 70;
       canvas.drawCircle(
@@ -323,8 +338,13 @@ class WeatherSkyPainter extends CustomPainter {
         canvas.drawCircle(c, r, Paint()..color = p.orb!.withAlpha(215));
       }
     }
+  }
 
-    // 云：横向晕开的淡墨/淡白团
+  /// 云：横向晕开的淡墨/淡白团。[dx] 为整体平移（漂云用：画两份首尾相接）
+  void paintClouds(Canvas canvas, Size size, {required double dx}) {
+    final w = size.width, h = size.height;
+    final p = palette;
+    final rng = math.Random(seed * 7 + 2);
     final cloudCount = switch (condition) {
       SkyCondition.clear => 2,
       SkyCondition.cloudy => 6,
@@ -335,7 +355,7 @@ class WeatherSkyPainter extends CustomPainter {
     for (var i = 0; i < cloudCount; i++) {
       final cw = w * (0.45 + rng.nextDouble() * 0.5);
       final ch = h * (0.035 + rng.nextDouble() * 0.05);
-      final cx = rng.nextDouble() * w;
+      final cx = rng.nextDouble() * w + dx;
       final cy = h * (0.08 + rng.nextDouble() * 0.42);
       final base = p.night
           ? p.horizon
@@ -343,15 +363,22 @@ class WeatherSkyPainter extends CustomPainter {
           ? Color.lerp(p.top, p.ridge, 0.25)!
           : p.horizon;
       final alpha = p.night ? 60 : (darkCloud ? 70 : 150);
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(cx, cy), width: cw, height: ch),
-        Paint()
-          ..color = base.withAlpha(condition == SkyCondition.clear ? alpha ~/ 2 : alpha)
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, ch * 0.7),
-      );
+      final paint = Paint()
+        ..color = base.withAlpha(condition == SkyCondition.clear ? alpha ~/ 2 : alpha)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, ch * 0.7);
+      for (final shift in [0.0, w]) {
+        canvas.drawOval(
+          Rect.fromCenter(center: Offset(cx + shift, cy), width: cw, height: ch),
+          paint,
+        );
+      }
     }
+  }
 
-    // 远山三层：浓脊淡脚；层间一道雾
+  void _paintMountains(Canvas canvas, Size size) {
+    final h = size.height;
+    final p = palette;
+    final rng = math.Random(seed * 7 + 3);
     final fog = condition == SkyCondition.fog;
     final layers = [
       (base: 0.64, amp: 0.13, alpha: fog ? 0.16 : 0.26),
@@ -360,38 +387,54 @@ class WeatherSkyPainter extends CustomPainter {
     ];
     for (var i = 0; i < layers.length; i++) {
       final l = layers[i];
-      _ridge(canvas, size, rng, h * l.base, h * l.amp, p.ridge, l.alpha, peaks: 3 - i ~/ 2 + (i == 0 ? 1 : 0));
+      _ridge(canvas, size, rng, h * l.base, h * l.amp, p.ridge, l.alpha,
+          peaks: i == 0 ? 4 : (i == 1 ? 3 : 2));
       _mist(canvas, size, h * (l.base + 0.035), h * (fog ? 0.12 : 0.07),
           p.horizon.withAlpha(fog ? 210 : 150));
     }
+  }
 
-    // 雨丝 / 雪点
-    if (p.precip != null) {
-      if (condition == SkyCondition.rain) {
-        final rain = Paint()
-          ..color = p.precip!.withAlpha(p.night ? 70 : 85)
-          ..strokeWidth = 0.9
-          ..strokeCap = StrokeCap.round;
-        final n = (w * h / 2400).round();
-        for (var i = 0; i < n; i++) {
-          final x = rng.nextDouble() * (w + 40) - 20;
-          final y = rng.nextDouble() * h * 0.86;
-          final len = 9 + rng.nextDouble() * 10;
-          canvas.drawLine(Offset(x, y), Offset(x - len * 0.26, y + len), rain);
-        }
-      } else if (condition == SkyCondition.snow) {
-        final flake = Paint()..color = p.precip!.withAlpha(210);
-        final n = (w * h / 3200).round();
-        for (var i = 0; i < n; i++) {
-          final o = Offset(rng.nextDouble() * w, rng.nextDouble() * h * 0.86);
-          canvas.drawCircle(o, 0.9 + rng.nextDouble() * 1.6, flake);
-        }
+  /// 雨丝 / 雪点。[t] 为下落相位：雨每圈落一个画布高，雪缓落并左右轻摆
+  void _paintPrecip(Canvas canvas, Size size, double t) {
+    final p = palette;
+    if (p.precip == null) return;
+    final w = size.width, h = size.height;
+    final rng = math.Random(seed * 7 + 4);
+    final top = -h * 0.05, span = h * 0.95;
+    if (condition == SkyCondition.rain) {
+      final rain = Paint()
+        ..color = p.precip!.withAlpha(p.night ? 70 : 85)
+        ..strokeWidth = 0.9
+        ..strokeCap = StrokeCap.round;
+      final n = (w * h / 2400).round();
+      for (var i = 0; i < n; i++) {
+        final x0 = rng.nextDouble() * (w + 60) - 20;
+        final y0 = rng.nextDouble();
+        final speed = 0.8 + rng.nextDouble() * 0.5;
+        final len = 9 + rng.nextDouble() * 10;
+        final f = (y0 + t * speed) % 1.0;
+        final y = top + f * span;
+        final x = x0 - f * span * 0.26; // 斜落
+        canvas.drawLine(Offset(x, y), Offset(x - len * 0.26, y + len), rain);
+      }
+    } else if (condition == SkyCondition.snow) {
+      final flake = Paint()..color = p.precip!.withAlpha(210);
+      final n = (w * h / 3200).round();
+      for (var i = 0; i < n; i++) {
+        final x0 = rng.nextDouble() * w;
+        final y0 = rng.nextDouble();
+        final r = 0.9 + rng.nextDouble() * 1.6;
+        final f = (y0 + t * (0.6 + r * 0.15)) % 1.0;
+        final sway = math.sin((f * 6 + y0 * 10) * math.pi) * 6;
+        canvas.drawCircle(Offset(x0 + sway, top + f * span), r, flake);
       }
     }
+  }
 
-    // 淡入纸面：山脚化进页面，不留硬边
+  void _paintFade(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
     // 夜天落在浅纸上反差大：雾起得更早更快，避免深浅混成脏灰
-    final contrasty = (p.top.computeLuminance() - paper.computeLuminance()).abs() > 0.5;
+    final contrasty = (palette.top.computeLuminance() - paper.computeLuminance()).abs() > 0.5;
     final fadeTop = contrasty ? 0.8 : 0.78;
     final fade = Rect.fromLTWH(0, h * fadeTop, w, h * (1 - fadeTop) + 1);
     canvas.drawRect(
@@ -481,5 +524,147 @@ class WeatherSkyPainter extends CustomPainter {
       old.palette != palette ||
       old.condition != condition ||
       old.paper != paper ||
-      old.seed != seed;
+      old.seed != seed ||
+      old.orbAt != orbAt ||
+      !setEquals(old.layers, layers);
+}
+
+/// 会动的天：云慢漂、雨雪下落；滚动时远山比天空移得快（景深视差）。
+/// 只有雨雪层逐帧重绘，天空/远山静态缓存，云整层平移。
+/// 减弱动效时静止；离屏（TickerMode 关闭）时自动暂停。
+class WeatherSkyScene extends StatefulWidget {
+  final SkyPalette palette;
+  final SkyCondition condition;
+  final Color paper;
+  final int seed;
+  final Offset orbAt;
+  final ScrollController? scroll; // 提供则做视差
+  final bool fade; // 底部淡入纸面（无面板覆盖时用）
+
+  const WeatherSkyScene({
+    super.key,
+    required this.palette,
+    required this.condition,
+    required this.paper,
+    this.seed = 7,
+    this.orbAt = const Offset(0.8, 0.3),
+    this.scroll,
+    this.fade = false,
+  });
+
+  @override
+  State<WeatherSkyScene> createState() => _WeatherSkySceneState();
+}
+
+class _WeatherSkySceneState extends State<WeatherSkyScene>
+    with TickerProviderStateMixin {
+  AnimationController? _drift;
+  AnimationController? _fall;
+  bool? _reduce;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(WeatherSkyScene old) {
+    super.didUpdateWidget(old);
+    if (old.condition != widget.condition) _sync(force: true);
+  }
+
+  void _sync({bool force = false}) {
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    if (!force && reduce == _reduce) return;
+    _reduce = reduce;
+    _drift?.dispose();
+    _fall?.dispose();
+    _drift = null;
+    _fall = null;
+    if (reduce) return;
+    _drift = AnimationController(vsync: this, duration: const Duration(seconds: 140))
+      ..repeat();
+    final fallMs = switch (widget.condition) {
+      SkyCondition.rain => 1100,
+      SkyCondition.snow => 14000,
+      _ => 0,
+    };
+    if (fallMs > 0) {
+      _fall = AnimationController(vsync: this, duration: Duration(milliseconds: fallMs))
+        ..repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _drift?.dispose();
+    _fall?.dispose();
+    super.dispose();
+  }
+
+  WeatherSkyPainter _painter(Set<SkyLayer> layers, {Animation<double>? phase}) =>
+      WeatherSkyPainter(
+        palette: widget.palette,
+        condition: widget.condition,
+        paper: widget.paper,
+        seed: widget.seed,
+        orbAt: widget.orbAt,
+        layers: layers,
+        phase: phase,
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final sky = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.sky})));
+    final mountains = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.mountains})));
+    final clouds = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.clouds})));
+    final precip = widget.palette.precip == null
+        ? null
+        : CustomPaint(painter: _painter({SkyLayer.precip}, phase: _fall));
+
+    return LayoutBuilder(
+      builder: (context, c) {
+        final w = c.maxWidth;
+        Widget drifting = clouds;
+        final drift = _drift;
+        if (drift != null) {
+          drifting = AnimatedBuilder(
+            animation: drift,
+            child: clouds,
+            builder: (_, child) => Transform.translate(
+              offset: Offset(-drift.value * w, 0),
+              child: child,
+            ),
+          );
+        }
+        final scroll = widget.scroll;
+        Widget layer(double k, Widget child) {
+          if (scroll == null) return child;
+          return AnimatedBuilder(
+            animation: scroll,
+            child: child,
+            builder: (_, child) {
+              final y = scroll.hasClients ? scroll.offset.clamp(0.0, 2000.0) : 0.0;
+              return Transform.translate(offset: Offset(0, -y * k), child: child);
+            },
+          );
+        }
+
+        return ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              layer(0.25, sky),
+              layer(0.3, drifting),
+              layer(0.5, mountains),
+              ?precip,
+              if (widget.fade)
+                IgnorePointer(child: CustomPaint(painter: _painter({SkyLayer.fade}))),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

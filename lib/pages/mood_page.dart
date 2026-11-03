@@ -14,6 +14,7 @@ import '../stores/theme_state.dart';
 import '../widgets/mood_card_maker.dart';
 import '../widgets/xq_toast.dart';
 import '../utils/time_utils.dart';
+import '../widgets/xq/xq_surface.dart';
 import '../services/mood_queue.dart';
 import 'treehole_page.dart';
 
@@ -378,33 +379,51 @@ class _MoodPageState extends State<MoodPage> {
           },
           child: ListView(
             controller: _scrollCtrl,
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 32),
             children: [
-              _buildHeader(t, appState),
-              const SizedBox(height: 28),
-              _sectionLabel(t, '此刻'),
-              const SizedBox(height: 14),
-              _buildMoodRow(t),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                alignment: Alignment.topCenter,
-                child: (_moodScore > 0 && _currentTags.isNotEmpty)
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: _buildTags(t),
-                      )
-                    : const SizedBox(width: double.infinity),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: _buildHeader(t, appState),
               ),
-              const SizedBox(height: 24),
-              _buildEditor(t),
-              const SizedBox(height: 48),
+              const SizedBox(height: 20),
+              // 记录区：一张卡（心情 + 标签），一张纸（书写）
+              XqSurface(
+                padding: const EdgeInsets.fromLTRB(12, 18, 12, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: _sectionLabel(t, '此刻的心情'),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMoodRow(t),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      alignment: Alignment.topCenter,
+                      child: (_moodScore > 0 && _currentTags.isNotEmpty)
+                          ? Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 18, 8, 0),
+                              child: _buildTags(t),
+                            )
+                          : const SizedBox(width: double.infinity),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              XqSurface(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+                child: _buildEditor(t),
+              ),
+              const SizedBox(height: 36),
 
               // ── 回顾区 ──
               _buildDaySection(t, appState),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
               _buildRecentWeek(t, appState),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
               _buildMoreLinks(t),
             ],
           ),
@@ -630,11 +649,6 @@ class _MoodPageState extends State<MoodPage> {
     return Container(
       key: _editorKey,
       constraints: const BoxConstraints(minHeight: 4 * 32 + 8),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: t.borderColor, width: 0.8),
-        ),
-      ),
       child: Stack(
         children: [
           Positioned.fill(
@@ -680,45 +694,34 @@ class _MoodPageState extends State<MoodPage> {
     );
   }
 
-  /// 这一天：竖向时间线（时间 · 釉色点 · 心情 · 楷体摘句）
+  /// 这一天：标题在外，时间线装在一张卡里
   Widget _buildDaySection(ThemeState t, AppState appState) {
     final date = DateTime.tryParse(appState.selectedDate) ?? DateTime.now();
     final isToday = DateUtils.isSameDay(date, DateTime.now());
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              isToday ? '今天写下的' : '这一天写下的',
-              style: XqTypography.headlineSmall.copyWith(color: t.textPrimary),
-            ),
-            const Spacer(),
-            if (_dayMoods.isNotEmpty)
-              Text(
-                '${_dayMoods.length} 笔',
-                style: TextStyle(color: t.textTertiary, fontSize: 12),
-              ),
-          ],
+        XqSectionTitle(
+          isToday ? '今天写下的' : '这一天写下的',
+          trailing: _dayMoods.isEmpty
+              ? null
+              : Text('${_dayMoods.length} 笔', style: TextStyle(color: t.textTertiary, fontSize: 12.5)),
         ),
-        const SizedBox(height: 16),
-        if (_dayMoods.isEmpty)
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _scrollToEmotions,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                isToday ? '还空着。选一个此刻的心情，写下第一笔。' : '这一天没有留下记录。',
-                style: TextStyle(color: t.textTertiary, fontSize: 14),
-              ),
-            ),
-          )
-        else
-          for (var i = 0; i < _dayMoods.length; i++)
-            _buildTimelineItem(_dayMoods[i], t, last: i == _dayMoods.length - 1),
+        XqSurface(
+          padding: const EdgeInsets.fromLTRB(16, 20, 20, 20),
+          onTap: _dayMoods.isEmpty ? _scrollToEmotions : null,
+          child: _dayMoods.isEmpty
+              ? Text(
+                  isToday ? '还空着。选一个此刻的心情，写下第一笔。' : '这一天没有留下记录。',
+                  style: TextStyle(color: t.textTertiary, fontSize: 14),
+                )
+              : Column(
+                  children: [
+                    for (var i = 0; i < _dayMoods.length; i++)
+                      _buildTimelineItem(_dayMoods[i], t, last: i == _dayMoods.length - 1),
+                  ],
+                ),
+        ),
       ],
     );
   }
@@ -846,13 +849,14 @@ class _MoodPageState extends State<MoodPage> {
     ];
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          '最近七天',
-          style: XqTypography.headlineSmall.copyWith(color: t.textPrimary),
-        ),
-        const SizedBox(height: 16),
+        const XqSectionTitle('最近七天'),
+        XqSurface(
+          padding: const EdgeInsets.fromLTRB(8, 18, 8, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
         Row(
           children: days.map((d) {
             final has = (d.score ?? 0) > 0;
@@ -906,55 +910,40 @@ class _MoodPageState extends State<MoodPage> {
         ),
         if (recorded > 0) ...[
           const SizedBox(height: 16),
-          Text(
-            facts.join('  ·  '),
-            style: TextStyle(color: t.textTertiary, fontSize: 12.5),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              facts.join('  ·  '),
+              style: TextStyle(color: t.textTertiary, fontSize: 12.5),
+            ),
           ),
         ],
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  /// 页尾：素笺故事 / 树洞，两条文字入口
+  /// 页尾：素笺故事 / 树洞
   Widget _buildMoreLinks(ThemeState t) {
-    Widget link(String title, String sub, Widget page) => Semantics(
-          button: true,
-          label: title,
-          child: InkWell(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => page),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Row(
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(color: t.textPrimary, fontSize: 15),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      sub,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: t.textTertiary, fontSize: 13),
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, size: 18, color: t.textTertiary),
-                ],
-              ),
-            ),
-          ),
-        );
-    return Column(
+    void go(Widget page) =>
+        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    return XqGroup(
+      title: '再多写一点',
       children: [
-        Divider(color: t.borderColor),
-        link('素笺', '写一篇长一点的故事', const StoryListPage()),
-        Divider(color: t.borderColor),
-        link('树洞', '说给不认识的人听', const TreeholePage()),
-        Divider(color: t.borderColor),
+        XqRow(
+          icon: Icons.edit_note_rounded,
+          title: '素笺',
+          subtitle: '写一篇长一点的故事',
+          onTap: () => go(const StoryListPage()),
+        ),
+        XqRow(
+          icon: Icons.forest_outlined,
+          title: '树洞',
+          subtitle: '说给不认识的人听',
+          onTap: () => go(const TreeholePage()),
+        ),
       ],
     );
   }
@@ -1076,7 +1065,13 @@ class _MoodPageState extends State<MoodPage> {
     return Container(
       decoration: BoxDecoration(
         color: t.cardColor,
-        border: Border(top: BorderSide(color: t.borderColor, width: 0.8)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(t.isDark ? 90 : 12),
+            blurRadius: 18,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.fromLTRB(24, 10, 16, 10),
       child: Row(

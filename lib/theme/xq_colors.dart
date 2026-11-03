@@ -126,28 +126,28 @@ class XqColors {
   //  颜色留给首页天色与心情釉色；界面本身克制。对比度见 test/theme_regression_test.dart
   // ═══════════════════════════════════════
 
-  static const sujianBackground = Color(0xFFF4F1E8); // 宣纸
-  static const sujianCard = Color(0xFFFAF8F2);
-  static const sujianCardElevated = Color(0xFFFCFBF7);
+  static const sujianBackground = Color(0xFFEDE8DD); // L0 页面底：宣纸（压暗一档，让卡片浮起来）
+  static const sujianCard = Color(0xFFFCFAF6); // L1 卡片/面板
+  static const sujianCardElevated = Color(0xFFFFFDF9); // L2 浮层
   static const sujianAccent = Color(0xFF4B3A2B); // 深檀（参照全季：原木与茶褐）
   static const sujianAccentLight = Color(0xFF6E5642);
   static const sujianAccentMuted = Color(0x2E4B3A2B);
   static const sujianTextPrimary = Color(0xFF26251F); // 墨
   static const sujianTextSecondary = Color(0xFF56524A);
-  static const sujianTextTertiary = Color(0xFF6B665C);
+  static const sujianTextTertiary = Color(0xFF625D54);
   static const sujianTextOnAccent = Color(0xFFFAF8F2);
-  static const sujianBorder = Color(0xFFDCD5C6); // 装饰细线
+  static const sujianBorder = Color(0xFFE2DBCC); // 卡片内分隔细线
   static const sujianBorderFocus = Color(0xFF4B3A2B);
   static const sujianError = Color(0xFF8F382E);
   static const sujianSuccess = Color(0xFF456548);
   static const sujianWarning = Color(0xFF6C5C2E);
   static const sujianInk = Color(0xFF33302A); // 手绘装饰用墨
   static const sujianInkLight = Color(0x99857E70);
-  static const sujianGold = Color(0xFF7D5C38); // 原木（日期、数字）
+  static const sujianGold = Color(0xFF7A5934); // 原木（日期、数字）
   static const sujianControlBorder = Color(0xFF8A8374); // 控件边框 ≥3:1
   static const sujianPaperLine = Color(0xFFDDD6C7);
-  static const sujianSeal = Color(0xFFB23A2B); // 朱砂小印
-  static const sujianSunken = Color(0xFFEAE5D9); // 凹陷区/标签底
+  static const sujianSeal = Color(0xFFAD3727); // 朱砂小印
+  static const sujianSunken = Color(0xFFE7E1D4); // 凹陷区：标签、输入框、次按钮底
 
   // 和纸胶带色（宣纸版：赭/青/米/灰蓝，低饱和）
   static const sujianWashi1 = Color(0xFFD8CBB3);
@@ -159,15 +159,15 @@ class XqColors {
   //  素笺 · 夜墨（暖黑，不是蓝黑）
   // ═══════════════════════════════════════
 
-  static const sujianDarkBackground = Color(0xFF161513);
-  static const sujianDarkCard = Color(0xFF1E1C19);
-  static const sujianDarkCardElevated = Color(0xFF25221E);
+  static const sujianDarkBackground = Color(0xFF121110);
+  static const sujianDarkCard = Color(0xFF1F1D1A);
+  static const sujianDarkCardElevated = Color(0xFF292622);
   static const sujianDarkAccent = Color(0xFFD9BC8C); // 暖灯
   static const sujianDarkAccentLight = Color(0xFFE6CFA6);
   static const sujianDarkAccentMuted = Color(0x33D9BC8C);
   static const sujianDarkTextPrimary = Color(0xFFE8E3D8);
   static const sujianDarkTextSecondary = Color(0xFFB9B2A4);
-  static const sujianDarkTextTertiary = Color(0xFF938C7E);
+  static const sujianDarkTextTertiary = Color(0xFF958E80);
   static const sujianDarkTextOnAccent = Color(0xFF161513);
   static const sujianDarkBorder = Color(0xFF2E2B27);
   static const sujianDarkBorderFocus = Color(0xFFD9BC8C);
@@ -180,7 +180,7 @@ class XqColors {
   static const sujianDarkControlBorder = Color(0xFF736C60);
   static const sujianDarkPaperLine = Color(0xFF2A2723);
   static const sujianDarkSeal = Color(0xFFD27466);
-  static const sujianDarkSunken = Color(0xFF100F0D);
+  static const sujianDarkSunken = Color(0xFF2A2723); // 深色下凹陷取比卡片亮一档的面
 
   static const sujianDarkWashi1 = Color(0xFF3E3830);
   static const sujianDarkWashi2 = Color(0xFF33403B);

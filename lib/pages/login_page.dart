@@ -212,7 +212,7 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         XqAuthHero(theme: theme, title: '拾晴日记'),
                         // 表单让到远山之下
-                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.5),
+                        SizedBox(height: XqAuthBackdrop.skyHeight(context) * 0.3),
                         XqAuthCard(
                           theme: theme,
                           child: Column(

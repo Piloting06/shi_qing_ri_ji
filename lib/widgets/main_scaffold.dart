@@ -153,11 +153,15 @@ class _MainScaffoldState extends State<MainScaffold> {
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (i) => setState(() => _currentIndex = i),
-                children: const [
-                  HomePage(),
-                  MoodPage(),
-                  CityMapPage(),
-                  ProfilePage(),
+                // 非当前 Tab 暂停动画（首页天色的云与雨雪）
+                children: [
+                  for (final (i, page) in const [
+                    HomePage(),
+                    MoodPage(),
+                    CityMapPage(),
+                    ProfilePage(),
+                  ].indexed)
+                    TickerMode(enabled: i == _currentIndex, child: page),
                 ],
               ),
             ),
@@ -225,72 +229,71 @@ class _SujianBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
+    final reduce = MediaQuery.disableAnimationsOf(context);
     return Semantics(
       container: true,
       child: Container(
-        // 系统导航栏区域同色，视觉与通栏一体
-        color: theme.cardColor,
-        padding: EdgeInsets.only(bottom: bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(height: 0.8, color: theme.borderColor),
-            SizedBox(
-              height: 56,
-              child: Row(
-                children: List.generate(4, (i) {
-                  final active = i == currentIndex;
-                  final color = active ? theme.accentColor : theme.textTertiary;
-                  return Expanded(
-                    child: Semantics(
-                      label: _labels[i],
-                      button: true,
-                      selected: active,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => onTap(i),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // 素笺规范：选中项 2px 顶线
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOut,
-                              width: active ? 16 : 0,
-                              height: 2,
-                              margin: const EdgeInsets.only(bottom: 3),
-                              decoration: BoxDecoration(
-                                color: active
-                                    ? theme.accentColor
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            XqIcon(_icons[i], size: 21, color: color),
-                            const SizedBox(height: 2),
-                            AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 200),
-                              // 继承主题标签样式（只覆盖色与字重），防止回退到无主题字体
-                              style: Theme.of(context).textTheme.labelSmall!
-                                  .copyWith(
-                                    fontSize: 11,
-                                    letterSpacing: 1,
-                                    fontWeight: active
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                    color: color,
-                                  ),
-                              child: Text(_labels[i]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
+        // 浮起的底栏：surface 底 + 向上柔影（不再用分隔细线）
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(theme.isDark ? 90 : 14),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
+        ),
+        padding: EdgeInsets.only(bottom: bottom),
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: List.generate(4, (i) {
+              final active = i == currentIndex;
+              final color = active ? theme.accentColor : theme.textTertiary;
+              return Expanded(
+                child: Semantics(
+                  label: _labels[i],
+                  button: true,
+                  selected: active,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onTap(i),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // 选中：图标背后一块圆角底
+                        AnimatedContainer(
+                          duration: Duration(milliseconds: reduce ? 0 : 220),
+                          curve: Curves.easeOutQuart,
+                          width: active ? 56 : 40,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: active
+                                ? theme.accentColor.withAlpha(theme.isDark ? 40 : 26)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          alignment: Alignment.center,
+                          child: XqIcon(_icons[i], size: 21, color: color),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _labels[i],
+                          style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                                fontSize: 11,
+                                letterSpacing: 1,
+                                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                                color: color,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );

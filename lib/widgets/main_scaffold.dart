@@ -233,7 +233,7 @@ class _SujianBottomBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(height: 1, color: theme.borderColor),
+            Container(height: 0.8, color: theme.borderColor),
             SizedBox(
               height: 56,
               child: Row(
@@ -269,13 +269,16 @@ class _SujianBottomBar extends StatelessWidget {
                             const SizedBox(height: 2),
                             AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 200),
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: active
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                                color: color,
-                              ),
+                              // 继承主题标签样式（只覆盖色与字重），防止回退到无主题字体
+                              style: Theme.of(context).textTheme.labelSmall!
+                                  .copyWith(
+                                    fontSize: 11,
+                                    letterSpacing: 1,
+                                    fontWeight: active
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    color: color,
+                                  ),
                               child: Text(_labels[i]),
                             ),
                           ],

@@ -9,6 +9,7 @@ class AppState extends ChangeNotifier {
   int _windowWidth = 0;
   bool _animActive = true;
   bool _lockedOut = false;
+  int _moodRevision = 0;
 
   AppState() {
     _loadAnimActive();
@@ -25,6 +26,14 @@ class AppState extends ChangeNotifier {
   int get windowWidth => _windowWidth;
   bool get animActive => _animActive;
   bool get isLockedOut => _lockedOut;
+
+  /// 心情记录变动计数：保存/删除后递增，首页据此刷新「今天」栏
+  int get moodRevision => _moodRevision;
+
+  void bumpMoodRevision() {
+    _moodRevision++;
+    notifyListeners();
+  }
 
   void setSelectedDate(String d) {
     if (_selectedDate != d) {

@@ -14,6 +14,7 @@ import 'package:share_plus/share_plus.dart';
 import '../api/api_client.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_decorations.dart';
+import '../theme/xq_typography.dart';
 import '../constants/mood.dart';
 import 'mood_card/card_album_store.dart';
 import 'mood_card/mood_card_data.dart';
@@ -861,7 +862,11 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                 itemBuilder: (context, i) {
                   final card = RepaintBoundary(
                     key: i == _templateIndex ? _repaintKey : GlobalKey(),
-                    child: moodCardTemplates[i].buildCard(_cardDataFor(cardHeight)),
+                    // 卡片属内容层：整张卡默认楷体，与界面黑体分开
+                    child: DefaultTextStyle.merge(
+                      style: const TextStyle(fontFamily: XqTypography.content),
+                      child: moodCardTemplates[i].buildCard(_cardDataFor(cardHeight)),
+                    ),
                   );
                   if (i != _templateIndex || !_shareWithQr) {
                     return Padding(

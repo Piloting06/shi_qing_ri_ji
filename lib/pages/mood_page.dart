@@ -233,6 +233,7 @@ class _MoodPageState extends State<MoodPage>
           _dirty = false;
           _dayMoods = dayMoods;
         });
+        context.read<AppState>().bumpMoodRevision();
         final prefs = await SharedPreferences.getInstance();
         final hasSaved = prefs.getBool('mood_has_saved') ?? false;
         if (!hasSaved) {
@@ -1378,6 +1379,7 @@ class _MoodPageState extends State<MoodPage>
     try {
       await Api.deleteMood(id);
       await _loadAllMoods();
+      if (mounted) context.read<AppState>().bumpMoodRevision();
     } catch (_) {}
   }
 

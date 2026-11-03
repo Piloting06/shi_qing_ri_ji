@@ -74,3 +74,10 @@ flutter:
     - family: LXGW WenKai
       fonts:
         - asset: assets/fonts/LXGWWenKai-Regular.ttf
+    # 宋体仪式层：Noto Serif SC 子集（scripts/subset_serif.py 生成，OFL）
+    - family: SerifSC
+      fonts:
+        - asset: assets/fonts/NotoSerifSC-500.otf
+          weight: 500
+        - asset: assets/fonts/NotoSerifSC-600.otf
+          weight: 600

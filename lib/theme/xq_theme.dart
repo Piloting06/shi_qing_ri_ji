@@ -111,7 +111,78 @@ class XqTheme {
       brightness: brightness,
       scaffoldBackgroundColor: bg,
       colorScheme: scheme,
-      fontFamily: 'LXGW WenKai',
+      // 界面走系统黑体；宋体只在 Display/Headline，楷体只在内容层（ADR-0004）
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: accent.withAlpha(14),
+      iconTheme: IconThemeData(color: text2, size: 22),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: accent,
+        linearTrackColor: border,
+        circularTrackColor: Colors.transparent,
+      ),
+      cardTheme: CardThemeData(
+        color: card,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: border, width: 0.5),
+        ),
+      ),
+      listTileTheme: ListTileThemeData(
+        iconColor: text2,
+        textColor: text1,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+        minLeadingWidth: 24,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: card,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        modalElevation: 0,
+        showDragHandle: false,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: card,
+        surfaceTintColor: Colors.transparent,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: border, width: 0.5),
+        ),
+        textStyle: XqTypography.bodyLarge.copyWith(color: text1),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: accent,
+          foregroundColor: onAccent,
+          disabledBackgroundColor: border,
+          disabledForegroundColor: text3,
+          minimumSize: const Size(64, 48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          textStyle: XqTypography.button,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: accent,
+          minimumSize: const Size(64, 48),
+          side: BorderSide(color: control, width: 0.8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          textStyle: XqTypography.button,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: accent,
+          minimumSize: const Size(44, 44),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          textStyle: XqTypography.labelLarge,
+        ),
+      ),
       textTheme: TextTheme(
         displayLarge: XqTypography.displayLarge.copyWith(color: text1),
         displayMedium: XqTypography.displayMedium.copyWith(color: text1),
@@ -149,11 +220,14 @@ class XqTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: accent,
           foregroundColor: onAccent,
+          disabledBackgroundColor: border,
+          disabledForegroundColor: text3,
+          elevation: 0,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(4),
           ),
-          textStyle: XqTypography.labelLarge,
+          textStyle: XqTypography.button,
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -178,6 +252,7 @@ class XqTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: card,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         titleTextStyle:
             XqTypography.headlineMedium.copyWith(color: text1),

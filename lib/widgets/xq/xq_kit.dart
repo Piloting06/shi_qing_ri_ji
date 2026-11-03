@@ -184,25 +184,36 @@ class XqSeal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: -0.06,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          border: Border.all(color: color, width: 1.4),
-          borderRadius: BorderRadius.circular(2),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          char,
-          style: TextStyle(
-            color: color,
-            fontSize: size * 0.46,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'SerifSC',
-            fontFamilyFallback: ['Songti SC'],
+    // 单字居中；两字竖排成方印（如节气「霜降」）
+    final multi = char.characters.length > 1;
+    final style = TextStyle(
+      color: color,
+      fontSize: multi ? size * 0.34 : size * 0.46,
+      height: 1.05,
+      fontWeight: FontWeight.w600,
+      fontFamily: 'SerifSC',
+      fontFamilyFallback: const ['Songti SC'],
+    );
+    return Semantics(
+      label: char,
+      child: Transform.rotate(
+        angle: -0.06,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            border: Border.all(color: color, width: 1.4),
+            borderRadius: BorderRadius.circular(2),
           ),
+          alignment: Alignment.center,
+          child: multi
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final c in char.characters.take(2)) Text(c, style: style),
+                  ],
+                )
+              : Text(char, style: style),
         ),
       ),
     );

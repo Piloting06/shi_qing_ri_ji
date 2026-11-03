@@ -298,11 +298,8 @@ class _TreeholePageState extends State<TreeholePage>
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(
-              color: theme.gold.withAlpha(22),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.edit_note_outlined, color: theme.gold, size: 18),
+            alignment: Alignment.center,
+            child: Icon(Icons.edit_note_outlined, color: theme.gold, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -589,7 +586,7 @@ class _TreeholePageState extends State<TreeholePage>
                         : const Icon(Icons.send_rounded, size: 16),
                     color: theme.accentColor,
                     style: IconButton.styleFrom(
-                      backgroundColor: theme.accentColor.withAlpha(18),
+                      backgroundColor: Colors.transparent,
                     ),
                     onPressed: _commentPosting.contains(msgId) ? null : () => _postComment(msgId),
                   ),
@@ -821,10 +818,11 @@ class _TreeholePageState extends State<TreeholePage>
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.send_rounded, size: 18),
-                    color: theme.textOnAccent,
+                    color: theme.accentColor,
                     style: IconButton.styleFrom(
-                      backgroundColor: theme.accentColor,
-                      disabledBackgroundColor: theme.borderColor,
+                      backgroundColor: Colors.transparent,
+                      disabledBackgroundColor: Colors.transparent,
+                      disabledForegroundColor: theme.textTertiary,
                     ),
                     onPressed: _posting || _msgCtrl.text.trim().isEmpty
                         ? null

@@ -627,15 +627,11 @@ class _CityMapPageState extends State<CityMapPage>
               ),
               child: Row(
                 children: [
-                  Container(
+                  SizedBox(
                     width: 44,
                     height: 44,
-                    decoration: BoxDecoration(
-                      color: theme.accentColor.withAlpha(22),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.location_on,
-                        color: theme.accentColor, size: 22),
+                    child: Icon(Icons.location_on_outlined,
+                        color: theme.accentColor, size: 24),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

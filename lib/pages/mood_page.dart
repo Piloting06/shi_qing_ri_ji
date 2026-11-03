@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/xq_typography.dart';
-import '../theme/xq_hand_drawn.dart';
 import '../theme/xq_paper_textures.dart';
 import '../theme/xq_decorations.dart';
 import 'package:provider/provider.dart';
@@ -387,6 +386,8 @@ class _MoodPageState extends State<MoodPage>
 
     return Scaffold(
       backgroundColor: t.backgroundColor,
+      // 保存条吸底：Scaffold 自动避让键盘
+      bottomNavigationBar: _buildInlineSaveBar(t),
       body: SafeArea(
         child: Stack(
           children: [
@@ -414,15 +415,7 @@ class _MoodPageState extends State<MoodPage>
                               color: t.textPrimary,
                             ),
                           ),
-                          SizedBox(
-                            width: 80,
-                            height: 6,
-                            child: CustomPaint(
-                              painter: HandDrawnDividerPainter(
-                                inkColor: t.accentColor.withAlpha(60),
-                              ),
-                            ),
-                          ),
+                          const SizedBox(height: 6),
                         ],
                       ),
                       const Spacer(),
@@ -623,9 +616,7 @@ class _MoodPageState extends State<MoodPage>
                   ),
                   const SizedBox(height: 12),
 
-                  // Save bar
-                  _buildInlineSaveBar(t),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 100), // 为吸底保存条留出缓冲
 
                   // ── 回顾区 ──
                   Text(

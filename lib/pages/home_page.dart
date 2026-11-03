@@ -12,6 +12,7 @@ import '../constants/mood.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
 import '../utils/solar_term_utils.dart';
+import '../utils/time_utils.dart';
 import '../utils/weather_utils.dart';
 import '../utils/geo_utils.dart';
 import '../widgets/jiangnan_scene.dart';
@@ -794,8 +795,7 @@ class _HomePageState extends State<HomePage> {
     final latest = _todayMoods.first;
     final score = (latest['emotion_type'] as num?)?.toInt() ?? 0;
     final notes = (latest['notes']?.toString() ?? '').trim();
-    final time = (latest['created_at']?.toString() ?? '');
-    final hm = time.length >= 16 ? time.substring(11, 16) : '';
+    final hm = TimeUtils.hm(latest['created_at']);
     final more = _todayMoods.length - 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -55,6 +55,9 @@ class XqDecorations {
   //  卡片模式
   // ═══════════════════════════════════════
 
+  // 素笺规范：界面卡片只靠 surface 底 + 细线分层，不加阴影、渐变与光晕。
+  // 下列助手保留原签名（多处调用），一律产出扁平样式；阴影只留给浮层与卡片模板（内容层）。
+
   /// 高级卡片（天气轮播等）
   static BoxDecoration elevatedCard(
     Color cardElevated,
@@ -63,11 +66,7 @@ class XqDecorations {
   }) => BoxDecoration(
     color: cardElevated,
     borderRadius: BorderRadius.circular(radiusLarge),
-    border: borderAccent(accent),
-    boxShadow: [
-      ...shadowMedium(dark: dark),
-      ...shadowGlow(accent),
-    ],
+    border: borderThin(accent.withAlpha(70)),
   );
 
   /// Hero 卡片（天气、语录、档案）
@@ -78,16 +77,9 @@ class XqDecorations {
     bool dark = false,
     Color? glow,
   }) => BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [start, end],
-    ),
+    color: start,
     borderRadius: BorderRadius.circular(radiusHero),
-    border: borderMedium(border),
-    boxShadow: glow == null
-        ? shadowMedium(dark: dark)
-        : [...shadowMedium(dark: dark), ...shadowGlow(glow)],
+    border: borderThin(border),
   );
 
   /// 操作卡片（快捷入口、反馈）
@@ -99,8 +91,7 @@ class XqDecorations {
   }) => BoxDecoration(
     color: card,
     borderRadius: BorderRadius.circular(radiusLarge),
-    border: borderThin(accent == null ? border : accent.withAlpha(55)),
-    boxShadow: shadowSubtle(dark: dark),
+    border: borderThin(border),
   );
 
   /// Sheet 表面（底部弹层）

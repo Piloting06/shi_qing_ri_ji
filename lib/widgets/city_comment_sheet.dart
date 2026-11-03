@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../stores/map_state.dart';
 import '../stores/theme_state.dart';
+import '../constants/mood.dart';
 
 Future<void> _deleteCityComment(int id, BuildContext ctx) async {
   final theme = ctx.read<ThemeState>();
@@ -23,7 +24,7 @@ Future<void> _deleteCityComment(int id, BuildContext ctx) async {
         ),
         TextButton(
           onPressed: () => Navigator.pop(c, true),
-          child: const Text('撤回', style: TextStyle(color: Color(0xFFD9706A))),
+          child: Text('撤回', style: TextStyle(color: theme.errorColor)),
         ),
       ],
     ),
@@ -441,14 +442,16 @@ class CityCommentSheet extends StatelessWidget {
 
   String _fmt(String? iso) => TimeUtils.relative(iso);
 
+  /// 城市情绪 → 心情釉色（与城迹页同一映射，取 constants/mood.dart）
   static Color? _moodTint(String? mood) {
-    return switch (mood) {
-      'warm' => const Color(0xFFF0A830),
-      'sad' => const Color(0xFF7B9BB8),
-      'anxious' => const Color(0xFFB090C8),
-      'calm' => const Color(0xFF78B090),
-      'excited' => const Color(0xFFF08848),
-      _ => null,
+    final score = switch (mood) {
+      'warm' => 1,
+      'sad' => 3,
+      'anxious' => 5,
+      'calm' => 2,
+      'excited' => 7,
+      _ => 0,
     };
+    return score == 0 ? null : Color(moodColors[score]!);
   }
 }

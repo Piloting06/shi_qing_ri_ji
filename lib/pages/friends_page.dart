@@ -549,7 +549,6 @@ class _FriendsPageState extends State<FriendsPage> {
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
         border: Border.all(color: theme.borderColor.withAlpha(80)),
-        boxShadow: XqDecorations.shadowSubtle(dark: theme.isDark),
       ),
       child: Row(
         children: [
@@ -599,7 +598,7 @@ class _FriendsPageState extends State<FriendsPage> {
                   ),
                   decoration: BoxDecoration(
                     color: theme.errorColor.withAlpha(22),
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                   child: Text(
                     '${_requests.length} 个申请',
@@ -838,7 +837,6 @@ class _FriendsPageState extends State<FriendsPage> {
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
             border: Border.all(color: theme.borderColor.withAlpha(80)),
-            boxShadow: XqDecorations.shadowSubtle(dark: theme.isDark),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -986,19 +984,27 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
+  /// 头像位：素底圆 + 线性图标；有今日心情时换成釉色点（不用 emoji）
   Widget _avatar(ThemeState theme, IconData icon, int? mood) {
-    final emoji = mood == null ? null : moodEmojis[mood];
+    final moodColor = mood == null ? null : moodColors[mood];
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: theme.accentColor.withAlpha(22),
+        color: theme.sunkenColor,
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: emoji != null
-            ? Text(emoji, style: const TextStyle(fontSize: 21))
-            : Icon(icon, color: theme.accentColor, size: 22),
+        child: moodColor != null
+            ? Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: Color(moodColor),
+                  shape: BoxShape.circle,
+                ),
+              )
+            : Icon(icon, color: theme.textSecondary, size: 21),
       ),
     );
   }
@@ -1269,9 +1275,13 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
           ),
           child: Row(
             children: [
-              Text(
-                moodEmojis[score] ?? '•',
-                style: const TextStyle(fontSize: 28),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Color(moodColors[score] ?? 0xFF7C918C),
+                  shape: BoxShape.circle,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

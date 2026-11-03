@@ -12,7 +12,6 @@ import '../stores/theme_state.dart';
 import '../theme/xq_decorations.dart';
 import '../theme/xq_typography.dart';
 import '../widgets/ink_writing_loader.dart';
-import '../widgets/glow_wrap.dart';
 
 class TreeholePage extends StatefulWidget {
   const TreeholePage({super.key});
@@ -383,50 +382,37 @@ class _TreeholePageState extends State<TreeholePage>
     final id = readInt(message['id']);
     final isOwn = message['is_own'] == true;
     final stamp = _displayTime(message['created_at']?.toString());
-    final washi = theme.washiColors[(id ?? 0) % theme.washiColors.length];
 
+    // 一张纸条 = 细线下的一段楷体字（内容层），不用底色卡片
     return GestureDetector(
       onLongPress: isOwn ? () => _deleteTreehole(id ?? 0) : null,
       child: Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
-        color: washi.withAlpha(theme.isDark ? 42 : 20),
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-        border: Border.all(
-          color: isOwn
-              ? theme.accentColor.withAlpha(100)
-              : theme.borderColor.withAlpha(190),
+        border: Border(
+          bottom: BorderSide(color: theme.borderColor, width: 0.6),
         ),
-        boxShadow: XqDecorations.shadowSubtle(dark: theme.isDark),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(
-                  color: isOwn
-                      ? theme.accentColor.withAlpha(18)
-                      : theme.surfaceAlpha,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  isOwn ? '你的纸条' : '匿名纸条',
-                  style: TextStyle(
-                    color: isOwn ? theme.accentColor : theme.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
+              Text(
+                isOwn ? '你的纸条' : '匿名',
+                style: TextStyle(
+                  color: isOwn ? theme.accentColor : theme.textTertiary,
+                  fontSize: 12,
+                  letterSpacing: 1,
                 ),
               ),
               const Spacer(),
               Text(
                 stamp,
-                style: XqTypography.labelSmall.copyWith(
-                  color: theme.textTertiary,
+                style: TextStyle(
+                  color: theme.gold,
+                  fontSize: 12,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             ],
@@ -434,9 +420,11 @@ class _TreeholePageState extends State<TreeholePage>
           const SizedBox(height: 10),
           Text(
             message['content']?.toString() ?? '',
-            style: XqTypography.bodyMedium.copyWith(
+            style: TextStyle(
+              fontFamily: XqTypography.content,
               color: theme.textPrimary,
-              height: 1.6,
+              fontSize: 16,
+              height: 1.75,
             ),
           ),
           const SizedBox(height: 12),
@@ -486,7 +474,7 @@ class _TreeholePageState extends State<TreeholePage>
         content: const Text('确定撤回这条树洞留言吗？此操作不可撤销。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('取消', style: TextStyle(color: theme.textSecondary))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('撤回', style: TextStyle(color: Color(0xFFD9706A)))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('撤回', style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
         ],
       ),
     );
@@ -512,14 +500,9 @@ class _TreeholePageState extends State<TreeholePage>
       children: [
         // Toggle button
         InkWell(
-          borderRadius: BorderRadius.circular(8),
           onTap: () => _toggleComments(msgId),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            decoration: BoxDecoration(
-              color: theme.surfaceAlpha,
-              borderRadius: BorderRadius.circular(8),
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -530,10 +513,10 @@ class _TreeholePageState extends State<TreeholePage>
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  commentCount > 0 ? '$commentCount 条留言' : '说点什么',
+                  commentCount > 0 ? '$commentCount 条回应' : '回应一句',
                   style: TextStyle(
                     color: theme.textSecondary,
-                    fontSize: 12,
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -569,9 +552,6 @@ class _TreeholePageState extends State<TreeholePage>
                       isDense: true,
                       hintText: '匿名回应一句...',
                       hintStyle: TextStyle(color: theme.textTertiary, fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       counterText: '',
                     ),
@@ -725,33 +705,23 @@ class _TreeholePageState extends State<TreeholePage>
     bool active,
     VoidCallback? onTap,
   ) {
-    final color = active ? theme.accentColor : theme.textSecondary;
-    return GlowWrap(
-      accentColor: theme.accentColor,
-      radius: 30,
-      borderRadius: BorderRadius.circular(999),
+    final color = active ? theme.accentColor : theme.textTertiary;
+    return InkResponse(
       onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 34, minWidth: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: active ? theme.accentColor.withAlpha(20) : theme.surfaceAlpha,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: active ? theme.accentColor.withAlpha(70) : theme.borderColor,
-          ),
-        ),
+      radius: 24,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: color),
+            Icon(icon, size: 17, color: color),
             const SizedBox(width: 5),
             Text(
               '$count',
               style: TextStyle(
                 color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
           ],
@@ -768,13 +738,6 @@ class _TreeholePageState extends State<TreeholePage>
         decoration: BoxDecoration(
           color: theme.cardColor.withAlpha(theme.isDark ? 245 : 252),
           border: Border(top: BorderSide(color: theme.borderColor)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(theme.isDark ? 28 : 8),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

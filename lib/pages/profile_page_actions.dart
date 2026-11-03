@@ -227,7 +227,6 @@ extension _ProfilePageActions on _ProfilePageState {
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
             border: Border.all(color: theme.borderColor.withAlpha(80)),
-            boxShadow: XqDecorations.shadowSubtle(dark: theme.isDark),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),

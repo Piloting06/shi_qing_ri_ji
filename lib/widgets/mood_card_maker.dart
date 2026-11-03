@@ -399,9 +399,6 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: SweepGradient(colors: spec.dotColors),
-          boxShadow: active
-              ? [BoxShadow(color: spec.dotColors[0].withAlpha(80), blurRadius: 10)]
-              : null,
           border: Border.all(
             color: widget.theme.cardColor,
             width: active ? 3 : 2,

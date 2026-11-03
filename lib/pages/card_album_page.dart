@@ -146,14 +146,6 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
                             borderRadius: BorderRadius.circular(8),
                             border:
                                 Border.all(color: t.borderColor.withAlpha(80)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withAlpha(t.isDark ? 40 : 12),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),

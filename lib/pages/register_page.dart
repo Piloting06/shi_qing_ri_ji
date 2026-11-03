@@ -11,6 +11,7 @@ import '../widgets/main_scaffold.dart';
 import '../services/notification_service.dart';
 import '../main.dart';
 import '../theme/xq_decorations.dart';
+import 'login_page.dart' show LoginAuthTab;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -329,141 +330,21 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              // 手机号 / 邮箱切换
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: theme.surfaceAlpha,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.all(4),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => _useEmail = false),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: !_useEmail
-                                                ? theme.cardColor
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                            boxShadow: !_useEmail
-                                                ? [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withAlpha(
-                                                            theme.isDark
-                                                                ? 30
-                                                                : 10,
-                                                          ),
-                                                      blurRadius: 6,
-                                                      offset: const Offset(
-                                                        0,
-                                                        2,
-                                                      ),
-                                                    ),
-                                                  ]
-                                                : null,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.phone_iphone_rounded,
-                                                size: 16,
-                                                color: !_useEmail
-                                                    ? theme.accentColor
-                                                    : theme.textTertiary,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                '手机号',
-                                                style: XqTypography.bodySmall.copyWith(
-                                                  color: !_useEmail
-                                                      ? theme.accentColor
-                                                      : theme.textTertiary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => _useEmail = true),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _useEmail
-                                                ? theme.cardColor
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                            boxShadow: _useEmail
-                                                ? [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withAlpha(
-                                                            theme.isDark
-                                                                ? 30
-                                                                : 10,
-                                                          ),
-                                                      blurRadius: 6,
-                                                      offset: const Offset(
-                                                        0,
-                                                        2,
-                                                      ),
-                                                    ),
-                                                  ]
-                                                : null,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.email_outlined,
-                                                size: 16,
-                                                color: _useEmail
-                                                    ? theme.accentColor
-                                                    : theme.textTertiary,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                '邮箱',
-                                                style: XqTypography.bodySmall.copyWith(
-                                                  color: _useEmail
-                                                      ? theme.accentColor
-                                                      : theme.textTertiary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              // 手机号 / 邮箱切换：与登录页同一语言（文字 + 细线）
+                              Row(
+                                children: [
+                                  LoginAuthTab(
+                                    label: '手机号',
+                                    active: !_useEmail,
+                                    onTap: () => setState(() => _useEmail = false),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  LoginAuthTab(
+                                    label: '邮箱',
+                                    active: _useEmail,
+                                    onTap: () => setState(() => _useEmail = true),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 16),
                               if (_useEmail) ...[
@@ -738,7 +619,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _qTypeBtn(String type, String label, ThemeState theme) {
     final active = _questionType == type;
     return InkWell(
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(2),
       onTap: () => setState(() {
         _questionType = type;
         _error = null;
@@ -748,7 +629,7 @@ class _RegisterPageState extends State<RegisterPage> {
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
         decoration: BoxDecoration(
           color: active ? theme.accentColor.withAlpha(24) : theme.cardColor,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(2),
           border: Border.all(
             color: active ? theme.accentColor : theme.borderColor,
           ),

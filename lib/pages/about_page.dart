@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../constants/app_info.dart';
+import '../theme/xq_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -157,7 +159,7 @@ class AboutPage extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(8),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -166,13 +168,6 @@ class AboutPage extends StatelessWidget {
                   theme.accentColor.withAlpha(140),
                 ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.accentColor.withAlpha(50),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-              ],
             ),
             child: const Icon(
               Icons.water_drop_rounded,
@@ -183,11 +178,10 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             '拾晴日记',
-            style: TextStyle(
+            style: XqTypography.displaySmall.copyWith(
               color: theme.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
+              fontSize: 24,
+              letterSpacing: 4,
             ),
           ),
           const SizedBox(height: 4),
@@ -196,19 +190,13 @@ class AboutPage extends StatelessWidget {
             style: TextStyle(color: theme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.accentColor.withAlpha(15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'v2.6.0',
-              style: TextStyle(
-                color: theme.accentColor,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
+          Text(
+            'v$appVersion',
+            style: TextStyle(
+              color: theme.gold,
+              fontSize: 13,
+              letterSpacing: 0.5,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ],

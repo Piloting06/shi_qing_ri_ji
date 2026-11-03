@@ -604,7 +604,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: theme.accentColor.withAlpha(14),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(2),
       ),
       child: Text(
         text,

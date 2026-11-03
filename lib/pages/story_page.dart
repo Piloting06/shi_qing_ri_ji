@@ -203,7 +203,7 @@ class _StoryListPageState extends State<StoryListPage> {
         ? ''
         : '${updated.year}.${updated.month.toString().padLeft(2, '0')}.${updated.day.toString().padLeft(2, '0')}';
     final mood = e.moodScore > 0
-        ? '  ·  ${moodEmojis[e.moodScore] ?? ''} ${moodLabels[e.moodScore] ?? ''}'
+        ? '  ·  ${moodLabels[e.moodScore] ?? ''}'
         : '';
     return '$time$mood';
   }
@@ -375,6 +375,9 @@ class _StoryEditPageState extends State<StoryEditPage> {
                         fontSize: 22,
                       ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
                     ),
                   ),
                   Container(
@@ -404,6 +407,9 @@ class _StoryEditPageState extends State<StoryEditPage> {
                         fontSize: 16.5,
                       ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
                     ),
                   ),
                 ],

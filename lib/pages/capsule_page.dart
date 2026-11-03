@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../widgets/ink_bloom.dart';
 import '../widgets/xq_empty_state.dart';
 import '../widgets/xq_toast.dart';
@@ -563,13 +564,6 @@ class _CapsulePageState extends State<CapsulePage> {
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: theme.borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(theme.isDark ? 28 : 8),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -700,6 +694,8 @@ class _CapsulePageState extends State<CapsulePage> {
               ),
             ),
           ),
+          // 通知自测入口只在调试包出现，正式包不暴露
+          if (kDebugMode) ...[
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
@@ -708,15 +704,9 @@ class _CapsulePageState extends State<CapsulePage> {
               onPressed: _testNotification,
               icon: const Icon(Icons.timer_outlined, size: 16),
               label: const Text('测试通知 — 1分钟后推送'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: theme.gold,
-                side: BorderSide(color: theme.gold.withAlpha(80)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
             ),
           ),
+          ],
         ],
       ),
     );
@@ -909,7 +899,7 @@ class _CapsulePageState extends State<CapsulePage> {
         content: const Text('确定删除这颗已打开的胶囊吗？此操作不可撤销。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('取消', style: TextStyle(color: theme.textSecondary))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('删除', style: TextStyle(color: Color(0xFFD9706A)))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('删除', style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
         ],
       ),
     );

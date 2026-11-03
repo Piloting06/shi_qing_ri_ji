@@ -282,7 +282,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
       child: GlowWrap(
         accentColor: theme.accentColor,
         radius: 30,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(2),
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 38),
@@ -291,7 +291,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
             color: active
                 ? theme.accentColor.withAlpha(22)
                 : theme.cardElevated.withAlpha(theme.isDark ? 170 : 220),
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(2),
             border: Border.all(
               color: active
                   ? theme.accentColor.withAlpha(90)

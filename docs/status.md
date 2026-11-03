@@ -9,7 +9,7 @@
 | 当前版本 | **v2.17.6+39（P6 全范围精修完成，待真机验收）** |
 | 最新 APK | 项目根目录最新的 `拾晴日记_v2.17.6_p6_*.apk` |
 | 仓库 | `github.com/Piloting06/shi_qing_ri_ji`（2026-11-02 由 xin_qing_ri_ji 改名） |
-| 分支 | `master`（v2.15.1 基线）← `feat/jiangnan-visual`（v2.16.0，PR#1）← `fix/p0-visual`（PR#2）← `feat/p1-typography`（PR#3）← `feat/p2-components`（PR#4）← `feat/p3-sample`（PR#5，含 P4/P5）← `feat/p6-refine`（P6 精修，未推送）——**堆叠 PR，按序合并** |
+| 分支 | `master`（v2.15.1 基线）← `feat/jiangnan-visual`（v2.16.0，PR#1）← `fix/p0-visual`（PR#2）← `feat/p1-typography`（PR#3）← `feat/p2-components`（PR#4）← `feat/p3-sample`（PR#5，含 P4/P5）← `feat/p6-refine`（PR#6，P6 精修）——**堆叠 PR，按序合并** |
 
 ## 已上线（生产验证）
 

@@ -27,7 +27,7 @@ void main() {
   test('全部 6 套主题都能产出 ThemeData 且背景色正确', () {
     final expectedBg = {
       'sujian': XqColors.sujianBackground, // 宣纸
-      'sujian_dark': XqColors.sujianDarkBackground, // 夜墨
+      'sujian_dark': XqColors.sujianDarkBackground, // 磁青
       'warm': const Color(0xFFFAF4EC),
       'dark': const Color(0xFF0E1222),
       'mint': const Color(0xFFDDEBE3),
@@ -68,8 +68,8 @@ void main() {
         greaterThanOrEqualTo(3.0));
   });
 
-  test('素笺夜墨：文字与控件对比度达标', () {
-    checkContrast('夜墨', [
+  test('磁青：文字与控件对比度达标', () {
+    checkContrast('磁青', [
       XqColors.sujianDarkBackground,
       XqColors.sujianDarkCard,
       XqColors.sujianDarkSunken,

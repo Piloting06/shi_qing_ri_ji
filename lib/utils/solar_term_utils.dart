@@ -72,3 +72,14 @@ String seasonOfTerm(String term) {
   };
   return map[term] ?? 'spring';
 }
+
+/// 进入当前节气的第几天（节气当天为第 1 天）。1 月初落在上一年冬至之后。
+int daysIntoSolarTerm(DateTime d) {
+  final day = DateTime(d.year, d.month, d.day);
+  // currentSolarTerm 用 isAfter 判区间，零点正落在节气当天会被算进上一个；取正午避开边界
+  final term = currentSolarTerm(day.add(const Duration(hours: 12)));
+  final (m, dd) = _solarTerms[term]!;
+  var start = DateTime(day.year, m, dd);
+  if (start.isAfter(day)) start = DateTime(day.year - 1, m, dd);
+  return day.difference(start).inDays + 1;
+}

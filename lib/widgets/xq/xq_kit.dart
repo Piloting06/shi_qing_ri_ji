@@ -1,5 +1,9 @@
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'xq_icons.dart';
+import 'xq_paper.dart';
 
 /// 素笺基础组件库。色值一律走 ThemeState/Theme，禁止硬编码。
 
@@ -174,50 +178,170 @@ class XqTag extends StatelessWidget {
   }
 }
 
-/// 方形小印：朱砂或心情釉色，方形、微倾、单字。
+/// 印的两种刻法：朱文（字是红的，留边框）/ 白文（红底，字留白）
+enum XqSealStyle { zhu, bai }
+
+/// 印：刻刀不匀的边框 + 印泥斑驳（纸纹侵蚀）+ 微倾。支持 1 / 2（竖排）/ 4 字（右起两列）。
+/// 印文用思源宋子集 600：印要有分量，展示字体太细。
 class XqSeal extends StatelessWidget {
   final String char;
   final Color color;
   final double size;
+  final XqSealStyle style;
+  final double angle;
 
-  const XqSeal({super.key, required this.char, required this.color, this.size = 30});
+  const XqSeal({
+    super.key,
+    required this.char,
+    required this.color,
+    this.size = 30,
+    this.style = XqSealStyle.zhu,
+    this.angle = -0.05,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // 单字居中；两字竖排成方印（如节气「霜降」）
-    final multi = char.characters.length > 1;
-    final style = TextStyle(
-      color: color,
-      fontSize: multi ? size * 0.34 : size * 0.46,
-      height: 1.05,
-      fontWeight: FontWeight.w600,
-      fontFamily: 'SerifSC',
-      fontFamilyFallback: const ['Songti SC'],
-    );
     return Semantics(
       label: char,
-      child: Transform.rotate(
-        angle: -0.06,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            border: Border.all(color: color, width: 1.4),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          alignment: Alignment.center,
-          child: multi
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final c in char.characters.take(2)) Text(c, style: style),
-                  ],
-                )
-              : Text(char, style: style),
+      excludeSemantics: true,
+      child: ValueListenableBuilder<ui.Image?>(
+        valueListenable: XqPaper.image,
+        builder: (context, img, _) => CustomPaint(
+          size: Size.square(size),
+          painter: _SealPainter(char: char, color: color, style: style, angle: angle, image: img),
         ),
       ),
     );
   }
+}
+
+class _SealPainter extends CustomPainter {
+  final String char;
+  final Color color;
+  final XqSealStyle style;
+  final double angle;
+  final ui.Image? image;
+
+  _SealPainter({
+    required this.char,
+    required this.color,
+    required this.style,
+    required this.angle,
+    required this.image,
+  });
+
+  int get _seed => char.codeUnits.fold(7, (a, b) => (a * 31 + b) & 0x7fffffff);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width;
+    final rng = math.Random(_seed);
+    final bounds = (Offset.zero & size).inflate(s * 0.08);
+    canvas.save();
+    canvas.translate(s / 2, s / 2);
+    canvas.rotate(angle);
+    canvas.translate(-s / 2, -s / 2);
+    canvas.saveLayer(bounds, Paint());
+
+    final inset = s * 0.05;
+    final frame = _roughRect(Rect.fromLTWH(inset, inset, s - inset * 2, s - inset * 2), rng, s * 0.014);
+    if (style == XqSealStyle.bai) {
+      canvas.drawPath(frame, Paint()..color = color);
+      canvas.saveLayer(bounds, Paint()..blendMode = BlendMode.dstOut);
+      _paintChars(canvas, s, const Color(0xFF000000));
+      canvas.restore();
+    } else {
+      canvas.drawPath(
+        frame,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = s * 0.07
+          ..strokeJoin = StrokeJoin.round,
+      );
+      _paintChars(canvas, s, color);
+    }
+
+    // 边上的崩口：刻石用久了的缺损
+    final nick = Paint()..blendMode = BlendMode.dstOut;
+    for (var i = 0; i < 3; i++) {
+      final t = rng.nextDouble();
+      final side = rng.nextInt(4);
+      final p = switch (side) {
+        0 => Offset(inset + t * (s - inset * 2), inset),
+        1 => Offset(s - inset, inset + t * (s - inset * 2)),
+        2 => Offset(inset + t * (s - inset * 2), s - inset),
+        _ => Offset(inset, inset + t * (s - inset * 2)),
+      };
+      canvas.drawCircle(p, s * (0.02 + rng.nextDouble() * 0.025), nick);
+    }
+
+    final img = image;
+    if (img != null) {
+      XqPaper.erode(canvas, bounds, img,
+          strength: 0.8, scale: 0.36, shift: Offset((_seed % 400).toDouble(), (_seed ~/ 7 % 400).toDouble()));
+    }
+    canvas.restore();
+    canvas.restore();
+  }
+
+  /// 四边逐段抖动的方框：刻刀走得不匀
+  Path _roughRect(Rect r, math.Random rng, double j) {
+    final pts = <Offset>[];
+    const seg = 6;
+    double jit() => (rng.nextDouble() - 0.5) * 2 * j;
+    for (var i = 0; i < seg; i++) {
+      pts.add(Offset(r.left + r.width * i / seg, r.top + jit()));
+    }
+    for (var i = 0; i < seg; i++) {
+      pts.add(Offset(r.right + jit(), r.top + r.height * i / seg));
+    }
+    for (var i = 0; i < seg; i++) {
+      pts.add(Offset(r.right - r.width * i / seg, r.bottom + jit()));
+    }
+    for (var i = 0; i < seg; i++) {
+      pts.add(Offset(r.left + jit(), r.bottom - r.height * i / seg));
+    }
+    return Path()..addPolygon(pts, true);
+  }
+
+  void _paintChars(Canvas canvas, double s, Color c) {
+    final chars = char.characters.toList();
+    final n = chars.length >= 4 ? 4 : (chars.length >= 2 ? 2 : 1);
+    final fontSize = switch (n) { 1 => s * 0.58, 2 => s * 0.4, _ => s * 0.36 };
+    // 每格中心：单字居中；两字竖排；四字右起两列（先右列上下，再左列上下）
+    final cells = switch (n) {
+      1 => [Offset(s / 2, s / 2)],
+      2 => [Offset(s / 2, s * 0.3), Offset(s / 2, s * 0.7)],
+      _ => [Offset(s * 0.7, s * 0.3), Offset(s * 0.7, s * 0.7), Offset(s * 0.3, s * 0.3), Offset(s * 0.3, s * 0.7)],
+    };
+    for (var i = 0; i < n; i++) {
+      for (final stroke in [false, true]) {
+        final tp = TextPainter(
+          text: TextSpan(
+            text: chars[i],
+            style: TextStyle(
+              fontFamily: 'SerifSC',
+              fontFamilyFallback: const ['Songti SC'],
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+              height: 1.0,
+              foreground: Paint()
+                ..color = c
+                ..style = stroke ? PaintingStyle.stroke : PaintingStyle.fill
+                ..strokeWidth = s * 0.016,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        tp.paint(canvas, cells[i] - Offset(tp.width / 2, tp.height / 2));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SealPainter old) =>
+      old.char != char || old.color != color || old.style != style || old.angle != angle || old.image != image;
 }
 
 /// 宋体页头：标题 + 可选说明。
@@ -237,10 +361,10 @@ class XqPageHeader extends StatelessWidget {
           title,
           style: TextStyle(
             color: t.textTheme.bodyLarge?.color,
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'SerifSC',
-            fontFamilyFallback: ['Noto Serif SC', 'Songti SC'],
+            fontSize: 21,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Display',
+            fontFamilyFallback: ['SerifSC', 'Songti SC'],
             height: 1.45,
           ),
         ),

@@ -1,9 +1,13 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// 天色：首页主视觉。随真实天气（6 种）与时辰（4 段）变化的一幅水墨天。
+import 'xq/xq_paper.dart';
+
+/// 天色：首页主视觉。随真实天气（6 种）与时辰（4 段）变化的一张「笺头画」。
+/// P9 起画法从「渐变 + 剪影」改为木版套色：刷痕、错版、断续勾线、版面侵蚀、纸纹透出，点景取自《芥子园画传》。
 /// 纯逻辑（天况/时辰/色板/文案/中文数字）与画笔分开，逻辑见 test/weather_sky_test.dart。
 
 enum SkyCondition { clear, cloudy, overcast, fog, rain, snow }
@@ -258,11 +262,19 @@ String skyLine(SkyCondition c, SkyTime t, {int dayOfYear = 0}) {
   return lines[dayOfYear % lines.length];
 }
 
+/// 点景：雨雪阴雾配孤舟，晴与多云配归帆（线稿见 assets/motifs/SOURCES.md）
+String skyMotifFor(SkyCondition c) => switch (c) {
+      SkyCondition.clear || SkyCondition.cloudy => 'assets/motifs/sail.png',
+      _ => 'assets/motifs/boat.png',
+    };
+
 /// 天色分层：静态层只画一次，云整层平移，雨雪逐帧
 enum SkyLayer { sky, clouds, mountains, precip, fade }
 
-/// 水墨天色画笔：渐变天 → 日月星 → 云 → 三层远山（浓脊淡脚）+ 雾 → 雨雪 → 淡入纸面。
+/// 笺头画画笔（木版套色）：刷色天 → 日月星 → 云 → 三层山（错版 + 侵蚀 + 断续勾线；近山只在右岸，
+/// 左侧留出水面放点景，即「一河两岸」）→ 雨雪 → 淡入纸面。
 /// [layers] 选择要画的层；每层用各自的随机种子，单画某层时位置与整画一致。
+/// [grain]/[motif] 为空时照常绘制（无侵蚀、无点景），测试与首帧不依赖资源加载。
 class WeatherSkyPainter extends CustomPainter {
   final SkyPalette palette;
   final SkyCondition condition;
@@ -271,6 +283,10 @@ class WeatherSkyPainter extends CustomPainter {
   final Set<SkyLayer> layers;
   final Offset orbAt; // 日月位置（占画布比例）
   final Animation<double>? phase; // 雨雪下落相位（0..1 循环）
+  final ui.Image? grain; // 纸纹：版面侵蚀
+  final ui.Image? motif; // 点景线稿
+  final Offset motifAt; // 点景底边中点（占画布比例）
+  final double motifWidth; // 点景宽（占画布宽比例）
 
   WeatherSkyPainter({
     required this.palette,
@@ -280,6 +296,10 @@ class WeatherSkyPainter extends CustomPainter {
     this.layers = const {...SkyLayer.values},
     this.orbAt = const Offset(0.8, 0.3),
     this.phase,
+    this.grain,
+    this.motif,
+    this.motifAt = const Offset(0.27, 0.785),
+    this.motifWidth = 0.2,
   }) : super(repaint: phase);
 
   @override
@@ -305,6 +325,23 @@ class WeatherSkyPainter extends CustomPainter {
           stops: const [0.0, 0.42, 0.74, 1.0],
         ).createShader(Offset.zero & size),
     );
+
+    // 刷痕：上色时棕刷在版上留下的横向纹理（木版水印的手工痕迹）
+    final darker = Color.lerp(p.top, p.ridge, 0.4)!;
+    for (var i = 0; i < 18; i++) {
+      final y = h * (0.02 + rng.nextDouble() * 0.55);
+      final x0 = -20 + rng.nextDouble() * w * 0.7;
+      final len = w * (0.25 + rng.nextDouble() * 0.7);
+      canvas.drawLine(
+        Offset(x0, y),
+        Offset(x0 + len, y + (rng.nextDouble() - 0.5) * 5),
+        Paint()
+          ..color = (rng.nextDouble() < 0.6 ? darker : p.horizon).withAlpha(p.night ? 16 : 20)
+          ..strokeWidth = 1.2 + rng.nextDouble() * 7
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 1.2 + rng.nextDouble() * 2.5),
+      );
+    }
 
     if (p.night && condition == SkyCondition.clear) {
       final star = Paint()..color = p.orb!.withAlpha(150);
@@ -380,17 +417,50 @@ class WeatherSkyPainter extends CustomPainter {
     final p = palette;
     final rng = math.Random(seed * 7 + 3);
     final fog = condition == SkyCondition.fog;
+    // 远 / 中 / 近三版。近山只占右岸，左侧留水面（一河两岸），点景落在中山脚下的水上
     final layers = [
-      (base: 0.64, amp: 0.13, alpha: fog ? 0.16 : 0.26),
-      (base: 0.73, amp: 0.13, alpha: fog ? 0.26 : 0.46),
-      (base: 0.83, amp: 0.12, alpha: fog ? 0.38 : 0.7),
+      (base: 0.62, amp: 0.12, alpha: fog ? 0.16 : 0.24, line: 0.0, width: 0.0, peaks: 4, from: 0.0, to: 1.0, floor: 0.18),
+      (base: 0.71, amp: 0.13, alpha: fog ? 0.26 : 0.44, line: fog ? 0.14 : 0.3, width: 0.8, peaks: 3, from: 0.0, to: 1.0, floor: 0.18),
+      (base: 0.83, amp: 0.15, alpha: fog ? 0.38 : 0.74, line: fog ? 0.22 : 0.5, width: 1.1, peaks: 2, from: 0.5, to: 1.02, floor: 0.05),
     ];
     for (var i = 0; i < layers.length; i++) {
       final l = layers[i];
       _ridge(canvas, size, rng, h * l.base, h * l.amp, p.ridge, l.alpha,
-          peaks: i == 0 ? 4 : (i == 1 ? 3 : 2));
+          peaks: l.peaks, from: l.from, to: l.to, floor: l.floor, line: l.line, lineWidth: l.width);
       _mist(canvas, size, h * (l.base + 0.035), h * (fog ? 0.12 : 0.07),
           p.horizon.withAlpha(fog ? 210 : 150));
+      if (i == 1) _paintMotif(canvas, size);
+    }
+  }
+
+  /// 点景：线稿染成山色（夜里染成天上文字的柔色，像月光勾出的轮廓），舟下几笔水纹
+  void _paintMotif(Canvas canvas, Size size) {
+    final img = motif;
+    if (img == null) return;
+    final w = size.width, h = size.height, p = palette;
+    final mw = w * motifWidth;
+    final mh = mw * img.height / img.width;
+    final cx = w * motifAt.dx, bottom = h * motifAt.dy;
+    final tint = p.night
+        ? p.onSkySoft.withAlpha(150)
+        : Color.lerp(p.ridge, const Color(0xFF000000), 0.2)!.withAlpha(215);
+    canvas.drawImageRect(
+      img,
+      Offset.zero & Size(img.width.toDouble(), img.height.toDouble()),
+      Rect.fromLTWH(cx - mw / 2, bottom - mh, mw, mh),
+      Paint()
+        ..filterQuality = FilterQuality.medium
+        ..colorFilter = ColorFilter.mode(tint, BlendMode.srcIn),
+    );
+    final r = math.Random(seed * 7 + 5);
+    final water = Paint()
+      ..color = tint.withAlpha((tint.a * 255 * 0.35).round())
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 4; i++) {
+      final y = bottom + 2.5 + i * 3 + r.nextDouble() * 1.5;
+      final x = cx - mw * 0.55 + r.nextDouble() * mw * 0.9;
+      canvas.drawLine(Offset(x, y), Offset(x + mw * (0.06 + r.nextDouble() * 0.14), y), water);
     }
   }
 
@@ -449,13 +519,20 @@ class WeatherSkyPainter extends CustomPainter {
     );
   }
 
-  /// 山脊：若干不对称峰（主峰 + 侧峰 + 缓坡）取最高包络，叠细碎山脊纹；
-  /// 竖向渐变上色：脊线浓、山脚淡入雾（水墨「浓脊淡脚」）
+  /// 山脊：若干不对称峰（主峰 + 侧峰 + 缓坡）取最高包络，叠细碎山脊纹与刻刀抖动；
+  /// 色版竖向渐变（浓脊淡脚）并相对线版错开一点（套印不准），版面按纸纹侵蚀；
+  /// [line] > 0 时再压一道断续的山脊墨线（线版，飞白处断开）。峰只落在 [from]..[to] 宽度区间。
   void _ridge(Canvas canvas, Size size, math.Random rng, double baseY, double amp,
-      Color color, double alpha, {required int peaks}) {
+      Color color, double alpha,
+      {required int peaks,
+      double from = 0,
+      double to = 1,
+      double floor = 0.18,
+      double line = 0,
+      double lineWidth = 1}) {
     final w = size.width;
     final ridgePeaks = List.generate(peaks, (i) {
-      final cx = w * (i + 0.2 + rng.nextDouble() * 0.6) / peaks;
+      final cx = w * (from + (to - from) * (i + 0.2 + rng.nextDouble() * 0.6) / peaks);
       return (
         cx: cx,
         height: 0.55 + rng.nextDouble() * 0.45,
@@ -465,7 +542,7 @@ class WeatherSkyPainter extends CustomPainter {
     });
     final ph = rng.nextDouble() * math.pi * 2;
     double yAt(double x) {
-      var hgt = 0.18; // 远处连绵的低缓山体
+      var hgt = floor; // 连绵的低缓山体
       for (final pk in ridgePeaks) {
         final d = x - pk.cx;
         final span = d < 0 ? pk.left : pk.right;
@@ -479,17 +556,26 @@ class WeatherSkyPainter extends CustomPainter {
       return baseY - amp * (hgt + texture);
     }
 
-    final path = Path()..moveTo(0, size.height);
+    final pts = <Offset>[];
     var minY = size.height;
     for (var x = 0.0; x <= w + 3; x += 3) {
-      final y = yAt(x);
+      final y = yAt(x) + (rng.nextDouble() - 0.5) * 1.4; // 刻刀走线不是数学曲线
       minY = math.min(minY, y);
-      path.lineTo(x, y);
+      pts.add(Offset(x, y));
+    }
+    final path = Path()..moveTo(0, size.height);
+    for (final pt in pts) {
+      path.lineTo(pt.dx, pt.dy);
     }
     path
       ..lineTo(w, size.height)
       ..close();
     final rect = Rect.fromLTRB(0, minY, w, baseY + amp * 0.9);
+    final shift = Offset((rng.nextDouble() - 0.5) * 2.4, (rng.nextDouble() - 0.5) * 1.8);
+    final bounds = Offset.zero & size;
+    canvas.saveLayer(bounds, Paint());
+    canvas.save();
+    canvas.translate(shift.dx, shift.dy);
     canvas.drawPath(
       path,
       Paint()
@@ -504,6 +590,36 @@ class WeatherSkyPainter extends CustomPainter {
           stops: const [0.0, 0.5, 1.0],
         ).createShader(rect),
     );
+    canvas.restore();
+    final img = grain;
+    if (img != null) {
+      XqPaper.erode(canvas, bounds, img, strength: 0.55, scale: 0.5, shift: Offset(baseY, baseY * 0.7));
+    }
+    canvas.restore();
+
+    if (line <= 0) return;
+    final p = palette;
+    final ink = p.night ? Color.lerp(p.horizon, p.onSkySoft, 0.25)! : color;
+    final stroke = Paint()
+      ..color = ink.withAlpha((line * 255).round())
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = lineWidth
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final dryPh = rng.nextDouble() * 10;
+    final seg = Path();
+    var pen = false;
+    for (var i = 0; i < pts.length; i++) {
+      // 飞白：两道不同频率的起伏同时走低处断笔
+      final dry = math.sin(i * 0.37 + dryPh) + math.sin(i * 0.113 + dryPh * 2) < -1.15;
+      if (dry) {
+        pen = false;
+        continue;
+      }
+      pen ? seg.lineTo(pts[i].dx, pts[i].dy) : seg.moveTo(pts[i].dx, pts[i].dy);
+      pen = true;
+    }
+    canvas.drawPath(seg, stroke);
   }
 
   void _mist(Canvas canvas, Size size, double y, double hgt, Color color) {
@@ -526,6 +642,10 @@ class WeatherSkyPainter extends CustomPainter {
       old.paper != paper ||
       old.seed != seed ||
       old.orbAt != orbAt ||
+      old.grain != grain ||
+      old.motif != motif ||
+      old.motifAt != motifAt ||
+      old.motifWidth != motifWidth ||
       !setEquals(old.layers, layers);
 }
 
@@ -540,6 +660,9 @@ class WeatherSkyScene extends StatefulWidget {
   final Offset orbAt;
   final ScrollController? scroll; // 提供则做视差
   final bool fade; // 底部淡入纸面（无面板覆盖时用）
+  final String? motif; // 点景线稿资源；null 不画
+  final Offset motifAt;
+  final double motifWidth;
 
   const WeatherSkyScene({
     super.key,
@@ -550,6 +673,9 @@ class WeatherSkyScene extends StatefulWidget {
     this.orbAt = const Offset(0.8, 0.3),
     this.scroll,
     this.fade = false,
+    this.motif,
+    this.motifAt = const Offset(0.27, 0.785),
+    this.motifWidth = 0.2,
   });
 
   @override
@@ -561,6 +687,26 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
   AnimationController? _drift;
   AnimationController? _fall;
   bool? _reduce;
+  ui.Image? _motif;
+  String? _motifAsset;
+
+  @override
+  void initState() {
+    super.initState();
+    XqPaper.ensureLoaded();
+    _loadMotif();
+  }
+
+  void _loadMotif() {
+    final asset = widget.motif;
+    if (asset == _motifAsset) return;
+    _motifAsset = asset;
+    _motif = null;
+    if (asset == null) return;
+    XqPaper.loadImage(asset).then((img) {
+      if (mounted && _motifAsset == asset) setState(() => _motif = img);
+    }, onError: (_) {});
+  }
 
   @override
   void didChangeDependencies() {
@@ -572,6 +718,7 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
   void didUpdateWidget(WeatherSkyScene old) {
     super.didUpdateWidget(old);
     if (old.condition != widget.condition) _sync(force: true);
+    _loadMotif();
   }
 
   void _sync({bool force = false}) {
@@ -603,7 +750,7 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
     super.dispose();
   }
 
-  WeatherSkyPainter _painter(Set<SkyLayer> layers, {Animation<double>? phase}) =>
+  WeatherSkyPainter _painter(Set<SkyLayer> layers, {Animation<double>? phase, ui.Image? grain}) =>
       WeatherSkyPainter(
         palette: widget.palette,
         condition: widget.condition,
@@ -612,16 +759,40 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
         orbAt: widget.orbAt,
         layers: layers,
         phase: phase,
+        grain: grain,
+        motif: _motif,
+        motifAt: widget.motifAt,
+        motifWidth: widget.motifWidth,
       );
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<ui.Image?>(
+      valueListenable: XqPaper.image,
+      builder: (context, grain, _) => _scene(context, grain),
+    );
+  }
+
+  Widget _scene(BuildContext context, ui.Image? grain) {
     final sky = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.sky})));
-    final mountains = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.mountains})));
+    final mountains = RepaintBoundary(
+      child: CustomPaint(painter: _painter({SkyLayer.mountains}, grain: grain)),
+    );
     final clouds = RepaintBoundary(child: CustomPaint(painter: _painter({SkyLayer.clouds})));
     final precip = widget.palette.precip == null
         ? null
         : CustomPaint(painter: _painter({SkyLayer.precip}, phase: _fall));
+    // 纸纹盖在整幅画上、不随视差走：画是印在纸上的
+    final paperGrain = RepaintBoundary(
+      child: IgnorePointer(
+        child: CustomPaint(
+          painter: XqGrainPainter(
+            image: grain,
+            tint: widget.palette.night ? const Color(0x0EE6ECF4) : const Color(0x14403020),
+          ),
+        ),
+      ),
+    );
 
     return LayoutBuilder(
       builder: (context, c) {
@@ -659,6 +830,7 @@ class _WeatherSkySceneState extends State<WeatherSkyScene>
               layer(0.3, drifting),
               layer(0.5, mountains),
               ?precip,
+              paperGrain,
               if (widget.fade)
                 IgnorePointer(child: CustomPaint(painter: _painter({SkyLayer.fade}))),
             ],

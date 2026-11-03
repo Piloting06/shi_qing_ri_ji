@@ -24,7 +24,9 @@ import '../widgets/stagger_in.dart';
 import '../widgets/xq/xq_kit.dart';
 import '../widgets/xq/xq_icons.dart';
 import '../widgets/xq/xq_surface.dart';
-import '../theme/xq_decorations.dart';
+import '../widgets/xq/xq_paper.dart';
+import '../theme/xq_paper_textures.dart';
+import '../data/poems.dart';
 import 'story_page.dart';
 import 'capsule_page.dart';
 import 'card_album_page.dart';
@@ -603,8 +605,9 @@ class _HomePageState extends State<HomePage> {
                     condition: condition,
                     paper: theme.backgroundColor,
                     seed: now.month * 31 + now.day,
-                    orbAt: const Offset(0.72, 0.15),
+                    orbAt: const Offset(0.655, 0.1),
                     scroll: _scrollCtrl,
+                    motif: skyMotifFor(condition),
                   ),
                 ),
               ),
@@ -645,9 +648,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     SliverToBoxAdapter(child: _buildSheet(theme, appState, now, cond)),
-                    SliverFillRemaining(
+                    const SliverFillRemaining(
                       hasScrollBody: false,
-                      child: ColoredBox(color: theme.backgroundColor),
+                      child: XqPaperPage(child: SizedBox.expand()),
                     ),
                   ],
                 ),
@@ -674,7 +677,7 @@ class _HomePageState extends State<HomePage> {
     return '$greet，$name';
   }
 
-  /// 天上的字：城市、宋体大字温度、一句短句；右侧竖排题款 + 节气朱砂印（画的落款）
+  /// 天上的字：城市、展示体大字温度、一句短句与日期节气；右上角题跋（公版古诗竖排两列 + 落款作者 + 节气白文印）
   Widget _buildHero({
     required ThemeState theme,
     required SkyPalette palette,
@@ -692,18 +695,21 @@ class _HomePageState extends State<HomePage> {
     final ready = cond != null && temp != null;
     final seal = palette.darkText ? XqColors.sujianSeal : XqColors.sujianDarkSeal;
     final reduce = MediaQuery.disableAnimationsOf(context);
+    final term = currentSolarTerm(now);
+    final poem = poemFor(condition, time, now);
+    final dateLine =
+        '${chineseNumber(now.month)}月${chineseNumber(now.day)}日 ${weekdays[now.weekday % 7]} · $term第${chineseNumber(daysIntoSolarTerm(now))}天';
 
-    Widget vertical(String text, {double size = 14}) => Column(
+    Widget vertical(String text, {double size = 17, Color? color}) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final ch in text.characters)
               Text(
                 ch,
                 style: XqTypography.headlineSmall.copyWith(
-                  color: palette.onSkySoft,
+                  color: color ?? palette.onSkySoft,
                   fontSize: size,
-                  fontWeight: FontWeight.w500,
-                  height: 1.18,
+                  height: 1.16,
                 ),
               ),
           ],
@@ -713,26 +719,36 @@ class _HomePageState extends State<HomePage> {
       height: height,
       child: Stack(
         children: [
-          // 落款：竖排日期 · 星期，节气印压在最下
+          // 题跋：右起第一列是首句；落款低一字起，下压节气印
           Positioned(
-            top: topInset + 20,
-            right: 22,
+            top: topInset + 22,
+            right: 18,
             child: Semantics(
-              label: '${now.month}月${now.day}日，${weekdays[now.weekday % 7]}，${currentSolarTerm(now)}',
+              label: '${poem.lines.join('，')}。${poem.author}《${poem.title}》。今日$term',
               excludeSemantics: true,
-              child: Column(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  vertical('${chineseNumber(now.month)}月${chineseNumber(now.day)}日'),
-                  const SizedBox(height: 10),
-                  vertical(weekdays[now.weekday % 7], size: 13),
-                  const SizedBox(height: 14),
-                  XqSeal(char: currentSolarTerm(now), color: seal, size: 34),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Column(
+                      children: [
+                        vertical(poem.author, size: 12.5),
+                        const SizedBox(height: 8),
+                        XqSeal(char: term, color: seal, size: 28, style: XqSealStyle.bai, angle: 0.03),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  vertical(poem.lines[1], color: palette.onSky.withAlpha(215)),
+                  const SizedBox(width: 6),
+                  vertical(poem.lines[0], color: palette.onSky.withAlpha(215)),
                 ],
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(20, topInset + 10, 80, 0),
+            padding: EdgeInsets.fromLTRB(20, topInset + 10, 104, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -740,7 +756,7 @@ class _HomePageState extends State<HomePage> {
                   button: true,
                   label: '换城市，当前$city',
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(4),
                     onTap: _openCitySheet,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -749,21 +765,14 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           XqIcon(XqIcons.locate, size: 15, color: palette.onSkySoft),
                           const SizedBox(width: 6),
-                          Text(
-                            city,
-                            style: TextStyle(
-                              color: palette.onSky,
-                              fontSize: 15,
-                              letterSpacing: 1,
-                            ),
-                          ),
+                          Text(city, style: TextStyle(color: palette.onSky, fontSize: 15)),
                           Icon(Icons.expand_more_rounded, size: 18, color: palette.onSkySoft),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
                 Semantics(
                   button: ready,
                   label: ready ? '$cond，$temp 度，查看天气详情' : null,
@@ -791,20 +800,24 @@ class _HomePageState extends State<HomePage> {
                                     chineseTemperature(temp),
                                     style: XqTypography.displayLarge.copyWith(
                                       color: palette.onSky,
-                                      fontSize: height < 450 ? 56 : 68,
-                                      height: 1.08,
-                                      letterSpacing: 3,
+                                      fontSize: height < 450 ? 60 : 72,
+                                      height: 1.05,
+                                      letterSpacing: 2,
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 14),
                                   Text(
                                     '$cond。${skyLine(condition, time, dayOfYear: dayOfYear)}',
                                     style: XqTypography.headlineSmall.copyWith(
                                       color: palette.onSkySoft,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                      height: 1.7,
+                                      fontSize: 17,
+                                      height: 1.6,
                                     ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    dateLine,
+                                    style: TextStyle(color: palette.onSkySoft, fontSize: 12.5, height: 1.5),
                                   ),
                                 ],
                               ),
@@ -824,27 +837,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// 纸面面板：圆角向上、带向上的柔影，盖住山脚；里面是卡片（L1）
+  /// 叠上来的一张纸（L2）：毛边顶、纸纹、向上一道影，盖住山脚；上面放一张「今日笺」（L1）
   Widget _buildSheet(ThemeState theme, AppState appState, DateTime now, String? cond) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.backgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: XqDecorations.sheetLift(dark: theme.isDark),
-      ),
-      padding: const EdgeInsets.fromLTRB(18, 26, 18, 32),
+    return XqDeckleSheet(
+      seed: now.day,
+      padding: const EdgeInsets.fromLTRB(18, 30, 18, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           StaggerIn(
             index: 0,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(6, 0, 6, 18),
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
               child: Text(
                 _greeting(now, appState),
                 style: XqTypography.headlineLarge.copyWith(
                   color: theme.textPrimary,
-                  fontSize: 22,
+                  fontSize: 23,
+                  letterSpacing: 1,
                 ),
               ),
             ),
@@ -854,12 +864,9 @@ class _HomePageState extends State<HomePage> {
           StaggerIn(
             index: 2,
             child: SizedBox(
-              height: 54,
+              height: 52,
               child: FilledButton(
                 onPressed: _openMood,
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -867,17 +874,17 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(width: 10),
                     Text(
                       _todayMoods.isEmpty ? '记一笔' : '再记一笔',
-                      style: const TextStyle(letterSpacing: 4, fontSize: 16),
+                      style: const TextStyle(fontSize: 16, letterSpacing: 1),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 26),
           StaggerIn(index: 3, child: _buildShortcuts(theme)),
           if (_memory != null) ...[
-            const SizedBox(height: 28),
+            const SizedBox(height: 30),
             StaggerIn(index: 4, child: _buildMemoryCard(theme)),
           ],
         ],
@@ -885,22 +892,42 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// 今天：L1 卡片。已记 → 最新一条；未记 → 一句邀请。点卡片进心情页。
+  /// 朱丝栏：信笺上的淡朱界行
+  Widget _ruled(ThemeState theme, Widget child, {double spacing = 32}) => Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: LinedPaperPainter(
+                lineColor: theme.sealColor.withAlpha(theme.isDark ? 70 : 52),
+                lineSpacing: spacing,
+                showMarginLine: false,
+              ),
+            ),
+          ),
+          child,
+        ],
+      );
+
+  /// 今日笺（L1）：已记 → 颜料点 · 心情 · 时间，楷体摘句写在朱丝栏上，右下钤一枚「记」；未记 → 一张空笺。
   Widget _buildToday(ThemeState theme, String? cond) {
     if (_todayMoods.isEmpty) {
       return XqSurface(
         onTap: _openMood,
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('今天', style: TextStyle(color: theme.gold, fontSize: 12.5, letterSpacing: 2)),
-            const SizedBox(height: 10),
-            Text(
-              cond != null ? '$cond的一天，还没有写下什么。' : '今天还没有写下什么。',
-              style: XqTypography.handwrittenBody.copyWith(
-                color: theme.textSecondary,
-                fontSize: 18,
-                height: 1.7,
+            Text('今日笺', style: TextStyle(color: theme.textTertiary, fontSize: 12.5)),
+            const SizedBox(height: 4),
+            _ruled(
+              theme,
+              Text(
+                cond != null ? '$cond的一天，还空着。\n写下第一笔。' : '今天还空着。\n写下第一笔。',
+                style: XqTypography.handwrittenBody.copyWith(
+                  color: theme.textSecondary,
+                  fontSize: 18,
+                  height: 32 / 18,
+                ),
               ),
             ),
           ],
@@ -911,108 +938,116 @@ class _HomePageState extends State<HomePage> {
     final score = (latest['emotion_type'] as num?)?.toInt() ?? 0;
     final notes = (latest['notes']?.toString() ?? '').trim();
     final hm = TimeUtils.hm(latest['created_at']);
-    final moodColor = Color(moodColors[score] ?? 0xFF7C918C);
+    final moodColor = Color(moodColors[score] ?? 0xFF7A7871);
     return XqSurface(
       onTap: _openMood,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.zero,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: moodColor.withAlpha(theme.isDark ? 60 : 36),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(color: moodColor, shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 6),
+                    XqPigmentDab(color: moodColor, size: 16, seed: score),
+                    const SizedBox(width: 7),
                     Text(
                       moodLabels[score] ?? '',
-                      style: TextStyle(color: theme.textPrimary, fontSize: 13),
+                      style: TextStyle(color: theme.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                     ),
+                    const SizedBox(width: 10),
+                    if (hm.isNotEmpty)
+                      Text(
+                        hm,
+                        style: TextStyle(
+                          color: theme.textTertiary,
+                          fontSize: 13,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    const Spacer(),
+                    if (_todayMoods.length > 1)
+                      Text(
+                        '今日 ${_todayMoods.length} 笔',
+                        style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+                      ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              if (hm.isNotEmpty)
-                Text(
-                  '今天 $hm',
-                  style: TextStyle(
-                    color: theme.gold,
-                    fontSize: 13,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                const SizedBox(height: 6),
+                _ruled(
+                  theme,
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30),
+                    child: Text(
+                      notes.isEmpty ? '只留下了一个心情。' : '「$notes」',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: XqTypography.handwrittenBody.copyWith(
+                        color: theme.textPrimary,
+                        fontSize: 18,
+                        height: 32 / 18,
+                      ),
+                    ),
                   ),
                 ),
-              const Spacer(),
-              if (_todayMoods.length > 1)
-                Text(
-                  '共 ${_todayMoods.length} 笔',
-                  style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            notes.isEmpty ? '只留下了一个心情。' : '「$notes」',
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: XqTypography.handwrittenBody.copyWith(
-              color: theme.textPrimary,
-              fontSize: 18,
-              height: 1.75,
+              ],
             ),
+          ),
+          Positioned(
+            right: 14,
+            bottom: 12,
+            child: XqSeal(char: '记', color: theme.sealColor, size: 30, style: XqSealStyle.bai, angle: 0.09),
           ),
         ],
       ),
     );
   }
 
-  /// 三个入口：素笺 / 时光胶囊 / 卡片册
+  /// 目录：一行三栏，上下乌丝栏、栏间界线（不是三张一样的卡片）
   Widget _buildShortcuts(ThemeState theme) {
-    Widget tile(IconData icon, String title, String sub, Widget page) => Expanded(
-          child: XqSurface(
-            padding: const EdgeInsets.fromLTRB(14, 16, 12, 14),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: theme.sunkenColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 19, color: theme.accentColor),
+    Widget entry(String title, String sub, Widget page) => Expanded(
+          child: Semantics(
+            button: true,
+            label: '$title，$sub',
+            excludeSemantics: true,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Column(
+                  children: [
+                    Text(title, style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, letterSpacing: 2)),
+                    const SizedBox(height: 4),
+                    Text(sub, style: TextStyle(color: theme.textTertiary, fontSize: 12)),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                Text(title, style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 15.5)),
-                const SizedBox(height: 3),
-                Text(sub, style: TextStyle(color: theme.textTertiary, fontSize: 12)),
-              ],
+              ),
             ),
           ),
         );
-    return Row(
-      children: [
-        tile(Icons.edit_note_rounded, '素笺', '写一篇长的', const StoryListPage()),
-        const SizedBox(width: 10),
-        tile(Icons.hourglass_empty_rounded, '时光胶囊', '写给以后', const CapsulePage()),
-        const SizedBox(width: 10),
-        tile(Icons.style_outlined, '卡片册', '做过的卡片', const CardAlbumPage()),
-      ],
+    Widget rule() => Container(width: 0.6, height: 34, color: theme.frameColor);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.symmetric(horizontal: BorderSide(color: theme.frameColor, width: 0.6)),
+      ),
+      child: Row(
+        children: [
+          entry('素笺', '写一篇长的', const StoryListPage()),
+          rule(),
+          entry('胶囊', '写给以后', const CapsulePage()),
+          rule(),
+          entry('卡片册', '做过的卡片', const CardAlbumPage()),
+        ],
+      ),
     );
   }
 
-  /// 那年今日：L1 卡片，点击制成卡片
+  /// 那年今日：一张泛黄的旧笺，点击制成卡片
   Widget _buildMemoryCard(ThemeState theme) {
     final m = _memory!;
     final date = m['date']?.toString() ?? '';
@@ -1027,12 +1062,18 @@ class _HomePageState extends State<HomePage> {
       if (weatherText.isNotEmpty) weatherText,
       moodLabels[score] ?? '',
     ].where((s) => s.isNotEmpty).join(' · ');
+    final aged = Color.lerp(
+      theme.cardColor,
+      theme.isDark ? const Color(0xFF3A3526) : const Color(0xFFE9D8B2),
+      theme.isDark ? 0.35 : 0.42,
+    )!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         XqSectionTitle('那年今日', caption: meta),
         XqSurface(
+          color: aged,
           onTap: () {
             MoodCardMaker.show(
               context,

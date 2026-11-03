@@ -18,6 +18,16 @@ class ThemeState extends ChangeNotifier {
     _ => borderColor,
   };
 
+  /// 笺的外框细墨线（L1 装裱边）
+  Color get frameColor => switch (_themeMode) {
+    'sujian' => XqColors.sujianFrame,
+    'sujian_dark' => XqColors.sujianDarkFrame,
+    _ => borderColor,
+  };
+
+  /// 纸纹染色：浅色暖墨纤维、深色月白纤维
+  Color get paperFiber => isDark ? XqColors.sujianDarkPaperFiber : XqColors.sujianPaperFiber;
+
   /// 凹陷区（素笺：比纸深一层的标签/代码底），其余主题回退到卡片色
   Color get sunkenColor => switch (_themeMode) {
     'sujian' => XqColors.sujianSunken,
@@ -34,7 +44,7 @@ class ThemeState extends ChangeNotifier {
 
   static const Map<String, String> themeNames = {
     'sujian': '素笺',
-    'sujian_dark': '素笺 · 夜墨',
+    'sujian_dark': '磁青',
     'warm': '暖笺',
     'dark': '黛笺',
     'mint': '青笺',

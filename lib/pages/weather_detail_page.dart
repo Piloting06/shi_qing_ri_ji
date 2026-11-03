@@ -8,7 +8,7 @@ import '../widgets/stagger_in.dart';
 import '../widgets/weather_feedback_bar.dart';
 import '../widgets/weather_sky.dart';
 import '../widgets/xq/xq_surface.dart';
-import '../theme/xq_decorations.dart';
+import '../widgets/xq/xq_paper.dart';
 
 enum WeatherDetailAction { relocate, chooseCity }
 
@@ -37,16 +37,24 @@ class WeatherDetailPage extends StatelessWidget {
     final today = weatherDay(weather);
     final tomorrow = weatherDay(weather, key: 'tomorrow', index: 1);
     final dayAfter = weatherDay(weather, key: 'day_after', index: 2);
-    final weatherText = (current['weather'] ?? today['weather'] ?? '未知天气').toString();
-    final code = weatherInt(current['weather_code']) ?? weatherInt(today['weather_code']);
-    final currentTemp = weatherInt(current['temp_current']) ?? weatherInt(today['temp_current']);
+    final weatherText = (current['weather'] ?? today['weather'] ?? '未知天气')
+        .toString();
+    final code =
+        weatherInt(current['weather_code']) ??
+        weatherInt(today['weather_code']);
+    final currentTemp =
+        weatherInt(current['temp_current']) ??
+        weatherInt(today['temp_current']);
     final high = weatherInt(today['temp_max']);
     final low = weatherInt(today['temp_min']);
-    final humidity = weatherInt(current['humidity']) ?? weatherInt(today['humidity']);
+    final humidity =
+        weatherInt(current['humidity']) ?? weatherInt(today['humidity']);
     final feelsLike = weatherInt(current['feels_like']);
-    final wind = weatherInt(current['wind_current']) ?? weatherInt(today['wind']);
+    final wind =
+        weatherInt(current['wind_current']) ?? weatherInt(today['wind']);
     // 服务端字段为 precip_prob（旧代码读 rain_prob，降水从未显示）
-    final rain = weatherInt(today['precip_prob']) ?? weatherInt(today['rain_prob']);
+    final rain =
+        weatherInt(today['precip_prob']) ?? weatherInt(today['rain_prob']);
     final sunrise = today['sunrise']?.toString();
     final sunset = today['sunset']?.toString();
 
@@ -103,7 +111,8 @@ class WeatherDetailPage extends StatelessWidget {
               ? '可能会下，备一把伞'
               : '不太会下',
         ),
-      if (sunrise != null && sunset != null) ('日出 · 日落', '$sunrise · $sunset', null),
+      if (sunrise != null && sunset != null)
+        ('日出 · 日落', '$sunrise · $sunset', null),
     ];
 
     return Scaffold(
@@ -116,31 +125,46 @@ class WeatherDetailPage extends StatelessWidget {
             right: 0,
             height: skyH + 80,
             child: AnnotatedRegion<SystemUiOverlayStyle>(
-              value: palette.darkText ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+              value: palette.darkText
+                  ? SystemUiOverlayStyle.dark
+                  : SystemUiOverlayStyle.light,
               child: WeatherSkyScene(
                 palette: palette,
                 condition: condition,
                 paper: theme.backgroundColor,
                 seed: now.month * 31 + now.day,
                 orbAt: const Offset(0.78, 0.2),
+                motif: skyMotifFor(condition),
+                motifAt: const Offset(0.3, 0.8),
               ),
             ),
           ),
           ListView(
             padding: EdgeInsets.zero,
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             children: [
               SizedBox(
                 height: skyH,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(12, media.padding.top + 4, 24, 0),
+                  padding: EdgeInsets.fromLTRB(
+                    12,
+                    media.padding.top + 4,
+                    24,
+                    0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       IconButton(
                         tooltip: '返回',
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.arrow_back, color: palette.onSky, size: 22),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: palette.onSky,
+                          size: 22,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 16, top: 6),
@@ -149,11 +173,17 @@ class WeatherDetailPage extends StatelessWidget {
                           children: [
                             Text(
                               '$city · ${weatherUpdatedText(updatedAt)}',
-                              style: TextStyle(color: palette.onSkySoft, fontSize: 13, letterSpacing: 1),
+                              style: TextStyle(
+                                color: palette.onSkySoft,
+                                fontSize: 13,
+                                letterSpacing: 1,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              currentTemp == null ? weatherText : chineseTemperature(currentTemp),
+                              currentTemp == null
+                                  ? weatherText
+                                  : chineseTemperature(currentTemp),
                               style: XqTypography.displayLarge.copyWith(
                                 color: palette.onSky,
                                 fontSize: 52,
@@ -165,7 +195,8 @@ class WeatherDetailPage extends StatelessWidget {
                             Text(
                               [
                                 weatherText,
-                                if (high != null && low != null) '最低 $low° · 最高 $high°',
+                                if (high != null && low != null)
+                                  '最低 $low° · 最高 $high°',
                               ].join('　'),
                               style: XqTypography.headlineSmall.copyWith(
                                 color: palette.onSkySoft,
@@ -180,68 +211,79 @@ class WeatherDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.backgroundColor,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                  boxShadow: XqDecorations.sheetLift(dark: theme.isDark),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: media.size.height - skyH,
                 ),
-                constraints: BoxConstraints(minHeight: media.size.height - skyH),
-                padding: const EdgeInsets.fromLTRB(18, 26, 18, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    StaggerIn(
-                      index: 0,
-                      child: _section(theme, '接下来', [
-                        for (final (label, d) in days) _dayRow(theme, label, d),
-                      ]),
-                    ),
-                    const SizedBox(height: 28),
-                    if (facts.isNotEmpty)
+                child: XqDeckleSheet(
+                  seed: now.day + 7,
+                  padding: const EdgeInsets.fromLTRB(18, 30, 18, 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       StaggerIn(
-                        index: 1,
-                        child: _section(theme, '此刻', [
-                          for (final f in facts) _factRow(theme, f.$1, f.$2, f.$3),
+                        index: 0,
+                        child: _section(theme, '接下来', [
+                          for (final (label, d) in days)
+                            _dayRow(theme, label, d),
                         ]),
                       ),
-                    const SizedBox(height: 28),
-                    StaggerIn(
-                      index: 2,
-                      child: WeatherFeedbackBar(
-                        weatherText: weatherText,
-                        currentTemp: currentTemp,
-                        high: high,
-                        low: low,
-                        cityName: cityName,
+                      const SizedBox(height: 28),
+                      if (facts.isNotEmpty)
+                        StaggerIn(
+                          index: 1,
+                          child: _section(theme, '此刻', [
+                            for (final f in facts)
+                              _factRow(theme, f.$1, f.$2, f.$3),
+                          ]),
+                        ),
+                      const SizedBox(height: 28),
+                      StaggerIn(
+                        index: 2,
+                        child: WeatherFeedbackBar(
+                          weatherText: weatherText,
+                          currentTemp: currentTemp,
+                          high: high,
+                          low: low,
+                          cityName: cityName,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context, WeatherDetailAction.relocate),
-                            child: const Text('重新定位'),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(
+                                context,
+                                WeatherDetailAction.relocate,
+                              ),
+                              child: const Text('重新定位'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(
+                                context,
+                                WeatherDetailAction.chooseCity,
+                              ),
+                              child: const Text('换个城市'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          locationStatus,
+                          style: TextStyle(
+                            color: theme.textTertiary,
+                            fontSize: 12,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context, WeatherDetailAction.chooseCity),
-                            child: const Text('换个城市'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Text(
-                        locationStatus,
-                        style: TextStyle(color: theme.textTertiary, fontSize: 12),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -263,7 +305,8 @@ class WeatherDetailPage extends StatelessWidget {
             children: [
               for (var i = 0; i < rows.length; i++) ...[
                 rows[i],
-                if (i < rows.length - 1) Container(height: 0.6, color: theme.borderColor),
+                if (i < rows.length - 1)
+                  Container(height: 0.6, color: theme.borderColor),
               ],
             ],
           ),
@@ -330,7 +373,10 @@ class WeatherDetailPage extends StatelessWidget {
         children: [
           SizedBox(
             width: 88,
-            child: Text(name, style: TextStyle(color: theme.textSecondary, fontSize: 14)),
+            child: Text(
+              name,
+              style: TextStyle(color: theme.textSecondary, fontSize: 14),
+            ),
           ),
           Expanded(
             child: Text(

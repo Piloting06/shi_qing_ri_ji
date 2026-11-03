@@ -15,6 +15,10 @@ import '../widgets/mood_card_maker.dart';
 import '../widgets/xq_toast.dart';
 import '../utils/time_utils.dart';
 import '../widgets/xq/xq_surface.dart';
+import '../widgets/xq/xq_paper.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../utils/solar_term_utils.dart';
+import '../widgets/weather_sky.dart' show chineseNumber;
 import '../services/mood_queue.dart';
 import 'treehole_page.dart';
 
@@ -204,6 +208,7 @@ class _MoodPageState extends State<MoodPage> {
       final dayMoods = await Api.getMoodsByDate(date);
 
       if (mounted) {
+        HapticFeedback.heavyImpact(); // 印落下
         setState(() {
           _saving = false;
           _saved = true;
@@ -368,7 +373,8 @@ class _MoodPageState extends State<MoodPage> {
       backgroundColor: t.backgroundColor,
       // 保存条吸底：Scaffold 自动避让键盘
       bottomNavigationBar: _buildInlineSaveBar(t),
-      body: SafeArea(
+      body: XqPaperPage(
+        child: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
             await _loadAllMoods();
@@ -386,7 +392,7 @@ class _MoodPageState extends State<MoodPage> {
                 child: _buildHeader(t, appState),
               ),
               const SizedBox(height: 20),
-              // 记录区：一张卡（心情 + 标签），一张纸（书写）
+              // 记录区：一张笺（心情颜料 + 签条），一张朱丝栏信笺（书写，钤印）
               XqSurface(
                 padding: const EdgeInsets.fromLTRB(12, 18, 12, 18),
                 child: Column(
@@ -414,7 +420,7 @@ class _MoodPageState extends State<MoodPage> {
               ),
               const SizedBox(height: 12),
               XqSurface(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+                padding: EdgeInsets.zero,
                 child: _buildEditor(t),
               ),
               const SizedBox(height: 36),
@@ -429,19 +435,16 @@ class _MoodPageState extends State<MoodPage> {
           ),
         ),
       ),
+      ),
     );
   }
 
   Widget _sectionLabel(ThemeState t, String text) => Text(
         text,
-        style: TextStyle(
-          color: t.textTertiary,
-          fontSize: 12,
-          letterSpacing: 2,
-        ),
+        style: TextStyle(color: t.textTertiary, fontSize: 12.5, letterSpacing: 1),
       );
 
-  /// 页头：宋体「今天 / M月D日」+ 日期翻页（暗木数字，点日期选日子）
+  /// 页头：展示体「今天」+ 下一行「周三 · 霜降第十三天」；右侧汉字日期可点选日子，左右翻页
   Widget _buildHeader(ThemeState t, AppState appState) {
     final date = DateTime.tryParse(appState.selectedDate) ?? DateTime.now();
     final now = DateTime.now();
@@ -451,7 +454,9 @@ class _MoodPageState extends State<MoodPage> {
         ? '今天'
         : DateUtils.isSameDay(date, now.subtract(const Duration(days: 1)))
         ? '昨天'
-        : '${date.month}月${date.day}日';
+        : '${chineseNumber(date.month)}月${chineseNumber(date.day)}日';
+    final term = currentSolarTerm(date.add(const Duration(hours: 12)));
+    final sub = '周${_weekdayNames[date.weekday - 1]} · $term第${chineseNumber(daysIntoSolarTerm(date))}天';
 
     Widget arrow(IconData icon, String label, VoidCallback? onTap) => Semantics(
           button: true,
@@ -474,9 +479,16 @@ class _MoodPageState extends State<MoodPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          title,
-          style: XqTypography.displayMedium.copyWith(color: t.textPrimary),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: XqTypography.displayMedium.copyWith(color: t.textPrimary, fontSize: 32, letterSpacing: 2),
+            ),
+            const SizedBox(height: 2),
+            Text(sub, style: TextStyle(color: t.textTertiary, fontSize: 12.5)),
+          ],
         ),
         const Spacer(),
         arrow(Icons.chevron_left, '前一天', () {
@@ -485,7 +497,8 @@ class _MoodPageState extends State<MoodPage> {
         }),
         Semantics(
           button: true,
-          label: '选择日期',
+          label: '选择日期，当前${date.month}月${date.day}日',
+          excludeSemantics: true,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () async {
@@ -500,13 +513,8 @@ class _MoodPageState extends State<MoodPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
-                '${date.month.toString().padLeft(2, '0')} · ${date.day.toString().padLeft(2, '0')}  周${_weekdayNames[date.weekday - 1]}',
-                style: TextStyle(
-                  color: t.gold,
-                  fontSize: 14,
-                  letterSpacing: 0.5,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+                '${chineseNumber(date.month)}月${chineseNumber(date.day)}日',
+                style: XqTypography.headlineSmall.copyWith(color: t.gold, fontSize: 16),
               ),
             ),
           ),
@@ -525,7 +533,7 @@ class _MoodPageState extends State<MoodPage> {
     );
   }
 
-  /// 八种心情：一行釉色墨点 + 名字。选中的墨点放大、名字着釉色、下有一笔细线。
+  /// 八种心情：一行颜料（藤黄/石绿/花青…）+ 名字。选中的颜料放大、名字加重、下有一笔墨线。
   Widget _buildMoodRow(ThemeState t) {
     final reduce = MediaQuery.of(context).disableAnimations;
     return Row(
@@ -552,20 +560,13 @@ class _MoodPageState extends State<MoodPage> {
                 child: Column(
                   children: [
                     SizedBox(
-                      height: 30,
+                      height: 34,
                       child: Center(
                         child: AnimatedScale(
-                          scale: active ? 1.0 : 0.62,
+                          scale: active ? 1.0 : 0.7,
                           duration: Duration(milliseconds: reduce ? 0 : 200),
-                          curve: Curves.easeOutCubic,
-                          child: Container(
-                            width: 26,
-                            height: 26,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
+                          curve: Curves.easeOutQuart,
+                          child: XqPigmentDab(color: color, size: 32, seed: s),
                         ),
                       ),
                     ),
@@ -574,8 +575,7 @@ class _MoodPageState extends State<MoodPage> {
                       moodLabels[s] ?? '',
                       style: TextStyle(
                         fontSize: 13,
-                        letterSpacing: 0.5,
-                        color: active ? color : t.textSecondary,
+                        color: active ? t.textPrimary : t.textSecondary,
                         fontWeight: active ? FontWeight.w600 : FontWeight.w400,
                       ),
                     ),
@@ -583,8 +583,8 @@ class _MoodPageState extends State<MoodPage> {
                     AnimatedContainer(
                       duration: Duration(milliseconds: reduce ? 0 : 200),
                       width: active ? 14 : 0,
-                      height: 1.5,
-                      color: color,
+                      height: 1.2,
+                      color: t.textPrimary,
                     ),
                   ],
                 ),
@@ -596,7 +596,7 @@ class _MoodPageState extends State<MoodPage> {
     );
   }
 
-  /// 标签：文字短签（无 emoji），选中着黛青
+  /// 标签：签条（细墨框），选中墨底反白
   Widget _buildTags(ThemeState t) {
     return Wrap(
       spacing: 8,
@@ -622,18 +622,15 @@ class _MoodPageState extends State<MoodPage> {
               duration: const Duration(milliseconds: 160),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: sel ? t.accentColor.withAlpha(22) : t.sunkenColor,
+                color: sel ? t.accentColor : Colors.transparent,
                 borderRadius: BorderRadius.circular(2),
-                border: Border.all(
-                  color: sel ? t.accentColor.withAlpha(150) : Colors.transparent,
-                  width: 0.8,
-                ),
+                border: Border.all(color: sel ? t.accentColor : t.frameColor, width: 0.8),
               ),
               child: Text(
                 tag['label'] ?? '',
                 style: TextStyle(
                   fontSize: 13,
-                  color: sel ? t.accentColor : t.textSecondary,
+                  color: sel ? t.textOnAccent : t.textSecondary,
                   fontWeight: sel ? FontWeight.w500 : FontWeight.w400,
                 ),
               ),
@@ -644,53 +641,92 @@ class _MoodPageState extends State<MoodPage> {
     );
   }
 
-  /// 书写区：无框横线纸，楷体正文（内容层）
+  /// 书写区：朱丝栏信笺，右上角一枝寒枝（芥子园线稿，极淡），楷体正文；保存后右下钤一枚「记」
   Widget _buildEditor(ThemeState t) {
-    return Container(
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    return Stack(
       key: _editorKey,
-      constraints: const BoxConstraints(minHeight: 4 * 32 + 8),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: LinedPaperPainter(
-                lineColor: t.paperLine,
-                lineSpacing: 32,
-                showMarginLine: false,
+      children: [
+        Positioned(
+          top: 6,
+          right: 8,
+          child: IgnorePointer(
+            child: Image.asset(
+              'assets/motifs/branch.png',
+              width: 76,
+              color: t.ink.withAlpha(t.isDark ? 40 : 34),
+              colorBlendMode: BlendMode.srcIn,
+              excludeFromSemantics: true,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 4 * 32 + 8),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: LinedPaperPainter(
+                      lineColor: t.sealColor.withAlpha(t.isDark ? 70 : 52),
+                      lineSpacing: 32,
+                      showMarginLine: false,
+                    ),
+                  ),
+                ),
+                TextField(
+                  controller: _notesCtrl,
+                  minLines: 4,
+                  maxLines: 12,
+                  style: XqTypography.handwrittenBody.copyWith(
+                    color: t.textPrimary,
+                    height: 32 / 17,
+                  ),
+                  cursorColor: t.accentColor,
+                  cursorWidth: 1.5,
+                  onTap: () => Future.delayed(
+                    const Duration(milliseconds: 300),
+                    _scrollToEditor,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: _moodScore == 0
+                        ? '今天发生了什么'
+                        : _placeholderForScore(_moodScore),
+                    hintStyle: XqTypography.handwrittenBody.copyWith(
+                      color: t.textTertiary.withAlpha(150),
+                      height: 32 / 17,
+                    ),
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // 钤印：保存成功时印从上方落下（1.6 → 1，快进慢停），改动后印撤去
+        if (_saved)
+          Positioned(
+            right: 16,
+            bottom: 12,
+            child: IgnorePointer(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: reduce ? 1 : 0, end: 1),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutQuart,
+                builder: (context, v, child) => Opacity(
+                  opacity: (v * 2.5).clamp(0.0, 1.0),
+                  child: Transform.scale(scale: 1.6 - 0.6 * v, child: child),
+                ),
+                child: XqSeal(char: '记', color: t.sealColor, size: 52, style: XqSealStyle.bai, angle: -0.08),
               ),
             ),
           ),
-          TextField(
-            controller: _notesCtrl,
-            minLines: 4,
-            maxLines: 12,
-            style: XqTypography.handwrittenBody.copyWith(
-              color: t.textPrimary,
-              height: 32 / 17,
-            ),
-            cursorColor: t.accentColor,
-            cursorWidth: 1.5,
-            onTap: () => Future.delayed(
-              const Duration(milliseconds: 300),
-              _scrollToEditor,
-            ),
-            decoration: InputDecoration(
-              hintText: _moodScore == 0
-                  ? '今天发生了什么'
-                  : _placeholderForScore(_moodScore),
-              hintStyle: XqTypography.handwrittenBody.copyWith(
-                color: t.textTertiary.withAlpha(150),
-                height: 32 / 17,
-              ),
-              filled: false,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -763,15 +799,8 @@ class _MoodPageState extends State<MoodPage> {
                 width: 20,
                 child: Column(
                   children: [
-                    const SizedBox(height: 5),
-                    Container(
-                      width: 9,
-                      height: 9,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    const SizedBox(height: 3),
+                    XqPigmentDab(color: color, size: 13, seed: score),
                     if (!last)
                       Expanded(
                         child: Container(
@@ -883,14 +912,13 @@ class _MoodPageState extends State<MoodPage> {
                             width: 1.2,
                           ),
                         ),
-                        child: Container(
-                          width: has ? 14 : 6,
-                          height: has ? 14 : 6,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
+                        child: has
+                            ? XqPigmentDab(color: color, size: 17, seed: d.score!)
+                            : Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                              ),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -1052,41 +1080,33 @@ class _MoodPageState extends State<MoodPage> {
 
   // ── Save Bar ──
 
-  /// 吸底保存条：贴底通栏（surface + 顶部细线），与导航同一语言
+  /// 吸底保存条：纸条 + 顶部乌丝栏；右侧是一枚印——可存时朱红白文，点下即「盖印保存」
   Widget _buildInlineSaveBar(ThemeState t) {
     final status = _saving
-        ? '保存中…'
+        ? '正在盖印…'
         : _saved
-        ? '已保存'
+        ? '已盖印保存'
         : _dirty
         ? '有改动未保存'
         : '选一个心情，或写下几句';
+    final canSave = _dirty && !_saving;
 
     return Container(
       decoration: BoxDecoration(
         color: t.cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(t.isDark ? 90 : 12),
-            blurRadius: 18,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        image: XqPaper.grain(t.paperFiber, strength: t.isDark ? 0.6 : 0.8),
+        border: Border(top: BorderSide(color: t.frameColor, width: 0.6)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 10, 16, 10),
+      padding: const EdgeInsets.fromLTRB(24, 8, 14, 8),
       child: Row(
         children: [
-          if (_saved) ...[
-            Icon(Icons.check, size: 16, color: t.successColor),
-            const SizedBox(width: 6),
-          ],
           Expanded(
             child: Text(
               status,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: _saved ? t.successColor : t.textSecondary,
+                color: _saved ? t.textPrimary : t.textSecondary,
                 fontSize: 13,
               ),
             ),
@@ -1095,27 +1115,47 @@ class _MoodPageState extends State<MoodPage> {
           if (_saved)
             OutlinedButton(
               onPressed: _openCardMaker,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(96, 44),
-              ),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(96, 44)),
               child: const Text('制成卡片'),
             )
           else
-            FilledButton(
-              onPressed: (_dirty && !_saving) ? _save : null,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(96, 44),
-              ),
-              child: _saving
-                  ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1.5,
-                        color: t.textOnAccent,
+            Semantics(
+              button: true,
+              enabled: canSave,
+              label: '盖印保存',
+              excludeSemantics: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: canSave ? _save : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '盖印保存',
+                        style: TextStyle(
+                          color: canSave ? t.textPrimary : t.textTertiary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    )
-                  : const Text('保存'),
+                      const SizedBox(width: 10),
+                      AnimatedOpacity(
+                        opacity: canSave || _saving ? 1 : 0.45,
+                        duration: const Duration(milliseconds: 160),
+                        child: XqSeal(
+                          char: '记',
+                          color: canSave || _saving ? t.sealColor : t.textTertiary,
+                          size: 44,
+                          style: canSave || _saving ? XqSealStyle.bai : XqSealStyle.zhu,
+                          angle: -0.04,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
         ],
       ),

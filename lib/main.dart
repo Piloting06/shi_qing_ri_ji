@@ -12,6 +12,7 @@ import 'theme/xq_colors.dart';
 import 'widgets/splash_screen.dart';
 import 'pages/login_page.dart';
 import 'widgets/main_scaffold.dart';
+import 'widgets/xq/xq_paper.dart';
 import 'constants/keys.dart';
 import 'api/api_client.dart';
 import 'services/notification_service.dart';
@@ -22,6 +23,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService.bindNavigatorKey(appNavigatorKey);
   unawaited(NotificationService.initialize());
+  unawaited(XqPaper.ensureLoaded()); // 纸纹：天色版画与印章的侵蚀用，越早解码越好
   Api.onUnauthorized = () {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ctx = appNavigatorKey.currentContext;

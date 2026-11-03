@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../theme/xq_typography.dart';
+import 'xq/xq_kit.dart';
+import 'xq/xq_paper.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
@@ -6,7 +9,6 @@ import '../services/notification_service.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_colors.dart';
 import '../stores/app_state.dart';
-import '../widgets/xq/xq_icons.dart';
 import '../widgets/xq_toast.dart';
 import '../pages/home_page.dart';
 import '../pages/mood_page.dart';
@@ -205,8 +207,8 @@ Color _navBarColor(String theme) => switch (theme) {
   _ => XqColors.sujianCard,
 };
 
-/// 素笺贴底通栏导航：surface 底、顶部 1px 线、选中项 accent + 2px 顶线。
-/// 无毛玻璃、无光晕、无循环动画；遵守系统减弱动效。
+/// 笺谱底栏：贴底纸条 + 顶部一道乌丝栏；四个单字「天 · 心 · 城 · 我」（展示体），
+/// 选中的那个变成一枚墨色白文小印（朱砂留给内容里的印）。遵守系统减弱动效。
 class _SujianBottomBar extends StatelessWidget {
   final int currentIndex;
   final ThemeState theme;
@@ -219,12 +221,7 @@ class _SujianBottomBar extends StatelessWidget {
   });
 
   static const _labels = ['天气', '心情', '城迹', '我的'];
-  static const _icons = [
-    XqIcons.sunny,
-    XqIcons.heart,
-    XqIcons.compass,
-    XqIcons.person,
-  ];
+  static const _chars = ['天', '心', '城', '我'];
 
   @override
   Widget build(BuildContext context) {
@@ -233,61 +230,62 @@ class _SujianBottomBar extends StatelessWidget {
     return Semantics(
       container: true,
       child: Container(
-        // 浮起的底栏：surface 底 + 向上柔影（不再用分隔细线）
         decoration: BoxDecoration(
           color: theme.cardColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(theme.isDark ? 90 : 14),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
+          image: XqPaper.grain(theme.paperFiber, strength: theme.isDark ? 0.6 : 0.8),
+          border: Border(top: BorderSide(color: theme.frameColor, width: 0.6)),
         ),
         padding: EdgeInsets.only(bottom: bottom),
         child: SizedBox(
-          height: 64,
+          height: 58,
           child: Row(
             children: List.generate(4, (i) {
               final active = i == currentIndex;
-              final color = active ? theme.accentColor : theme.textTertiary;
               return Expanded(
                 child: Semantics(
                   label: _labels[i],
                   button: true,
                   selected: active,
+                  excludeSemantics: true,
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () => onTap(i),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // 选中：图标背后一块圆角底
-                        AnimatedContainer(
-                          duration: Duration(milliseconds: reduce ? 0 : 220),
-                          curve: Curves.easeOutQuart,
-                          width: active ? 56 : 40,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: active
-                                ? theme.accentColor.withAlpha(theme.isDark ? 40 : 26)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: reduce ? 0 : 180),
+                        switchInCurve: Curves.easeOutQuart,
+                        transitionBuilder: (child, anim) => FadeTransition(
+                          opacity: anim,
+                          child: ScaleTransition(
+                            scale: Tween(begin: 1.18, end: 1.0).animate(anim),
+                            child: child,
                           ),
-                          alignment: Alignment.center,
-                          child: XqIcon(_icons[i], size: 21, color: color),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _labels[i],
-                          style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                                fontSize: 11,
-                                letterSpacing: 1,
-                                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                                color: color,
+                        child: active
+                            ? XqSeal(
+                                key: ValueKey('on$i'),
+                                char: _chars[i],
+                                color: theme.accentColor,
+                                size: 34,
+                                style: XqSealStyle.bai,
+                                angle: i.isEven ? -0.04 : 0.04,
+                              )
+                            : SizedBox(
+                                key: ValueKey('off$i'),
+                                width: 34,
+                                height: 34,
+                                child: Center(
+                                  child: Text(
+                                    _chars[i],
+                                    style: XqTypography.headlineSmall.copyWith(
+                                      color: theme.textTertiary,
+                                      fontSize: 20,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ),
                               ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

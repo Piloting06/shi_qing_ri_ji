@@ -4,12 +4,13 @@ import 'package:provider/provider.dart';
 import '../../stores/theme_state.dart';
 import '../../theme/xq_decorations.dart';
 import '../../theme/xq_typography.dart';
+import 'xq_paper.dart';
 
-/// 表面体系（DESIGN.md「层级」）：
-/// L0 页面底（宣纸）→ L1 卡片（XqSurface，圆角 16 + 柔影）→ L2 面板（首页覆盖天色的纸）。
-/// 卡片里不再套卡片；卡片内的次级块用凹陷底（sunken）而非阴影。
+/// 表面体系（DESIGN.md「层级」，P9 笺谱 · 装裱）：
+/// L0 裱绫（页面底，偏深）→ L1 笺（XqSurface：更亮的纸 + 一圈细墨线 + 纸纹）→ L2 毛边叠纸（XqDeckleSheet）。
+/// 笺里不再套笺；笺内的次级块用凹陷底（sunken）。
 
-/// L1 卡片。可点时带按压缩放与轻触感。
+/// L1 笺。可点时带按压缩放与轻触感。
 class XqSurface extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -41,8 +42,9 @@ class _XqSurfaceState extends State<XqSurface> {
       decoration: XqDecorations.surface(
         widget.color ?? t.cardColor,
         dark: t.isDark,
-        edge: t.borderColor,
+        edge: t.frameColor,
         radius: widget.radius,
+        grain: XqPaper.grain(t.paperFiber, strength: t.isDark ? 0.6 : 0.8),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(widget.radius),
@@ -69,7 +71,7 @@ class _XqSurfaceState extends State<XqSurface> {
   }
 }
 
-/// 区块标题：宋体题 + 可选说明/右侧操作。放在卡片之上，不进卡片。
+/// 区块标题：展示字体题 + 一道乌丝栏细线引到右侧（可选说明/右侧操作）。放在笺外，不进笺。
 class XqSectionTitle extends StatelessWidget {
   final String title;
   final String? caption;
@@ -81,27 +83,25 @@ class XqSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.watch<ThemeState>();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+      padding: const EdgeInsets.fromLTRB(2, 0, 2, 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(title, style: XqTypography.headlineSmall.copyWith(color: t.textPrimary, fontSize: 17)),
+          Text(title, style: XqTypography.headlineSmall.copyWith(color: t.textPrimary, fontSize: 18, letterSpacing: 1)),
           if (caption != null) ...[
             const SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  caption!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: t.textTertiary, fontSize: 12.5),
-                ),
+            Flexible(
+              child: Text(
+                caption!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: t.textTertiary, fontSize: 12.5),
               ),
             ),
-          ] else
-            const Spacer(),
-          ?trailing,
+          ],
+          const SizedBox(width: 12),
+          Expanded(child: Container(height: 0.6, color: t.frameColor)),
+          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
         ],
       ),
     );
@@ -131,7 +131,7 @@ class XqGroup extends StatelessWidget {
       rows.add(children[i]);
       if (i < children.length - 1) {
         rows.add(Padding(
-          padding: EdgeInsets.only(left: insetDivider ? 64 : 20),
+          padding: EdgeInsets.only(left: insetDivider ? 52 : 18),
           child: Container(height: 0.6, color: t.borderColor),
         ));
       }
@@ -149,7 +149,7 @@ class XqGroup extends StatelessWidget {
   }
 }
 
-/// 列表行：前置图标（凹陷圆角方块）· 标题/说明 · 右侧值或箭头。高 ≥ 60。
+/// 列表行（乌丝栏目录）：前置线描小图标（不加底块）· 标题/说明 · 右侧值或细箭头。高 ≥ 60。
 class XqRow extends StatelessWidget {
   final IconData? icon;
   final Widget? leading;
@@ -181,14 +181,9 @@ class XqRow extends StatelessWidget {
     final lead = leading ??
         (icon == null
             ? null
-            : Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: t.sunkenColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 19, color: destructive ? t.errorColor : t.textSecondary),
+            : SizedBox(
+                width: 22,
+                child: Icon(icon, size: 20, color: destructive ? t.errorColor : t.textSecondary),
               ));
     return Semantics(
       button: onTap != null,
@@ -202,7 +197,7 @@ class XqRow extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 60),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: Row(
               children: [
                 if (lead != null) ...[lead, const SizedBox(width: 14)],
@@ -238,7 +233,7 @@ class XqRow extends StatelessWidget {
                 if (trailing != null) ...[const SizedBox(width: 12), trailing!],
                 if (onTap != null && chevron) ...[
                   const SizedBox(width: 6),
-                  Icon(Icons.chevron_right_rounded, size: 20, color: t.textTertiary.withAlpha(150)),
+                  Icon(Icons.chevron_right_rounded, size: 18, color: t.textTertiary.withAlpha(120)),
                 ],
               ],
             ),

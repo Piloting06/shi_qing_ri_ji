@@ -6,17 +6,15 @@ class MoodCardData {
   final String dateText;
   final String rawDate; // YYYY-MM-DD 原始日期（节气等按真实日期计算）
   final int moodScore;
-  final String moodEmoji;
   final String moodLabel;
-  final String moodEn;
   final String bodyText;
   final List<String> tags;
   final String username;
-  final String watermark; // cn | en | sq | sqrj | xiaoqing
+  final String watermark; // cn 拾晴日记 | xiaoqing 小晴 | none 不落款
   final String? weatherText;
   final String? cityName;
   final String? temperature;
-  final bool square; // false=温润圆角 true=方寸直角
+  final bool square; // true=方图（直角）
   final int streakDays; // 连续记录天数（含今天或昨天）
   final List<MoodDay> week; // 最近7天（今天在前）
   final double height; // 卡片高度：216=竖版，约等于卡宽=方图
@@ -26,9 +24,7 @@ class MoodCardData {
     required this.dateText,
     this.rawDate = '',
     required this.moodScore,
-    required this.moodEmoji,
     required this.moodLabel,
-    required this.moodEn,
     required this.bodyText,
     required this.tags,
     required this.username,
@@ -44,17 +40,15 @@ class MoodCardData {
   });
 }
 
-/// 单日心情聚合（用于火焰卡/周历卡）
+/// 单日心情聚合（七日卡用）
 class MoodDay {
-  final String label; // 星期缩写
-  final String? emoji;
+  final String label; // 星期（一…日）
   final int? color; // moodColors 值
   final String? mood; // 心情字（开心/平静…）
   final bool isToday;
 
   const MoodDay({
     required this.label,
-    this.emoji,
     this.color,
     this.mood,
     required this.isToday,
@@ -96,7 +90,6 @@ class MoodDay {
       final score = (rec['emotion_type'] as num?)?.toInt();
       week.add(MoodDay(
         label: weekLabels[day.weekday - 1],
-        emoji: score != null ? (moodEmojis[score] ?? '') : '',
         color: score != null ? moodColors[score] : null,
         mood: score != null ? moodLabels[score] : null,
         isToday: i == 0,
@@ -112,11 +105,9 @@ String _fmt(DateTime d) =>
 
 /// 水印文案（共享给各模板）
 String watermarkTextFor(String watermark) => switch (watermark) {
-  'cn' => '拾晴日记',
-  'sq' => 'sq.',
-  'sqrj' => 's q r j',
+  'none' => '',
   'xiaoqing' => '小晴',
-  _ => 'SHI QING',
+  _ => '拾晴日记',
 };
 
 /// 模板描述与注册表：新增模板 = 写一个 builder + 在这里注册一行

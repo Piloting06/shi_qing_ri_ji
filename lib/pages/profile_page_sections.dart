@@ -397,7 +397,7 @@ extension _ProfilePageSections on _ProfilePageState {
                     underline: theme.textPrimary,
                     onTapUp: (pos) {
                       HapticFeedback.selectionClick();
-                      theme.setPaper(p, origin: pos);
+                      theme.setPaper(p, origin: pos, story: true);
                     },
                   ),
               ],

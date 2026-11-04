@@ -632,7 +632,7 @@ class _FriendsPageState extends State<FriendsPage> {
       ),
       child: Row(
         children: [
-          _avatar(theme, XqIcons.person, null),
+          _avatar(theme, user['username']?.toString() ?? '', null),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -729,7 +729,7 @@ class _FriendsPageState extends State<FriendsPage> {
         children: [
           Row(
             children: [
-              _avatar(theme, XqIcons.personAdd, null),
+              _avatar(theme, name, null),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -827,7 +827,7 @@ class _FriendsPageState extends State<FriendsPage> {
               // Row 1: avatar + name + note button + more menu
               Row(
                 children: [
-                  _avatar(theme, XqIcons.person, mood),
+                  _avatar(theme, name, canView ? mood : null),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -967,26 +967,20 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   /// 头像位：素底圆 + 线性图标；有今日心情时换成釉色点（不用 emoji）
-  Widget _avatar(ThemeState theme, XqIcons icon, int? mood) {
+  /// 好友的「名印」：取名字首字刻一方印。看得到心情时用当天心情颜料作印泥（白文），否则淡墨朱文
+  Widget _avatar(ThemeState theme, String name, int? mood) {
+    final ch = name.trim().isEmpty ? '友' : name.trim().characters.first;
     final moodColor = mood == null ? null : moodColors[mood];
-    return Container(
+    return SizedBox(
       width: 44,
       height: 44,
-      decoration: BoxDecoration(
-        color: theme.sunkenColor,
-        shape: BoxShape.circle,
-      ),
       child: Center(
-        child: moodColor != null
-            ? Container(
-                width: 14,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Color(moodColor),
-                  shape: BoxShape.circle,
-                ),
-              )
-            : XqIcon(icon, color: theme.textSecondary, size: 21),
+        child: XqSeal(
+          char: RegExp(r'^[0-9]$').hasMatch(ch) ? '友' : ch,
+          color: moodColor != null ? Color(moodColor) : theme.textTertiary,
+          size: 38,
+          style: moodColor != null ? XqSealStyle.bai : XqSealStyle.zhu,
+        ),
       ),
     );
   }
@@ -1379,13 +1373,10 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: theme.accentColor.withAlpha(24),
-            child: XqIcon(XqIcons.person,
-              size: 16,
-              color: theme.accentColor,
-            ),
+          XqSeal(
+            char: name.trim().isEmpty ? '友' : name.trim().characters.first,
+            color: theme.textTertiary,
+            size: 26,
           ),
           const SizedBox(width: 8),
           Expanded(

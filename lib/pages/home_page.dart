@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
 import '../api/api_errors.dart';
+import '../widgets/solar_term_sheet.dart';
 import '../constants/mood.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
@@ -61,7 +62,8 @@ class _HomePageState extends State<HomePage> {
   bool _loading = true;
   Map<String, dynamic>? _memory; // 那年今日
   List<Map<String, dynamic>> _todayMoods = const [];
-  Map<String, int> _weekScores = const {}; // 本周（周一起）每天最后一笔的心情
+  Map<String, int> _weekScores = const {};
+  bool _termDot = false; // 节气第一天且没点开过：节气印角上一个朱点 // 本周（周一起）每天最后一笔的心情
   int _seenMoodRevision = 0;
   final _scrollCtrl = ScrollController();
   bool? _reveal; // 今天第一次打开：笺头画按版序套印显影；null = 还没判断
@@ -72,6 +74,7 @@ class _HomePageState extends State<HomePage> {
     _decideReveal();
     _loadCachedFirst();
     _loadMemory();
+    _decideTermDot();
   }
 
   Future<void> _decideReveal() async {
@@ -313,6 +316,7 @@ class _HomePageState extends State<HomePage> {
       'GPS定位',
       'IP 定位',
       'IP 定位城市',
+      '所在城市',
       '正在定位',
       '使用上次位置',
       '城市待确认',
@@ -429,7 +433,7 @@ class _HomePageState extends State<HomePage> {
     if (loc['status'] != 'success' ||
         loc['lat'] == null ||
         loc['lon'] == null) {
-      throw Exception('IP 定位失败');
+      throw Exception('没能确定你在哪座城市');
     }
     final ipLat = (loc['lat'] as num).toDouble();
     final ipLng = (loc['lon'] as num).toDouble();
@@ -444,7 +448,7 @@ class _HomePageState extends State<HomePage> {
       final nearest = findNearestCity(ipLat, ipLng);
       city = nearest != null
           ? '${nearest.name}，${nearest.province}，中国'
-          : 'IP 定位城市';
+          : '所在城市';
     }
     return _WeatherLocation(
       lat: ipLat,
@@ -585,6 +589,28 @@ class _HomePageState extends State<HomePage> {
     } else if (action == WeatherDetailAction.chooseCity) {
       _openCitySheet();
     }
+  }
+
+  static const _termSeenKey = 'term_seen';
+
+  Future<void> _decideTermDot() async {
+    final now = DateTime.now();
+    if (daysIntoSolarTerm(now) > 1) return;
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getString(_termSeenKey);
+    final key = '${now.year}-${currentSolarTerm(now)}';
+    if (seen != key && mounted) setState(() => _termDot = true);
+  }
+
+  Future<void> _openTerm(DateTime now, String term) async {
+    HapticFeedback.selectionClick();
+    if (_termDot) {
+      setState(() => _termDot = false);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_termSeenKey, '${now.year}-$term');
+    }
+    if (!mounted) return;
+    await showSolarTermSheet(context, now);
   }
 
   void _openMood() {
@@ -783,10 +809,14 @@ class _HomePageState extends State<HomePage> {
               reveal && !reduce,
               const Interval(0.5, 0.8),
               child: Semantics(
+                button: true,
                 label:
-                    '${poem.lines.join('，')}。${poem.author}《${poem.title}》。今日$term',
+                    '${poem.lines.join('，')}。${poem.author}《${poem.title}》。今日$term，点按看这个节气',
                 excludeSemantics: true,
-                child: Row(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _openTerm(now, term),
+                  child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
@@ -799,12 +829,28 @@ class _HomePageState extends State<HomePage> {
                             reveal && !reduce,
                             const Interval(0.8, 1),
                             stamp: true,
-                            child: XqSeal(
-                              char: term,
-                              color: seal,
-                              size: 28,
-                              style: XqSealStyle.bai,
-                              angle: 0.03,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                XqSeal(
+                                  char: term,
+                                  color: seal,
+                                  size: 28,
+                                  style: XqSealStyle.bai,
+                                  angle: 0.03,
+                                ),
+                                // 节气第一天、还没点开看过：印角一个朱点
+                                if (_termDot)
+                                  Positioned(
+                                    top: -3,
+                                    right: -3,
+                                    child: Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(color: seal, shape: BoxShape.circle),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ],
@@ -821,6 +867,7 @@ class _HomePageState extends State<HomePage> {
                       color: palette.onSky.withAlpha(215),
                     ),
                   ],
+                ),
                 ),
               ),
             ),

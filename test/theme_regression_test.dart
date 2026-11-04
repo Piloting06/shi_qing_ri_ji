@@ -6,7 +6,7 @@ import 'package:xin_qing_ri_ji/stores/theme_state.dart';
 import 'package:xin_qing_ri_ji/theme/xq_palette.dart';
 import 'package:xin_qing_ri_ji/theme/xq_theme.dart';
 
-/// 回归：六张纸（素笺/暖笺/青笺/藕笺 · 磁青/黛笺）管线全覆盖 + 对比度 + 旧存值迁移。
+/// 回归：四张纸（素笺/薛涛笺 · 磁青/乌金）管线全覆盖 + 对比度 + 旧存值迁移。
 void main() {
   double luminance(Color c) {
     double chan(double v) =>
@@ -20,8 +20,13 @@ void main() {
     return (hi + 0.05) / (lo + 0.05);
   }
 
-  test('六张纸 id 唯一，四浅两深', () {
-    expect(XqPalette.all.map((p) => p.id).toSet().length, 6);
+  test('四张纸 id 唯一，两浅两深，每张都有来历', () {
+    expect(XqPalette.all.map((p) => p.id).toSet().length, 4);
+    for (final p in XqPalette.all) {
+      expect(p.story.length, greaterThan(30), reason: p.name);
+      expect(p.legend.length, 2, reason: p.name);
+      expect(p.legend.every((l) => l.length <= 10), isTrue, reason: '${p.name} 竖排每列不超过十字');
+    }
     expect(XqPalette.lights.every((p) => !p.dark), isTrue);
     expect(XqPalette.darks.every((p) => p.dark), isTrue);
   });
@@ -64,9 +69,18 @@ void main() {
     expect(ThemeState.migrate('warm', explicit: false).$1, XqAppearance.system);
     // 手动选过：按纸的深浅固定
     expect(ThemeState.migrate('sujian_dark', explicit: true), (XqAppearance.dark, XqPalette.cixing));
-    expect(ThemeState.migrate('dark', explicit: true), (XqAppearance.dark, XqPalette.dai));
-    expect(ThemeState.migrate('mint', explicit: true), (XqAppearance.light, XqPalette.mint));
-    expect(ThemeState.migrate('blush', explicit: true), (XqAppearance.light, XqPalette.blush));
+    expect(ThemeState.migrate('dark', explicit: true), (XqAppearance.dark, XqPalette.wujin));
+    // 已合并的暖笺 / 青笺 → 素笺
+    expect(ThemeState.migrate('mint', explicit: true), (XqAppearance.light, XqPalette.sujian));
+    expect(ThemeState.migrate('warm', explicit: true), (XqAppearance.light, XqPalette.sujian));
+    expect(ThemeState.migrate('blush', explicit: true), (XqAppearance.light, XqPalette.xuetao));
     expect(ThemeState.migrate('nonsense', explicit: true), (XqAppearance.system, XqPalette.sujian));
+  });
+
+  test('同深浅的两张纸一眼分得开（裱绫色差够大）', () {
+    double dist(Color a, Color b) =>
+        math.sqrt(math.pow(a.r - b.r, 2) + math.pow(a.g - b.g, 2) + math.pow(a.b - b.b, 2)) * 255;
+    expect(dist(XqPalette.sujian.background, XqPalette.xuetao.background), greaterThan(18));
+    expect(dist(XqPalette.cixing.background, XqPalette.wujin.background), greaterThan(12));
   });
 }

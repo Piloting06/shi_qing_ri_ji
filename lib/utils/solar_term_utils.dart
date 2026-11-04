@@ -83,3 +83,15 @@ int daysIntoSolarTerm(DateTime d) {
   if (start.isAfter(day)) start = DateTime(day.year - 1, m, dd);
   return day.difference(start).inDays + 1;
 }
+
+/// 下一个节气的名字与（本年或次年）日期
+({String name, DateTime date}) nextSolarTerm(DateTime d) {
+  final day = DateTime(d.year, d.month, d.day);
+  ({String name, DateTime date})? best;
+  for (final e in _solarTerms.entries) {
+    var t = DateTime(day.year, e.value.$1, e.value.$2);
+    if (!t.isAfter(day)) t = DateTime(day.year + 1, e.value.$1, e.value.$2);
+    if (best == null || t.isBefore(best.date)) best = (name: e.key, date: t);
+  }
+  return best!;
+}

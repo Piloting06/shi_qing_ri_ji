@@ -13,8 +13,8 @@ class XqTypography {
   /// 内容层字体（用户写下的字）。界面控件不要用。
   static const content = 'LXGW WenKai';
 
-  /// 霞鹜文楷缺「」『』“”等标点，缺字退到宋体子集（同属书写气质，不混入黑体）
-  static const contentFallback = <String>['SerifSC'];
+  /// 霞鹜文楷缺「」『』“”等标点，缺字退到宋体子集；〇与竖排标点再退到展示体子集（同属书写气质，不混入黑体）
+  static const contentFallback = <String>['SerifSC', 'Display'];
   static const serif = 'Display';
 
   /// 思源宋子集：印章字、需要字重的地方（Display 只有一个字重）

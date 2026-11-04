@@ -3,6 +3,7 @@ import '../widgets/ink_bloom.dart';
 import '../widgets/xq_empty_state.dart';
 import '../widgets/xq_toast.dart';
 import 'package:flutter/material.dart';
+import '../widgets/weather_sky.dart' show chineseNumber;
 import '../widgets/xq/xq_kit.dart';
 import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
@@ -793,51 +794,46 @@ class _CapsulePageState extends State<CapsulePage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _open(capsule),
-        // 胶囊 = 细线下一行：状态图标 · 开封日（宋）· 剩余天数
+        // 胶囊 = 一封封好的信：封缄印 · 拆封日 · 还要等几天
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
           decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
           child: Row(
             children: [
+              // 封缄印：没到日子是淡墨朱文「封」，到日子了是朱砂白文「启」，拆过的是淡墨「阅」
               SizedBox(
                 width: 40,
                 height: 40,
-                child: XqIcon(
-                  opened
-                      ? XqIcons.mail
-                      : canOpen
-                      ? XqIcons.lock
-                      : XqIcons.lock,
-                  color: opened || canOpen
-                      ? theme.accentColor
-                      : theme.textTertiary,
+                child: Center(
+                  child: XqSeal(
+                    char: opened ? '阅' : (canOpen ? '启' : '封'),
+                    color: canOpen ? theme.sealColor : theme.textTertiary,
+                    size: 34,
+                    style: canOpen ? XqSealStyle.bai : XqSealStyle.zhu,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       opened
-                          ? '已打开'
+                          ? '拆过了'
                           : canOpen
-                          ? '可以打开了'
-                          : '${DateFormat('M月d日').format(openDate ?? DateTime.now())} 可打开',
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                          ? '到日子了，可以拆开'
+                          : '${chineseNumber((openDate ?? DateTime.now()).month)}月${chineseNumber((openDate ?? DateTime.now()).day)}日拆封',
+                      style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       opened
                           ? (content.isEmpty ? '内容已开启' : content)
                           : canOpen
-                          ? '点开看看'
-                          : '还剩 ${daysLeft == null ? '--' : daysLeft.clamp(1, 999)} 天',
+                          ? '点开，看看那时写给现在的话'
+                          : '还要等 ${daysLeft == null ? '--' : daysLeft.clamp(1, 999)} 天',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

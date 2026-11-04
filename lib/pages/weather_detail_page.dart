@@ -275,7 +275,7 @@ class WeatherDetailPage extends StatelessWidget {
                       const SizedBox(height: 12),
                       Center(
                         child: Text(
-                          locationStatus,
+                          locationLabel(locationStatus),
                           style: TextStyle(
                             color: theme.textTertiary,
                             fontSize: 12,
@@ -396,4 +396,13 @@ class WeatherDetailPage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 定位来源说给用户听：不出现 GPS / IP 这类词
+String locationLabel(String status) {
+  if (status.startsWith('GPS定位')) {
+    return status.contains('待确认') ? '按手机定位，城市还没确认' : '按手机定位';
+  }
+  if (status.startsWith('IP')) return '按网络大致定位';
+  return status;
 }

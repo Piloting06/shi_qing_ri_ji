@@ -30,17 +30,17 @@ void main() {
   testWidgets('启动读出偏好不触发过渡', (tester) async {
     final theme = await boot(tester, {'appearance': 'dark', 'paperDark': 'dark'});
     expect(theme.loaded, isTrue);
-    expect(theme.palette, XqPalette.dai);
+    expect(theme.palette, XqPalette.wujin);
     expect(overlay(), findsNothing);
   });
 
   testWidgets('换纸：盖上旧画面 → 晕开 → 撤掉', (tester) async {
     final theme = await boot(tester, {});
     expect(overlay(), findsNothing);
-    theme.setPaper(XqPalette.warm, origin: const Offset(100, 300));
+    theme.setPaper(XqPalette.xuetao, origin: const Offset(100, 300));
     await tester.pump();
     expect(overlay(), findsOneWidget);
-    expect(theme.palette, XqPalette.warm);
+    expect(theme.palette, XqPalette.xuetao);
     await tester.pump(const Duration(milliseconds: 400));
     expect(overlay(), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 400));
@@ -50,14 +50,41 @@ void main() {
 
   testWidgets('点深色纸会把深浅固定到夜里；同一张纸再点不动', (tester) async {
     final theme = await boot(tester, {'appearance': 'light'});
-    theme.setPaper(XqPalette.dai, origin: Offset.zero);
+    theme.setPaper(XqPalette.wujin, origin: Offset.zero);
     expect(theme.appearance, XqAppearance.dark);
-    expect(theme.darkPaper, XqPalette.dai);
+    expect(theme.darkPaper, XqPalette.wujin);
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await tester.pump();
-    theme.setPaper(XqPalette.dai, origin: Offset.zero);
+    theme.setPaper(XqPalette.wujin, origin: Offset.zero);
     await tester.pump();
     expect(overlay(), findsNothing);
+  });
+
+  testWidgets('从纸样换纸：浮出来历小笺，停一会儿自己收；点一下提前收', (tester) async {
+    final theme = await boot(tester, {});
+    Finder story() => find.byKey(XqThemeReveal.storyKey);
+    theme.setPaper(XqPalette.cixing, origin: const Offset(10, 10), story: true);
+    await tester.pump();
+    expect(story(), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(story(), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2400));
+    await tester.pump();
+    expect(story(), findsNothing);
+
+    // 不是从纸样来的（例如切深浅）不讲故事
+    theme.setAppearance(XqAppearance.light, origin: Offset.zero);
+    await tester.pump();
+    expect(story(), findsNothing);
+    await tester.pump(const Duration(seconds: 1));
+
+    theme.setPaper(XqPalette.xuetao, origin: Offset.zero, story: true);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 900));
+    await tester.tap(story());
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    expect(story(), findsNothing);
   });
 }

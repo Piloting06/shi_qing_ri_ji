@@ -17,7 +17,8 @@ void main() {
   test('按状态码兜底', () {
     expect(friendlyServerMessage('请求失败', 502), '服务器出了点问题，稍后再试');
     expect(friendlyServerMessage('获取树洞失败', 500), '服务器出了点问题，稍后再试');
-    expect(friendlyServerMessage('登录太频繁，请稍后再试', 429), '点得太快了，歇一会儿再试');
+    expect(friendlyServerMessage('一分钟内只能发一次', 429), '一分钟内只能发一次');
+    expect(friendlyServerMessage('', 429), '点得太快了，歇一会儿再试');
   });
 
   test('网络异常不露英文', () {

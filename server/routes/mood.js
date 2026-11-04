@@ -4,17 +4,29 @@ const { db } = require('../db');
 const router = express.Router();
 
 // POST / — 新增一条心情记录（每次都是新记录，不覆盖）
+/** YYYY-MM-DD 且是真实存在的日期 */
+function isValidDate(s) {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + 'T00:00:00Z');
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
 router.post('/', auth, (req, res) => {
   try {
     const { date, emotion_type, emotion_tags, notes, city, weather_code } = req.body;
+    const type = Number(emotion_type);
+    if (!Number.isInteger(type) || type < 1 || type > 8) return res.status(400).json({ message: '心情不对，重新选一个' });
+    if (!isValidDate(date)) return res.status(400).json({ message: '日期不对' });
+    if (notes != null && String(notes).length > 2000) return res.status(400).json({ message: '最多写 2000 字' });
+    if (emotion_tags != null && String(emotion_tags).length > 500) return res.status(400).json({ message: '标签太多了' });
     const result = db.prepare(
       'INSERT INTO moods (user_id, date, emotion_type, emotion_tags, notes, city, weather_code) VALUES (?,?,?,?,?,?,?)'
     ).run(
       req.userId,
       date,
-      emotion_type,
-      emotion_tags || '',
-      notes || '',
+      type,
+      emotion_tags ? String(emotion_tags) : '',
+      notes ? String(notes) : '',
       city ? String(city).slice(0, 32) : null,
       weather_code == null ? null : String(weather_code)
     );

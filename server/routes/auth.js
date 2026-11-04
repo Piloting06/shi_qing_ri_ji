@@ -5,7 +5,21 @@ const { db } = require('../db');
 const auth = require('../middleware/auth');
 const { sendSms } = require('../sms');
 const { sendEmailCode } = require('../mail');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
+
+// 验证码只存哈希（目标 + 验证码），库里看不到明文
+const codeHash = (target, code) => crypto.createHash('sha256').update(`${target}:${String(code || '')}`).digest('hex');
+// 发码：每个 IP 十分钟 5 次；同一号码 / 邮箱一分钟 1 次（防短信轰炸、刷短信费）
+const sendLimiter = rateLimit({ windowMs: 10 * 60e3, max: 5, standardHeaders: true, legacyHeaders: false, message: { message: '验证码发得太频繁了，过十分钟再试' } });
+// 校验：每个 IP 十分钟 20 次（防六位验证码被穷举）
+const verifyLimiter = rateLimit({ windowMs: 10 * 60e3, max: 20, standardHeaders: true, legacyHeaders: false, message: { message: '试得太多了，过十分钟再来' } });
+// 有效期 5 分钟：过期时间还剩 4 分钟以上 = 一分钟内刚发过
+const sentWithinMinute = (target) =>
+  db.prepare("SELECT id FROM sms_codes WHERE phone = ? AND expires_at > datetime('now', '+4 minutes')").get(target);
+const findCode = (target, code) =>
+  db.prepare("SELECT id FROM sms_codes WHERE phone = ? AND code = ? AND expires_at > datetime('now') AND used = 0").get(target, codeHash(target, code));
 
 router.post('/register', (req, res) => {
   try {
@@ -76,10 +90,13 @@ router.post('/change-password', auth, (req, res) => {
 router.post('/change-username', auth, (req, res) => {
   try {
     const { username } = req.body;
-    if (!username || !username.trim()) {
+    if (!username || !String(username).trim()) {
       return res.status(400).json({ message: '名字不能为空' });
     }
-    db.prepare('UPDATE users SET username = ? WHERE id = ?').run(username.trim(), req.userId);
+    if (String(username).trim().length > 20) {
+      return res.status(400).json({ message: '名字最多 20 个字' });
+    }
+    db.prepare('UPDATE users SET username = ? WHERE id = ?').run(String(username).trim(), req.userId);
     res.json({ message: '名字已更新' });
   } catch (e) {
     res.status(500).json({ message: '修改失败' });
@@ -104,16 +121,23 @@ router.post('/delete-account', auth, (req, res) => {
 
 // ── SMS & password reset ──
 
-router.post('/send-sms-code', (req, res) => {
+router.post('/send-sms-code', sendLimiter, async (req, res) => {
   try {
     const phone = String(req.body.phone || '').trim();
     if (!/^1[3-9]\d{9}$/.test(phone)) {
       return res.status(400).json({ message: '手机号格式错误' });
     }
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    if (sentWithinMinute(phone)) return res.status(429).json({ message: '一分钟内只能发一次' });
+    const code = String(crypto.randomInt(100000, 1000000));
+    try {
+      await sendSms(phone, code);
+    } catch (e) {
+      // 发不出去就如实说，不再回「已发送」让人干等
+      console.error('SMS send error:', e.message);
+      return res.status(502).json({ message: '验证码没发出去，稍后再试' });
+    }
     db.prepare('INSERT INTO sms_codes (phone, code, expires_at) VALUES (?, ?, datetime(\'now\', \'+5 minutes\'))')
-      .run(phone, code);
-    sendSms(phone, code).catch(e => console.error('SMS send error:', e.message));
+      .run(phone, codeHash(phone, code));
     res.json({ message: '验证码已发送' });
   } catch (e) {
     console.error('send-sms-code:', e.message);
@@ -121,16 +145,14 @@ router.post('/send-sms-code', (req, res) => {
   }
 });
 
-router.post('/reset-password', (req, res) => {
+router.post('/reset-password', verifyLimiter, (req, res) => {
   try {
     const phone = String(req.body.phone || '').trim();
     const { code, new_password } = req.body;
     if (!new_password || new_password.length < 6) {
       return res.status(400).json({ message: '密码至少6位' });
     }
-    const row = db.prepare(
-      'SELECT id FROM sms_codes WHERE phone = ? AND code = ? AND expires_at > datetime(\'now\') AND used = 0'
-    ).get(phone, code);
+    const row = findCode(phone, code);
     if (!row) {
       return res.status(400).json({ message: '验证码错误或已过期' });
     }
@@ -146,16 +168,22 @@ router.post('/reset-password', (req, res) => {
 
 // ── Email auth ──
 
-router.post('/send-email-code', (req, res) => {
+router.post('/send-email-code', sendLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || '').trim();
-    if (!email.includes('@') || email.length < 5) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
       return res.status(400).json({ message: '邮箱格式错误' });
     }
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    if (sentWithinMinute(email)) return res.status(429).json({ message: '一分钟内只能发一次' });
+    const code = String(crypto.randomInt(100000, 1000000));
+    try {
+      await sendEmailCode(email, code);
+    } catch (e) {
+      console.error('Email send error:', e.message);
+      return res.status(502).json({ message: '验证码没发出去，稍后再试' });
+    }
     db.prepare("INSERT INTO sms_codes (phone, code, expires_at) VALUES (?, ?, datetime('now', '+5 minutes'))")
-      .run(email, code);
-    sendEmailCode(email, code).catch(e => console.error('Email send error:', e.message));
+      .run(email, codeHash(email, code));
     res.json({ message: '验证码已发送' });
   } catch (e) {
     console.error('send-email-code:', e.message);
@@ -163,16 +191,14 @@ router.post('/send-email-code', (req, res) => {
   }
 });
 
-router.post('/email-register', (req, res) => {
+router.post('/email-register', verifyLimiter, (req, res) => {
   try {
     const email = String(req.body.email || '').trim();
     const { password, code } = req.body;
     if (!email.includes('@') || !password || password.length < 6) {
       return res.status(400).json({ message: '请填写完整信息' });
     }
-    const vRow = db.prepare(
-      "SELECT id FROM sms_codes WHERE phone = ? AND code = ? AND expires_at > datetime('now') AND used = 0"
-    ).get(email, code);
+    const vRow = findCode(email, code);
     if (!vRow) return res.status(400).json({ message: '验证码错误或已过期' });
     db.prepare('UPDATE sms_codes SET used = 1 WHERE id = ?').run(vRow.id);
     const existing = db.prepare('SELECT id FROM users WHERE email = ? AND is_active = 1').get(email);
@@ -205,14 +231,12 @@ router.post('/email-login', (req, res) => {
   }
 });
 
-router.post('/bind-email', auth, (req, res) => {
+router.post('/bind-email', auth, verifyLimiter, (req, res) => {
   try {
     const email = String(req.body.email || '').trim();
     const code = req.body.code;
     if (!email.includes('@')) return res.status(400).json({ message: '邮箱格式错误' });
-    const vRow = db.prepare(
-      "SELECT id FROM sms_codes WHERE phone = ? AND code = ? AND expires_at > datetime('now') AND used = 0"
-    ).get(email, code);
+    const vRow = findCode(email, code);
     if (!vRow) return res.status(400).json({ message: '验证码错误或已过期' });
     db.prepare('UPDATE sms_codes SET used = 1 WHERE id = ?').run(vRow.id);
     const dup = db.prepare('SELECT id FROM users WHERE email = ? AND id != ? AND is_active = 1').get(email, req.userId);

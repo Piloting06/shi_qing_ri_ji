@@ -19,7 +19,8 @@ Express 5 + helmet + cors + express-rate-limit + sql.js。端口 3001，PM2 进�
 - **好友关系双向查**：`WHERE (user_id=A AND friend_id=B) OR (user_id=B AND friend_id=A)`。
 - **心情记录**：INSERT 语义（一天可多条），写入 `city` + `weather_code`（城迹榜/心晴签/年度报告的数据源，勿去掉）。
 - **新增路由**：只新增 `routes/xxx.js` 并在 `index.js` 挂载到 `/api/` 下；不开新端口。唯一例外是 `routes/landing.js`：根路径 `/` 出落地页（分享卡片二维码指向 `/?from=card`），`/sqrj.apk` 下载安装包，静态资源在 `server/landing/`。
-- **安全基线**：`trust proxy 1`（限流按真实 IP）；CORS 白名单在 `index.js`（加域名改那里）；全部 SQL 参数绑定；`sms_codes`/密码只存哈希。
+- **安全基线**：`trust proxy 1`（限流按真实 IP）；CORS 白名单在 `index.js`（加域名改那里）；全部 SQL 参数绑定；`sms_codes`（sha256(目标:码)）/密码只存哈希；发码 IP 十分钟 5 次 + 同号一分钟 1 次，校验 IP 十分钟 20 次；发码失败如实回 502。
+- **管理员 token**：签发带 `role: 'admin'`，`adminAuth` 校验 role 且账号仍在 `admin_users`（未配 `ADMIN_JWT_SECRET` 时与用户 token 同钥，不校验 role 普通用户可进后台）。后台页面拼 innerHTML 一律 `esc()`。
 - **天气缓存**：`routes/weather.js` 内存缓存 10 分钟；`/location` 必须把 `X-Forwarded-For`/`X-Real-IP` 的客户端 IP 放进 ip-api **路径**（`/json/{ip}`），内网 IP 返回未知。
 
 ## 测试
@@ -31,7 +32,9 @@ JWT_SECRET=test PORT=3997 DB_BACKUP_DIR=/tmp/x DB_BACKUP_DIR_EXTERNAL=/tmp/x ALI
 BASE=http://127.0.0.1:3997 npm run smoke
 ```
 
-部署前先跑一遍。
+`npm run security`（`scripts/security_test.js`）：34 项安全与边界（路径穿越、坏 JSON / 超大请求体、伪造 token、普通用户进后台、越权删改、SQL 注入、输入校验、验证码限频与哈希、后台 XSS 转义）。两套共用注册限流（每分钟 3 次），之间重启一次实例。
+
+部署前两套都跑一遍。
 
 ## 部署
 

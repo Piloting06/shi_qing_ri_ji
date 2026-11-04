@@ -81,6 +81,8 @@ th{color:#999;font-size:11px}
 </div>
 
 <script>
+// 用户写的内容（树洞、评论、昵称、手机号、日志详情）拼进 innerHTML 前一律转义，防存储型 XSS
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
 var A='/api/admin', token='', curTab='users', curPages={};
 
 function doLogin(){
@@ -120,29 +122,29 @@ function loadDash(){
 function loadUsers(p){
   p=p||1; api('GET','/users?page='+p).then(function(d){
     var h='<table><tr><th>ID</th><th>手机</th><th>昵称</th><th>状态</th><th>注册</th><th>操作</th></tr>';
-    d.users.forEach(function(u){h+='<tr><td>'+u.id+'</td><td>'+u.phone+'</td><td>'+u.username+'</td><td><span class="badge '+(u.is_active?'green':'red')+'">'+(u.is_active?'正常':'封禁')+'</span></td><td>'+(u.created_at||'').slice(0,10)+'</td><td class="flex"><button class="btn-sm primary" onclick="viewUser('+u.id+')">详情</button><button class="btn-sm '+(u.is_active?'danger':'primary')+'" onclick="banUser('+u.id+')">'+(u.is_active?'封禁':'解封')+'</button></td></tr>'});
+    d.users.forEach(function(u){h+='<tr><td>'+u.id+'</td><td>'+esc(u.phone)+'</td><td>'+esc(u.username)+'</td><td><span class="badge '+(u.is_active?'green':'red')+'">'+(u.is_active?'正常':'封禁')+'</span></td><td>'+(u.created_at||'').slice(0,10)+'</td><td class="flex"><button class="btn-sm primary" onclick="viewUser('+u.id+')">详情</button><button class="btn-sm '+(u.is_active?'danger':'primary')+'" onclick="banUser('+u.id+')">'+(u.is_active?'封禁':'解封')+'</button></td></tr>'});
     h+='</table>'; document.getElementById('usersTbl').innerHTML=h;
     document.getElementById('usersPg').innerHTML=pager(d.page,d.totalPages,loadUsers);
   }).catch(function(){});
 }
 
-function viewUser(id){api('GET','/users/'+id).then(function(d){var u=d.user,h='<h3>'+u.username+' ('+u.phone+')</h3><p>注册于 '+(u.created_at||'').slice(0,10)+'</p>';h+='<p style="margin-top:10px"><b>心情</b></p>';d.moods.forEach(function(m){h+='<div style="background:#faf8f3;padding:8px;border-radius:8px;margin:4px 0">'+m.date+' type:'+m.emotion_type+' | '+(m.notes||'')+'</div>'});alert(h.slice(0,500))}).catch(function(){})}
+function viewUser(id){api('GET','/users/'+id).then(function(d){var u=d.user,h='<h3>'+esc(u.username)+' ('+esc(u.phone)+')</h3><p>注册于 '+(u.created_at||'').slice(0,10)+'</p>';h+='<p style="margin-top:10px"><b>心情</b></p>';d.moods.forEach(function(m){h+='<div style="background:#faf8f3;padding:8px;border-radius:8px;margin:4px 0">'+m.date+' type:'+m.emotion_type+' | '+(m.notes||'')+'</div>'});alert(h.slice(0,500))}).catch(function(){})}
 
 function banUser(id){if(!confirm('确定操作?'))return;api('POST','/users/'+id+'/ban').then(function(d){alert(d.message);loadUsers(curPages.users||1)}).catch(function(e){alert(e.message)})}
 
-function loadMessages(p){p=p||1;api('GET','/treehole?page='+p).then(function(d){var h='<table><tr><th>ID</th><th>内容</th><th>发布者</th><th>互动</th><th>状态</th><th>操作</th></tr>';d.messages.forEach(function(m){h+='<tr><td>'+m.id+'</td><td>'+String(m.content||'').slice(0,50)+'</td><td>'+m.phone+'</td><td>🤗'+m.cloud_hugs+' ☕'+m.cloud_coffees+'</td><td><span class="badge '+(m.is_visible?'green':'red')+'">'+(m.is_visible?'显':'隐')+'</span></td><td class="flex"><button class="btn-sm primary" onclick="hideMsg('+m.id+')">'+(m.is_visible?'隐藏':'显示')+'</button><button class="btn-sm danger" onclick="delMsg('+m.id+')">删除</button></td></tr>'});h+='</table>';document.getElementById('treeTbl').innerHTML=h;document.getElementById('treePg').innerHTML=pager(d.page,d.totalPages,loadMessages)}).catch(function(){})}
+function loadMessages(p){p=p||1;api('GET','/treehole?page='+p).then(function(d){var h='<table><tr><th>ID</th><th>内容</th><th>发布者</th><th>互动</th><th>状态</th><th>操作</th></tr>';d.messages.forEach(function(m){h+='<tr><td>'+m.id+'</td><td>'+esc(String(m.content||'').slice(0,50))+'</td><td>'+esc(m.phone)+'</td><td>🤗'+m.cloud_hugs+' ☕'+m.cloud_coffees+'</td><td><span class="badge '+(m.is_visible?'green':'red')+'">'+(m.is_visible?'显':'隐')+'</span></td><td class="flex"><button class="btn-sm primary" onclick="hideMsg('+m.id+')">'+(m.is_visible?'隐藏':'显示')+'</button><button class="btn-sm danger" onclick="delMsg('+m.id+')">删除</button></td></tr>'});h+='</table>';document.getElementById('treeTbl').innerHTML=h;document.getElementById('treePg').innerHTML=pager(d.page,d.totalPages,loadMessages)}).catch(function(){})}
 
 function hideMsg(id){api('POST','/treehole/'+id+'/toggle').then(function(d){alert(d.message);loadMessages(curPages.treehole||1)}).catch(function(e){alert(e.message)})}
 function delMsg(id){if(!confirm('确定删除?'))return;api('DELETE','/treehole/'+id).then(function(d){alert(d.message);loadMessages(curPages.treehole||1)}).catch(function(e){alert(e.message)})}
 
-function loadComments(p){p=p||1;api('GET','/comments?page='+p).then(function(d){var h='<table><tr><th>ID</th><th>内容</th><th>留言ID</th><th>发布者</th><th>时间</th><th>操作</th></tr>';d.comments.forEach(function(c){h+='<tr><td>'+c.id+'</td><td>'+String(c.content||'').slice(0,50)+'</td><td>'+c.message_id+'</td><td>'+c.phone+'</td><td>'+(c.created_at||'').slice(0,16)+'</td><td><button class="btn-sm danger" onclick="delComment('+c.id+')">删除</button></td></tr>'});h+='</table>';document.getElementById('cmtTbl').innerHTML=h;document.getElementById('cmtPg').innerHTML=pager(d.page,d.totalPages,loadComments)}).catch(function(){})}
+function loadComments(p){p=p||1;api('GET','/comments?page='+p).then(function(d){var h='<table><tr><th>ID</th><th>内容</th><th>留言ID</th><th>发布者</th><th>时间</th><th>操作</th></tr>';d.comments.forEach(function(c){h+='<tr><td>'+c.id+'</td><td>'+esc(String(c.content||'').slice(0,50))+'</td><td>'+c.message_id+'</td><td>'+esc(c.phone)+'</td><td>'+(c.created_at||'').slice(0,16)+'</td><td><button class="btn-sm danger" onclick="delComment('+c.id+')">删除</button></td></tr>'});h+='</table>';document.getElementById('cmtTbl').innerHTML=h;document.getElementById('cmtPg').innerHTML=pager(d.page,d.totalPages,loadComments)}).catch(function(){})}
 function delComment(id){if(!confirm('确定删除?'))return;api('DELETE','/comments/'+id).then(function(d){alert(d.message);loadComments(curPages.comments||1)}).catch(function(e){alert(e.message)})}
 
-function loadWords(){api('GET','/sensitive-words').then(function(d){document.getElementById('wordsList').innerHTML=d.words.map(function(w){return'<div class="flex" style="margin:4px 0;padding:6px 10px;background:#faf8f3;border-radius:8px"><span>'+w.word+'</span><span style="flex:1"></span><button class="btn-sm danger" onclick="delWord('+w.id+')">删除</button></div>'}).join('')}).catch(function(){})}
+function loadWords(){api('GET','/sensitive-words').then(function(d){document.getElementById('wordsList').innerHTML=d.words.map(function(w){return'<div class="flex" style="margin:4px 0;padding:6px 10px;background:#faf8f3;border-radius:8px"><span>'+esc(w.word)+'</span><span style="flex:1"></span><button class="btn-sm danger" onclick="delWord('+w.id+')">删除</button></div>'}).join('')}).catch(function(){})}
 function addWord(){var w=document.getElementById('newWord').value.trim();if(!w)return;api('POST','/sensitive-words',{word:w}).then(function(d){document.getElementById('newWord').value='';alert(d.message);loadWords()}).catch(function(e){alert(e.message)})}
 function delWord(id){api('DELETE','/sensitive-words/'+id).then(function(d){alert(d.message);loadWords()}).catch(function(e){alert(e.message)})}
 
-function loadLogs(p){p=p||1;api('GET','/logs?page='+p).then(function(d){var h='<table><tr><th>时间</th><th>管理员</th><th>操作</th><th>目标</th><th>详情</th></tr>';d.logs.forEach(function(l){h+='<tr><td>'+(l.created_at||'').slice(0,16)+'</td><td>'+l.username+'</td><td>'+l.action+'</td><td>'+l.target_type+'#'+l.target_id+'</td><td>'+l.detail+'</td></tr>'});h+='</table>';document.getElementById('logsTbl').innerHTML=h;document.getElementById('logsPg').innerHTML=pager(d.page,d.totalPages,loadLogs)}).catch(function(){})}
+function loadLogs(p){p=p||1;api('GET','/logs?page='+p).then(function(d){var h='<table><tr><th>时间</th><th>管理员</th><th>操作</th><th>目标</th><th>详情</th></tr>';d.logs.forEach(function(l){h+='<tr><td>'+(l.created_at||'').slice(0,16)+'</td><td>'+esc(l.username)+'</td><td>'+esc(l.action)+'</td><td>'+esc(l.target_type)+'#'+l.target_id+'</td><td>'+esc(l.detail)+'</td></tr>'});h+='</table>';document.getElementById('logsTbl').innerHTML=h;document.getElementById('logsPg').innerHTML=pager(d.page,d.totalPages,loadLogs)}).catch(function(){})}
 
 function pager(page,total,fn){var h='';for(var i=1;i<=total;i++){h+='<button class="btn-sm '+(i==page?'primary':'')+'" onclick="'+fn.name+'('+i+')">'+i+'</button>'}return h}
 

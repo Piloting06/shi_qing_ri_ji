@@ -62,7 +62,13 @@ app.get('/admin', (_req, res) => res.sendFile(require('path').join(__dirname, 'a
   // 落地页（卡片二维码指向根路径）+ 安装包下载，见 routes/landing.js
   app.use(require('./routes/landing'));
 
+  // /api 下没有的路径回 JSON（不回 Express 默认的 HTML「Cannot GET」）
+  app.use('/api', (_req, res) => res.status(404).json({ message: '没有这个接口' }));
+
   app.use((err, _req, res, _next) => {
+    // 请求体不是合法 JSON / 太大：是客户端的问题，回 400 / 413，不算服务器错误
+    if (err.type === 'entity.parse.failed') return res.status(400).json({ message: '请求格式不对' });
+    if (err.type === 'entity.too.large') return res.status(413).json({ message: '内容太长了' });
     console.error(err);
     res.status(500).json({ message: '服务器内部错误' });
   });

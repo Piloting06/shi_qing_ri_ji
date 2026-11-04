@@ -7,7 +7,8 @@ import 'api_base.dart';
 /// 服务器已经写得像人话的（「验证码错误或已过期」「这颗胶囊已经封存好了」）原样保留。
 String friendlyServerMessage(String raw, int status) {
   final m = raw.trim();
-  if (status == 429) return '点得太快了，歇一会儿再试';
+  // 429：服务器说清了原因（「一分钟内只能发一次」）就用它的，只在套话或空时兜底
+  if (status == 429 && (m.isEmpty || _generic.containsKey(m))) return '点得太快了，歇一会儿再试';
   if (status >= 500 && (m.isEmpty || _generic.containsKey(m) || _fetchFailed.hasMatch(m))) {
     return '服务器出了点问题，稍后再试';
   }

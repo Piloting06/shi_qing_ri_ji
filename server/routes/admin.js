@@ -36,7 +36,7 @@ router.post('/login', (req, res) => {
     if (!admin || !bcrypt.compareSync(password, admin.password_hash)) {
       return res.status(401).json({ message: '账号或密码错误' });
     }
-    const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+    const token = jwt.sign({ id: admin.id, username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
     res.json({ token, username: admin.username });
   } catch (e) { res.status(500).json({ message: '登录失败' }); }
 });

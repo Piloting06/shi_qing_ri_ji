@@ -7,9 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'stores/app_state.dart';
 import 'stores/theme_state.dart';
+import 'widgets/xq/xq_theme_reveal.dart';
 import 'stores/map_state.dart';
 import 'theme/xq_theme.dart';
-import 'theme/xq_colors.dart';
 import 'widgets/splash_screen.dart';
 import 'pages/login_page.dart';
 import 'widgets/main_scaffold.dart';
@@ -66,8 +66,8 @@ class XinQingRiJiApp extends StatelessWidget {
             navigatorKey: appNavigatorKey,
             title: '拾晴日记',
             debugShowCheckedModeBanner: false,
-            theme: XqTheme.forMode(theme.themeMode),
-            darkTheme: XqTheme.forMode('sujian_dark'),
+            theme: XqTheme.forPalette(theme.lightPaper),
+            darkTheme: XqTheme.forPalette(theme.darkPaper),
             // 中文本地化：日期选择、文本选择菜单（复制/粘贴）等系统文案
             locale: const Locale('zh', 'CN'),
             supportedLocales: const [Locale('zh', 'CN')],
@@ -77,9 +77,13 @@ class XinQingRiJiApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
-            // 主题切换时全 App 颜色平滑过渡，避免生硬跳变
-            themeAnimationDuration: const Duration(milliseconds: 420),
-            themeAnimationCurve: Curves.easeOutCubic,
+            // 换纸的过渡交给 XqThemeReveal（旧画面截图 + 新纸晕开），ThemeData 本身直接到位
+            themeAnimationDuration: Duration.zero,
+            // 系统字号最多放大到 1.3 倍：竖排城名、印章、日历格是按格子排的，再大会挤出格子
+            builder: (context, child) => MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: XqThemeReveal(child: child!),
+            ),
             home: const SplashGate(),
           );
         },
@@ -154,10 +158,7 @@ class _SplashGateState extends State<SplashGate> {
   @override
   Widget build(BuildContext context) {
     if (!_ready) {
-      return const Scaffold(
-        backgroundColor: XqColors.sujianBackground,
-        body: Center(child: SizedBox.shrink()),
-      );
+      return const Scaffold(body: SizedBox.shrink());
     }
     return InkSplashScreen(onComplete: _onSplashComplete);
   }

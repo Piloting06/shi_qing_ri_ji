@@ -6,6 +6,9 @@ class StorageKeys {
   static const String email = 'email';
   static const String themeMode = 'themeMode';
   static const String themeExplicit = 'themeExplicit';
+  static const String appearance = 'appearance';
+  static const String paperLight = 'paperLight';
+  static const String paperDark = 'paperDark';
   static const String cityName = 'cityName';
   static const String cityLat = 'cityLat';
   static const String cityLon = 'cityLon';

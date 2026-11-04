@@ -15,23 +15,24 @@ class WeeklyCardTemplate {
   static Widget build(MoodCardData data) {
     final br = data.square ? 0.0 : 20.0;
     final week = data.week;
-    final recorded = week.where((d) => d.emoji != null && d.emoji!.isNotEmpty).length;
+    final recorded = week.where((d) => d.color != null).length;
 
     // 最常出现的心情
-    String? topEmoji;
+    String? topMood;
     int? topColor;
     var topCount = 0;
     final counts = <String, int>{};
     final colorOf = <String, int?>{};
     for (final d in week) {
-      if (d.emoji == null || d.emoji!.isEmpty) continue;
-      counts[d.emoji!] = (counts[d.emoji!] ?? 0) + 1;
-      colorOf[d.emoji!] = d.color;
+      final m = d.mood;
+      if (m == null || m.isEmpty) continue;
+      counts[m] = (counts[m] ?? 0) + 1;
+      colorOf[m] = d.color;
     }
     for (final e in counts.entries) {
       if (e.value > topCount) {
         topCount = e.value;
-        topEmoji = e.key;
+        topMood = e.key;
         topColor = colorOf[e.key];
       }
     }
@@ -74,7 +75,7 @@ class WeeklyCardTemplate {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'MY WEEK IN MOODS',
+                  '最近七天',
                   style: TextStyle(
                     color: _accent.withAlpha(150),
                     fontSize: 8,
@@ -87,7 +88,7 @@ class WeeklyCardTemplate {
                 if (week.isNotEmpty)
                   Row(
                     children: week.map((day) {
-                      final recordedDay = day.emoji != null && day.emoji!.isNotEmpty;
+                      final recordedDay = day.color != null;
                       return Expanded(
                         child: Column(
                           children: [
@@ -99,7 +100,7 @@ class WeeklyCardTemplate {
                                 shape: BoxShape.circle,
                                 color: recordedDay
                                     ? Color(day.color ?? 0xFFE0D5C0)
-                                        .withAlpha(90)
+                                        .withAlpha(200)
                                     : _ink.withAlpha(8),
                                 border: day.isToday
                                     ? Border.all(
@@ -112,10 +113,7 @@ class WeeklyCardTemplate {
                                       ),
                               ),
                               child: recordedDay
-                                  ? Text(
-                                      day.emoji!,
-                                      style: const TextStyle(fontSize: 15),
-                                    )
+                                  ? null
                                   : Text(
                                       '·',
                                       style: TextStyle(
@@ -152,17 +150,17 @@ class WeeklyCardTemplate {
                 Row(
                   children: [
                     Text(
-                      '记录 $recorded/7 天',
+                      '记了 $recorded 天',
                       style: TextStyle(
                         color: _ink.withAlpha(170),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (topEmoji != null) ...[
+                    if (topMood != null && topCount > 1) ...[
                       const SizedBox(width: 12),
                       Text(
-                        '最常出现 $topEmoji ×$topCount',
+                        '$topMood $topCount 天',
                         style: TextStyle(
                           color: Color(topColor ?? 0xFF8A7350),
                           fontSize: 11,

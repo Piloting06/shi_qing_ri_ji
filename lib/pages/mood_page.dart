@@ -64,7 +64,7 @@ class _MoodPageState extends State<MoodPage> {
       }
     } on ApiException catch (e) {
       if (e.statusCode == 401) return;
-      if (mounted) XqToast.error(context, '加载心情统计失败：${e.message}');
+      if (mounted) XqToast.error(context, e.message);
     } catch (_) {
       if (mounted) XqToast.error(context, '没连上网，等会儿再试');
     }
@@ -130,7 +130,7 @@ class _MoodPageState extends State<MoodPage> {
     } on ApiException catch (e) {
       _hydrating = false;
       if (e.statusCode == 401) return;
-      if (mounted) XqToast.error(context, '加载心情失败：${e.message}');
+      if (mounted) XqToast.error(context, e.message);
     } catch (_) {
       _hydrating = false;
       if (mounted) XqToast.error(context, '没加载出来，等会儿再试');
@@ -229,7 +229,7 @@ class _MoodPageState extends State<MoodPage> {
     } on ApiException catch (e) {
       if (mounted) {
         setState(() => _saving = false);
-        XqToast.error(context, '保存失败：${e.message}');
+        XqToast.error(context, e.message);
       }
     } catch (_) {
       await MoodQueue.enqueue({

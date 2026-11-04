@@ -1,500 +1,497 @@
 part of 'profile_page.dart';
 
+/// 「我」页像一本手账的扉页：名帖 → 这个月 → 我的东西 → 纸 → 设置 → 牌记。
+/// 设置行不带图标（不是系统设置页），只有字、值和一道乌丝栏。
 extension _ProfilePageSections on _ProfilePageState {
-  /// 名帖：宋体名字 + 一方小印（无头像时以名字首字作印，本屏唯一朱砂）
+  // ── 名帖 ──
+
   Widget _profileHeader(ThemeState theme, AppState appState) {
     final name = appState.displayName.isNotEmpty ? appState.displayName : '未署名';
-    final accountText = _phone.isEmpty ? '已登录' : _phone;
+    final accountText = _phone.isEmpty ? (_boundEmail.isEmpty ? '已登录' : _boundEmail) : _phone;
     final initial = name.characters.first;
+    final num = TextStyle(
+      color: theme.gold,
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
 
     return XqSurface(
-      padding: const EdgeInsets.fromLTRB(22, 22, 20, 22),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.fromLTRB(22, 22, 20, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: XqTypography.displayLarge.copyWith(
-                    color: theme.textPrimary,
-                  ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: XqTypography.displayLarge.copyWith(color: theme.textPrimary, fontSize: 30),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      accountText,
+                      style: TextStyle(
+                        color: theme.textTertiary,
+                        fontSize: 13,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  accountText,
-                  style: TextStyle(
-                    color: theme.textTertiary,
-                    fontSize: 13,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Semantics(
+                button: true,
+                label: '更换头像',
+                child: GestureDetector(
+                  onTap: _pickAvatar,
+                  child: _avatarPath != null
+                      ? Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(color: theme.frameColor, width: 0.6),
+                          ),
+                          padding: const EdgeInsets.all(3),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: Image.file(File(_avatarPath!), fit: BoxFit.cover),
+                          ),
+                        )
+                      : XqSeal(char: initial, color: theme.sealColor, size: 56, style: XqSealStyle.bai),
                 ),
-                const SizedBox(height: 16),
-                Text.rich(
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(height: 0.6, color: theme.borderColor),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text.rich(
                   TextSpan(
                     style: TextStyle(color: theme.textSecondary, fontSize: 13),
                     children: [
-                      const TextSpan(text: '连续记录 '),
-                      TextSpan(
-                        text: '$_consecutive',
-                        style: TextStyle(
-                          color: theme.gold,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                      const TextSpan(text: ' 天'),
-                      const TextSpan(text: '   ·   '),
-                      TextSpan(text: _checkedIn ? '今天已记' : '今天还没记'),
+                      const TextSpan(text: '连续 '),
+                      TextSpan(text: '$_consecutive', style: num),
+                      const TextSpan(text: ' 天   共记 '),
+                      TextSpan(text: '$_totalDays', style: num),
+                      const TextSpan(text: ' 天   '),
+                      TextSpan(text: '$_totalEntries', style: num),
+                      const TextSpan(text: ' 笔'),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Semantics(
-            button: true,
-            label: '更换头像',
-            child: GestureDetector(
-              onTap: _pickAvatar,
-              child: _avatarPath != null
-                  ? Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: theme.borderColor, width: 0.8),
-                      ),
-                      child: ClipOval(
-                        child: Image.file(File(_avatarPath!), fit: BoxFit.cover),
-                      ),
-                    )
-                  : XqSeal(char: initial, color: theme.sealColor, size: 56),
-            ),
+              ),
+              _checkinButton(theme),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _recordsGroup(ThemeState theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _listTile(
-          theme,
-          icon: _checkedIn
-              ? XqIcons.checkCircle
-              : XqIcons.flame,
-          iconColor: _checkedIn ? theme.successColor : theme.accentColor,
-          title: _checkedIn ? '今日已记录' : '今天还没记',
-          subtitle: _checkedIn
-              ? '连续 $_consecutive 天'
-              : (_checkingIn ? '正在记录' : '点一下签到'),
-          onTap: (_checkedIn || _checkingIn) ? null : _doCheckin,
-        ),
-        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
-        _listTile(
-          theme,
-          icon: XqIcons.cards,
-          iconColor: theme.gold,
-          title: '卡片册',
-          subtitle: '做过的卡片都在这',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CardAlbumPage()),
-            );
-          },
-        ),
-        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
-        _listTile(
-          theme,
-          icon: XqIcons.leaf,
-          iconColor: theme.accentColor,
-          title: '素笺',
-          subtitle: '写长文，或从节气起个头',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const StoryListPage()),
-            );
-          },
-        ),
-        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
-        _listTile(
-          theme,
-          icon: XqIcons.hourglass,
-          iconColor: theme.accentColor,
-          title: '时光胶囊',
-          subtitle: _capsuleNotify ? '提醒已开启' : '提醒未开启',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const CapsulePage()),
+  /// 签到：没签是一枚可点的小朱文印「签」，签过变成一行小字
+  Widget _checkinButton(ThemeState theme) {
+    if (_checkedIn) {
+      return Text('今天签过了', style: TextStyle(color: theme.textTertiary, fontSize: 12.5));
+    }
+    return Semantics(
+      button: true,
+      label: '签到',
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _checkingIn ? null : _doCheckin,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 0, 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('签到', style: TextStyle(color: theme.accentColor, fontSize: 13)),
+              const SizedBox(width: 6),
+              Opacity(
+                opacity: _checkingIn ? 0.4 : 1,
+                child: XqSeal(char: '签', color: theme.sealColor, size: 24),
+              ),
+            ],
           ),
         ),
-        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
-        _listTile(
-          theme,
-          icon: XqIcons.people,
-          iconColor: theme.accentColor,
-          title: '好友心情',
-          subtitle: '朋友最近的心情',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const FriendsPage()),
+      ),
+    );
+  }
+
+  // ── 这个月 ──
+
+  Widget _monthCard(ThemeState theme) {
+    final now = DateTime.now();
+    final first = DateTime(now.year, now.month, 1);
+    final days = DateTime(now.year, now.month + 1, 0).day;
+    final lead = first.weekday - 1; // 周一起
+    final rows = ((lead + days) / 7).ceil();
+    const names = ['一', '二', '三', '四', '五', '六', '日'];
+    final recorded = _monthScores.length;
+
+    Widget cell(int day) {
+      final score = _monthScores[day];
+      final isToday = day == now.day;
+      final future = day > now.day;
+      return SizedBox(
+        height: 38,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 26,
+              child: Center(
+                child: score != null
+                    ? XqPigmentDab(color: Color(moodColors[score] ?? 0xFF7A7871), size: 24, seed: day * 3 + score)
+                    : Text(
+                        '$day',
+                        style: TextStyle(
+                          color: isToday ? theme.textPrimary : theme.textTertiary.withAlpha(future ? 110 : 255),
+                          fontSize: 12,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+              ),
+            ),
+            Container(width: 10, height: 1.2, color: isToday ? theme.textPrimary : Colors.transparent),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        XqSectionTitle(
+          '${chineseNumber(now.month)}月',
+          trailing: Text(
+            recorded == 0 ? '这个月还没记' : '记了${chineseCount(recorded)}天',
+            style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+          ),
+        ),
+        Semantics(
+          button: true,
+          label: '这个月记了$recorded天，去心情页',
+          excludeSemantics: true,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => MainScaffold.switchToTab(context, 1),
+            child: XqSurface(
+              padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      for (final n in names)
+                        Expanded(
+                          child: Center(
+                            child: Text(n, style: TextStyle(color: theme.textTertiary, fontSize: 11.5)),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  for (var r = 0; r < rows; r++)
+                    Row(
+                      children: [
+                        for (var c = 0; c < 7; c++)
+                          Expanded(
+                            child: Builder(builder: (_) {
+                              final day = r * 7 + c - lead + 1;
+                              return day < 1 || day > days ? const SizedBox(height: 38) : cell(day);
+                            }),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _listTile(
-    ThemeState theme, {
-    required XqIcons icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                child: XqIcon(icon, color: theme.textSecondary, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
+  // ── 我的东西：一行四栏 ──
+
+  Widget _shelf(ThemeState theme) {
+    Widget entry(XqIcons icon, String title, String sub, Widget page) => Expanded(
+          child: Semantics(
+            button: true,
+            label: '$title，$sub',
+            excludeSemantics: true,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    XqIcon(icon, size: 20, color: theme.textSecondary),
+                    const SizedBox(height: 8),
                     Text(
                       title,
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 15,
-                      ),
+                      style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16, letterSpacing: 1),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: theme.textTertiary,
-                        fontSize: 12.5,
-                      ),
-                    ),
+                    const SizedBox(height: 3),
+                    Text(sub, style: TextStyle(color: theme.textTertiary, fontSize: 11.5)),
                   ],
                 ),
               ),
-              XqIcon(XqIcons.chevronRight,
-                color: theme.borderColor,
-                size: 20,
+            ),
+          ),
+        );
+    Widget rule() => Container(width: 0.6, height: 44, color: theme.frameColor);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.symmetric(horizontal: BorderSide(color: theme.frameColor, width: 0.6)),
+      ),
+      child: Row(
+        children: [
+          entry(XqIcons.cards, '卡片册', '做过的卡', const CardAlbumPage()),
+          rule(),
+          entry(XqIcons.book, '素笺', '长一点的', const StoryListPage()),
+          rule(),
+          entry(XqIcons.hourglass, '胶囊', _capsuleNotify ? '到期提醒' : '提醒关着', const CapsulePage()),
+          rule(),
+          entry(XqIcons.people, '好友', '朋友的心情', const FriendsPage()),
+        ],
+      ),
+    );
+  }
+
+  // ── 纸：深浅 + 六张纸 ──
+
+  Widget _paperPicker(ThemeState theme) {
+    final current = theme.palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        XqSectionTitle(
+          '纸',
+          trailing: Text('现在用的是${current.name}', style: TextStyle(color: theme.textTertiary, fontSize: 12.5)),
+        ),
+        XqSurface(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _appearanceTabs(theme),
+              const SizedBox(height: 14),
+              _paperRow(theme, '白天', XqPalette.lights, theme.lightPaper),
+              const SizedBox(height: 14),
+              _paperRow(theme, '夜里', XqPalette.darks, theme.darkPaper),
+              const SizedBox(height: 14),
+              Container(height: 0.6, color: theme.borderColor),
+              const SizedBox(height: 12),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text.rich(
+                  key: ValueKey(current.id),
+                  TextSpan(children: [
+                    TextSpan(
+                      text: '${current.name}　${current.paper}\n',
+                      style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16, height: 1.9),
+                    ),
+                    TextSpan(text: current.story),
+                  ]),
+                  style: TextStyle(color: theme.textSecondary, fontSize: 13, height: 1.6),
+                ),
               ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _profileSettingsGroup(ThemeState theme, AppState appState) {
-    return _card(
-      theme,
+  /// 跟随系统 / 白天 / 夜里：三个字签，选中的下面一道墨线
+  Widget _appearanceTabs(ThemeState theme) {
+    const items = [
+      (XqAppearance.system, '跟随系统'),
+      (XqAppearance.light, '总是白天'),
+      (XqAppearance.dark, '总是夜里'),
+    ];
+    return Row(
+      children: [
+        for (final (a, label) in items)
+          Expanded(
+            child: Semantics(
+              button: true,
+              selected: theme.appearance == a,
+              label: label,
+              excludeSemantics: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: (d) {
+                  HapticFeedback.selectionClick();
+                  theme.setAppearance(a, origin: d.globalPosition);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: theme.appearance == a ? theme.textPrimary : theme.textTertiary,
+                          fontSize: 14,
+                          fontWeight: theme.appearance == a ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutQuart,
+                        width: theme.appearance == a ? 18 : 0,
+                        height: 1.4,
+                        color: theme.textPrimary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _paperRow(ThemeState theme, String label, List<XqPalette> papers, XqPalette chosen) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 34,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(label, style: TextStyle(color: theme.textTertiary, fontSize: 12)),
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(builder: (context, c) {
+            const gap = 10.0;
+            final w = ((c.maxWidth - gap * 3) / 4).clamp(48.0, 72.0);
+            return Wrap(
+              spacing: gap,
+              children: [
+                for (final p in papers)
+                  _PaperSwatch(
+                    paper: p,
+                    width: w,
+                    chosen: p == chosen,
+                    inUse: p == theme.palette,
+                    underline: theme.textPrimary,
+                    onTapUp: (pos) {
+                      HapticFeedback.selectionClick();
+                      theme.setPaper(p, origin: pos);
+                    },
+                  ),
+              ],
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // ── 设置 / 关于 ──
+
+  Widget _settingsGroup(ThemeState theme, AppState appState) {
+    return XqSurface(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          _infoRow(
+          _row(
             theme,
-            icon: XqIcons.badge,
-            title: '昵称',
-            subtitle: appState.displayName.isNotEmpty
-                ? appState.displayName
-                : '设置署名',
-            trailing: '修改',
+            title: '署名',
+            value: appState.displayName.isNotEmpty ? appState.displayName : '还没设',
             onTap: () => _showNicknameDialog(theme, appState),
           ),
-          _divider(theme),
-          _infoRow(
+          _rule(theme),
+          _row(
             theme,
-            icon: XqIcons.mail,
-            title: _boundEmail.isEmpty ? '绑定邮箱' : '邮箱',
-            subtitle: _boundEmail.isEmpty ? '绑定后可用邮箱登录' : _boundEmail,
-            trailing: _boundEmail.isEmpty ? '绑定' : '更换',
+            title: '邮箱',
+            value: _boundEmail.isEmpty ? '没绑定，绑了能用邮箱登录' : _boundEmail,
             onTap: () => _showEmailSheet(theme),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _appearanceGroup(ThemeState theme) {
-    return _card(
-      theme,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 10),
-          _themeSelectorGrid(theme),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '再点一次当前主题，看它的来历',
-                  style: TextStyle(
-                    color: theme.textTertiary,
-                    fontSize: 12,
-                    height: 1.35,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Divider(color: theme.borderColor.withAlpha(60), height: 1),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              XqIcon(XqIcons.bell,
-                size: 20,
-                color: theme.textSecondary,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '胶囊提醒',
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '到期时通过通知提醒我',
-                      style: TextStyle(
-                        color: theme.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              GlowSwitch(
-                value: _capsuleNotify,
-                onChanged: (v) async {
-                  if (v) {
-                    // 先检查是否已有权限
-                    final alreadyGranted = await NotificationService.areSystemNotificationsEnabled();
-                    if (alreadyGranted) {
-                      _setCapsuleNotify(true);
-                      return;
-                    }
-                    // 没有权限，请求系统弹窗
-                    final granted = await NotificationService.requestPermissionIfNeeded();
-                    if (!mounted) return;
-                    if (!granted) {
-                      // 被拒绝，提示去设置开启
-                      if (mounted) {
-                        XqToast.info(context, '要先在系统设置里打开通知');
-                      }
-                      return;
-                    }
-                  }
-                  _setCapsuleNotify(v);
-                },
-              ),
-            ],
+          _rule(theme),
+          _row(theme, title: '登录密码', value: '修改', onTap: () => _showPasswordSheet(theme)),
+          _rule(theme),
+          _row(
+            theme,
+            title: '胶囊到期提醒',
+            value: '',
+            trailing: GlowSwitch(value: _capsuleNotify, onChanged: _onCapsuleNotifyChanged),
           ),
         ],
       ),
     );
   }
 
-  Widget _themeSelectorGrid(ThemeState theme) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = (constraints.maxWidth - 10) / 2;
-        return Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: ThemeState.themeNames.entries.map((entry) {
-            final active = theme.themeMode == entry.key;
-            final colors = ThemeState.themeColors[entry.key]!;
-            final desc = _themeSceneDesc(entry.key);
-            return SizedBox(
-              width: width,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-                  onTap: () {
-                    if (active) {
-                      _showThemeDetail(entry.key, entry.value, colors, desc);
-                    } else {
-                      theme.setTheme(entry.key);
-                    }
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 240),
-                    curve: Curves.easeOutCubic,
-                    height: 78,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-                      color: colors[2],
-                      border: Border.all(
-                        color: active
-                            ? colors[0]
-                            : theme.borderColor.withAlpha(100),
-                        width: active ? 1.6 : 0.7,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            ...colors
-                                .take(3)
-                                .map(
-                                  (c) => Container(
-                                    width: 13,
-                                    height: 13,
-                                    margin: const EdgeInsets.only(right: 4),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: c,
-                                      border: Border.all(
-                                        color: Colors.white.withAlpha(140),
-                                        width: 0.6,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            const Spacer(),
-                            if (active)
-                              XqIcon(XqIcons.check,
-                                color: colors[0],
-                                size: 16,
-                              ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Text(
-                          entry.value,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: active
-                                ? colors[0]
-                                : _readableTextOn(colors[2]),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          desc,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: _readableTextOn(colors[2]).withAlpha(180),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  Widget _securityGroup(ThemeState theme) {
-    return _card(
-      theme,
-      child: _infoRow(
-        theme,
-        icon: XqIcons.lock,
-        title: '修改密码',
-        subtitle: '更改当前登录密码',
-        trailing: '修改',
-        onTap: () => _showPasswordSheet(theme),
-      ),
-    );
+  Future<void> _onCapsuleNotifyChanged(bool v) async {
+    if (v) {
+      final alreadyGranted = await NotificationService.areSystemNotificationsEnabled();
+      if (alreadyGranted) {
+        _setCapsuleNotify(true);
+        return;
+      }
+      final granted = await NotificationService.requestPermissionIfNeeded();
+      if (!mounted) return;
+      if (!granted) {
+        XqToast.info(context, '要先在系统设置里打开通知');
+        return;
+      }
+    }
+    _setCapsuleNotify(v);
   }
 
   Widget _aboutGroup(ThemeState theme) {
-    return _card(
-      theme,
+    return XqSurface(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          _infoRow(
+          _row(
             theme,
-            icon: XqIcons.info,
             title: '关于拾晴日记',
-            subtitle: '版本、合规、开源许可',
-            trailing: '查看',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AboutPage()),
-            ),
+            value: 'v$appVersion',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutPage())),
           ),
-          _divider(theme),
-          _infoRow(
+          _rule(theme),
+          _row(
             theme,
-            icon: XqIcons.doc,
             title: '隐私政策',
-            subtitle: '查看数据和隐私说明',
-            trailing: '查看',
+            value: '',
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const LegalPage(isPrivacy: true),
-              ),
+              MaterialPageRoute(builder: (_) => const LegalPage(isPrivacy: true)),
             ),
           ),
-          _divider(theme),
-          _infoRow(
+          _rule(theme),
+          _row(
             theme,
-            icon: XqIcons.doc,
             title: '用户协议',
-            subtitle: '查看使用约定',
-            trailing: '查看',
+            value: '',
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const LegalPage(isPrivacy: false),
-              ),
+              MaterialPageRoute(builder: (_) => const LegalPage(isPrivacy: false)),
             ),
           ),
-          _divider(theme),
-          _infoRow(
-            theme,
-            icon: XqIcons.chat,
-            title: '加入交流群',
-            subtitle: 'QQ 群',
-            trailing: '加入',
-            onTap: _openQqGroup,
-          ),
+          _rule(theme),
+          _row(theme, title: '交流群', value: 'QQ 群', onTap: _openQqGroup),
         ],
       ),
     );
@@ -508,102 +505,180 @@ extension _ProfilePageSections on _ProfilePageState {
       if (can) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('请先安装 QQ')));
+        XqToast.info(context, '这台手机上没装 QQ');
       }
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('跳转失败，请稍后重试')));
+      XqToast.error(context, '没打开，稍后再试');
     }
   }
 
-  // ── Reusable components ──
-
-  Widget _sectionTitle(String text, ThemeState theme, {String? subtitle}) =>
-      XqSectionTitle(text, caption: subtitle);
-
-  /// 分组卡片（L1）
-  Widget _card(ThemeState theme, {required Widget child}) => XqSurface(
-        padding: const EdgeInsets.fromLTRB(16, 6, 14, 6),
-        child: child,
-      );
-
-  Widget _divider(ThemeState theme) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 50),
-      child: Divider(color: theme.borderColor, height: 1),
+  /// 牌记：书末那一小方刊记，双线框里写书名和版次
+  Widget _colophon(ThemeState theme) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(border: Border.all(color: theme.frameColor, width: 0.6)),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 9),
+          decoration: BoxDecoration(border: Border.all(color: theme.frameColor, width: 0.6)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '拾晴日记',
+                style: XqTypography.headlineSmall.copyWith(color: theme.textSecondary, fontSize: 15, letterSpacing: 6),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'v$appVersion',
+                style: TextStyle(color: theme.textTertiary, fontSize: 11, letterSpacing: 1),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _infoRow(
+  // ── 行 ──
+
+  Widget _rule(ThemeState theme) => Container(height: 0.6, color: theme.borderColor);
+
+  Widget _row(
     ThemeState theme, {
-    required XqIcons icon,
     required String title,
-    required String subtitle,
-    required String trailing,
+    required String value,
     VoidCallback? onTap,
+    Widget? trailing,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 58),
-          padding: const EdgeInsets.symmetric(vertical: 7),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                child: XqIcon(icon, color: theme.textSecondary, size: 20),
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 52),
+        child: Row(
+          children: [
+            Text(title, style: TextStyle(color: theme.textPrimary, fontSize: 15)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: TextStyle(color: theme.textTertiary, fontSize: 13),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+            ),
+            ?trailing,
+            if (onTap != null) ...[
+              const SizedBox(width: 4),
+              XqIcon(XqIcons.chevronRight, color: theme.frameColor, size: 16),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 一张纸样：真的纸色 + 纸纹 + 两道栏线 + 竖写纸名 + 一枚小印。
+/// 选中的那张（各自深浅里记住的那张）下面一道墨线；正在用的那张略微提起。
+class _PaperSwatch extends StatelessWidget {
+  const _PaperSwatch({
+    required this.paper,
+    required this.width,
+    required this.chosen,
+    required this.inUse,
+    required this.underline,
+    required this.onTapUp,
+  });
+
+  final XqPalette paper;
+  final double width;
+  final bool chosen;
+  final bool inUse;
+  final Color underline;
+  final ValueChanged<Offset> onTapUp;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = paper;
+    final h = width * 1.32;
+    return Semantics(
+      button: true,
+      selected: chosen,
+      label: '${p.name}，${p.paper}',
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapUp: (d) => onTapUp(d.globalPosition),
+        child: Column(
+          children: [
+            AnimatedSlide(
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutQuart,
+              offset: Offset(0, inUse ? -0.04 : 0),
+              child: Container(
+                width: width,
+                height: h,
+                decoration: BoxDecoration(
+                  color: p.card,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: chosen ? p.textSecondary : p.frame, width: chosen ? 1 : 0.6),
+                  image: XqPaper.grain(p.fiber, strength: p.dark ? 0.6 : 0.8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(inUse ? 34 : 14),
+                      offset: Offset(0, inUse ? 3 : 1),
+                      blurRadius: inUse ? 6 : 1,
+                    ),
+                  ],
+                ),
+                child: Stack(
                   children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 15,
+                    // 两道乌丝栏
+                    for (final x in [0.3, 0.56])
+                      Positioned(
+                        left: width * x,
+                        top: h * 0.1,
+                        bottom: h * 0.1,
+                        child: Container(width: 0.6, color: p.border),
+                      ),
+                    Positioned(
+                      right: width * 0.12,
+                      top: h * 0.1,
+                      child: Column(
+                        children: [
+                          for (final ch in p.name.characters)
+                            Text(
+                              ch,
+                              style: TextStyle(
+                                fontFamily: 'Display',
+                                fontSize: (width * 0.24).clamp(12.0, 17.0),
+                                height: 1.15,
+                                color: p.textPrimary,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: theme.textSecondary,
-                        fontSize: 12,
-                      ),
+                    Positioned(
+                      left: width * 0.1,
+                      bottom: h * 0.08,
+                      child: XqSeal(char: p.name.characters.first, color: p.seal, size: (width * 0.28).clamp(14.0, 20.0)),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-              Text(
-                trailing,
-                style: TextStyle(
-                  color: onTap == null ? theme.textTertiary : theme.accentColor,
-                  fontSize: 13,
-                ),
-              ),
-              if (onTap != null) ...[
-                const SizedBox(width: 2),
-                XqIcon(XqIcons.chevronRight,
-                  color: theme.borderColor,
-                  size: 18,
-                ),
-              ],
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: chosen ? 14 : 0,
+              height: 1.4,
+              color: underline,
+            ),
+          ],
         ),
       ),
     );

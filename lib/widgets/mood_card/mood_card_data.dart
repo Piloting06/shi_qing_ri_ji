@@ -49,12 +49,14 @@ class MoodDay {
   final String label; // 星期缩写
   final String? emoji;
   final int? color; // moodColors 值
+  final String? mood; // 心情字（开心/平静…）
   final bool isToday;
 
   const MoodDay({
     required this.label,
     this.emoji,
     this.color,
+    this.mood,
     required this.isToday,
   });
 }
@@ -96,6 +98,7 @@ class MoodDay {
         label: weekLabels[day.weekday - 1],
         emoji: score != null ? (moodEmojis[score] ?? '') : '',
         color: score != null ? moodColors[score] : null,
+        mood: score != null ? moodLabels[score] : null,
         isToday: i == 0,
       ));
     }

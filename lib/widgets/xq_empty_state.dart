@@ -1,50 +1,65 @@
 import 'package:flutter/material.dart';
-import 'xq/xq_icons.dart';
+import 'package:provider/provider.dart';
+import '../stores/theme_state.dart';
+import '../theme/xq_typography.dart';
 
+/// 空页点景：芥子园线稿（一枝寒枝 / 一叶孤舟 / 一片归帆）
+enum XqMotif { branch, boat, sail }
+
+/// 空状态：淡墨线稿一幅 + 一句事实 + 一句怎么开始。不用大图标，不用感叹号。
 class XqEmptyState extends StatelessWidget {
-  final XqIcons icon;
+  final XqMotif motif;
   final String title;
   final String subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
-  final Color? iconColor;
 
   const XqEmptyState({
     super.key,
-    required this.icon,
+    this.motif = XqMotif.branch,
     required this.title,
     required this.subtitle,
     this.actionLabel,
     this.onAction,
-    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = iconColor ?? theme.colorScheme.primary.withAlpha(80);
-
+    final t = context.watch<ThemeState>();
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.fromLTRB(32, 24, 32, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            XqIcon(icon, size: 48, color: color),
-            const SizedBox(height: 16),
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-            const SizedBox(height: 6),
-            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: theme.colorScheme.onSurface.withAlpha(140))),
+            Image.asset(
+              'assets/motifs/${motif.name}.png',
+              width: 132,
+              color: t.ink.withAlpha(t.isDark ? 70 : 60),
+              colorBlendMode: BlendMode.srcIn,
+              excludeFromSemantics: true,
+            ),
+            const SizedBox(height: 18),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: XqTypography.headlineSmall.copyWith(color: t.textPrimary, fontSize: 18),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, height: 1.5, color: t.textSecondary),
+            ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 18),
               SizedBox(
-                height: 42,
+                height: 44,
                 child: OutlinedButton(
                   onPressed: onAction,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: theme.colorScheme.primary,
-                    side: BorderSide(color: theme.colorScheme.primary.withAlpha(100)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    minimumSize: const Size(120, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 22),
                   ),
                   child: Text(actionLabel!),
                 ),

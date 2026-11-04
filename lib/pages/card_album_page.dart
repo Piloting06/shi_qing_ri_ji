@@ -121,9 +121,9 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
           : _entries.isEmpty
               ? Center(
                   child: XqEmptyState(
-                    icon: XqIcons.cards,
-                    title: '卡片册还是空的',
-                    subtitle: '在心情页保存或分享卡片后，会自动收进这里',
+                    motif: XqMotif.branch,
+                    title: '还没有卡片',
+                    subtitle: '在心情页做一张卡，保存或分享后会收进这里。',
                   ),
                 )
               : XqRefresh(

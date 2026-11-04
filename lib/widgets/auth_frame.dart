@@ -96,9 +96,8 @@ class XqAuthHero extends StatelessWidget {
           style: TextStyle(
             color: theme.textPrimary,
             fontSize: 26,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'SerifSC',
-            fontFamilyFallback: ['Noto Serif SC', 'Songti SC'],
+            fontFamily: 'Display',
+            fontFamilyFallback: ['SerifSC', 'Noto Serif SC', 'Songti SC'],
             height: 1.35,
             letterSpacing: title.length <= 4 ? 4 : 1,
           ),

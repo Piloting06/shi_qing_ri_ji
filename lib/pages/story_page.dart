@@ -119,7 +119,7 @@ class _StoryListPageState extends State<StoryListPage> {
           : _entries.isEmpty
               ? Center(
                   child: XqEmptyState(
-                    icon: XqIcons.leaf,
+                    motif: XqMotif.branch,
                     title: '纸上还空着',
                     subtitle: '写长文，或从节气起个头',
                     actionLabel: '写一篇',

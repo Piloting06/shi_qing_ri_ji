@@ -21,6 +21,7 @@ import 'mood_card/card_album_store.dart';
 import 'mood_card/mood_card_data.dart';
 import 'mood_card/mood_card_registry.dart';
 import 'xq_toast.dart';
+import 'xq/xq_paper.dart';
 
 class MoodCardMaker extends StatefulWidget {
   final String date;
@@ -198,7 +199,8 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
   Future<void> _restorePrefs() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    final savedId = prefs.getString(_templatePrefKey);
+    // 没选过模板时，默认用和 App 当前同一张纸的「笺」
+    final savedId = prefs.getString(_templatePrefKey) ?? widget.theme.palette.id;
     final idx = moodCardTemplates.indexWhere((t) => t.id == savedId);
     setState(() {
       if (idx >= 0) _templateIndex = idx;
@@ -729,15 +731,17 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                             () => setState(() => _bodyScale = 0.9)),
                       ]),
                       const SizedBox(height: 10),
-                      // Emoji picker (mutually exclusive with tag picker)
+                      // 心情选择（与标签选择互斥）
                       GestureDetector(
                         onTap: () => setState(() {
                           _showEmojiPicker = !_showEmojiPicker;
                           if (_showEmojiPicker) _showTagPicker = false;
                         }),
                         child: _buildEditRow('情绪', [
+                          XqPigmentDab(color: Color(moodColors[_activeMoodScore] ?? 0xFF7A7871), size: 16, seed: _activeMoodScore),
+                          const SizedBox(width: 4),
                           Text(
-                            '${moodEmojis[_activeMoodScore] ?? ''} ${moodLabels[_activeMoodScore] ?? ''}',
+                            moodLabels[_activeMoodScore] ?? '',
                             style: TextStyle(color: _accentColor, fontSize: 13, fontWeight: FontWeight.w500),
                           ),
                           XqIcon(_showEmojiPicker ? XqIcons.chevronUp : XqIcons.chevronDown, size: 18, color: sheetTheme.textTertiary),
@@ -748,7 +752,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 6,
-                          children: moodEmojis.entries.map((e) {
+                          children: moodLabels.entries.map((e) {
                             final isActive = e.key == _activeMoodScore;
                             return GestureDetector(
                               onTap: () => setState(() {
@@ -759,13 +763,20 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: isActive ? _accentColor.withAlpha(20) : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                     color: isActive ? _accentColor : sheetTheme.borderColor,
                                     width: isActive ? 1.2 : 0.8,
                                   ),
                                 ),
-                                child: Text('${e.value} ${moodLabels[e.key]}', style: const TextStyle(fontSize: 12)),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    XqPigmentDab(color: Color(moodColors[e.key] ?? 0xFF7A7871), size: 14, seed: e.key),
+                                    const SizedBox(width: 5),
+                                    Text(e.value, style: TextStyle(fontSize: 12, color: sheetTheme.textPrimary)),
+                                  ],
+                                ),
                               ),
                             );
                           }).toList(),

@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
+import '../api/api_errors.dart';
 import '../constants/mood.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
@@ -242,8 +243,9 @@ class _HomePageState extends State<HomePage> {
         if (e.statusCode == 401) return;
         failures.add(e.message);
       } catch (e) {
-        final msg = e.toString().replaceFirst('Exception: ', '');
-        if (msg.trim().isNotEmpty) failures.add(msg);
+        // 自己抛的中文原因（如没开定位）原样给；网络异常等英文原文换成人话
+        final raw = e.toString().replaceFirst('Exception: ', '');
+        failures.add(RegExp(r'[\u4e00-\u9fff]').hasMatch(raw) ? raw : friendlyError(e));
       }
     }
 

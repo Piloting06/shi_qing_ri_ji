@@ -122,66 +122,66 @@ class XqColors {
   static const blushWashi4 = Color(0xFFF0D2CA);
 
   // ═══════════════════════════════════════
-  //  素笺 · 纸墨（宣纸底 + 松烟青交互主色，默认主题）
+  //  素笺 · 烟雨（江南韵：瓦白 + 黛青 + 墨灰 + 暗木，低饱和）
   //  色比：纸 70% / 墨 25% / 青 ≤5%；朱砂每屏至多一处
   // ═══════════════════════════════════════
 
-  static const sujianBackground = Color(0xFFF4F1E8); // 宣纸
-  static const sujianCard = Color(0xFFFAF8F2);
-  static const sujianCardElevated = Color(0xFFFCFAF5);
-  static const sujianAccent = Color(0xFF2F5D56); // 松烟青
-  static const sujianAccentLight = Color(0xFF4E7E76);
-  static const sujianAccentMuted = Color(0x2E2F5D56);
-  static const sujianTextPrimary = Color(0xFF26251F); // 墨
-  static const sujianTextSecondary = Color(0xFF55524A);
-  static const sujianTextTertiary = Color(0xFF6F6B60);
-  static const sujianTextOnAccent = Color(0xFFFAF8F2);
-  static const sujianBorder = Color(0xFFDDD7C9); // 装饰细线
-  static const sujianBorderFocus = Color(0xFF2F5D56);
-  static const sujianError = Color(0xFF8F2E26);
-  static const sujianSuccess = Color(0xFF46622F);
-  static const sujianWarning = Color(0xFF7C5A12);
-  static const sujianInk = Color(0xFF3A3830); // 手绘装饰用墨
-  static const sujianInkLight = Color(0x998A8577);
-  static const sujianGold = Color(0xFF9A7B3F); // 赭石（低饱和暖点缀）
-  static const sujianPaperLine = Color(0xFFD8D2C4);
+  static const sujianBackground = Color(0xFFEFEFE9); // 瓦白（青灰白）
+  static const sujianCard = Color(0xFFF7F7F2);
+  static const sujianCardElevated = Color(0xFFFAFAF6);
+  static const sujianAccent = Color(0xFF3D5A66); // 黛青
+  static const sujianAccentLight = Color(0xFF557582);
+  static const sujianAccentMuted = Color(0x2E3D5A66);
+  static const sujianTextPrimary = Color(0xFF262B2E); // 墨灰
+  static const sujianTextSecondary = Color(0xFF4F565B);
+  static const sujianTextTertiary = Color(0xFF6E767C);
+  static const sujianTextOnAccent = Color(0xFFF7F7F2);
+  static const sujianBorder = Color(0xFFD9DBD3); // 装饰细线
+  static const sujianBorderFocus = Color(0xFF3D5A66);
+  static const sujianError = Color(0xFF8F382E);
+  static const sujianSuccess = Color(0xFF4A6B4E);
+  static const sujianWarning = Color(0xFF7C6A3A);
+  static const sujianInk = Color(0xFF34393C); // 手绘装饰用墨
+  static const sujianInkLight = Color(0x997C827F);
+  static const sujianGold = Color(0xFF8A6E4F); // 暗木色（低饱和暖点缀）
+  static const sujianPaperLine = Color(0xFFD3D6CD);
   static const sujianSeal = Color(0xFFA8382A); // 朱砂小印
-  static const sujianSunken = Color(0xFFEBE6DA); // 凹陷区/标签底
+  static const sujianSunken = Color(0xFFE2E3DB); // 凹陷区/标签底
 
-  // 和纸胶带色（素笺低饱和版：陶/苔/黛/绢）
-  static const sujianWashi1 = Color(0xFFC9AFA5);
-  static const sujianWashi2 = Color(0xFFA3B29E);
-  static const sujianWashi3 = Color(0xFF9FB0BE);
-  static const sujianWashi4 = Color(0xFFD3C398);
+  // 和纸胶带色（烟雨版：黛/雨青/瓦/暗木）
+  static const sujianWashi1 = Color(0xFFB5C0BA);
+  static const sujianWashi2 = Color(0xFFAEB9B2);
+  static const sujianWashi3 = Color(0xFFC6C9B8);
+  static const sujianWashi4 = Color(0xFF98A6AC);
 
   // ═══════════════════════════════════════
-  //  素笺 · 夜墨（夜是墨色，不是关灯的纯黑）
+  //  素笺 · 夜雨（黛色夜雨，冷调墨夜）
   // ═══════════════════════════════════════
 
-  static const sujianDarkBackground = Color(0xFF171815);
-  static const sujianDarkCard = Color(0xFF1F201C);
-  static const sujianDarkCardElevated = Color(0xFF262722);
-  static const sujianDarkAccent = Color(0xFF8FBBAE);
-  static const sujianDarkAccentLight = Color(0xFFA6CBBF);
-  static const sujianDarkAccentMuted = Color(0x338FBBAE);
-  static const sujianDarkTextPrimary = Color(0xFFE9E4D8);
-  static const sujianDarkTextSecondary = Color(0xFFBDB7A9);
-  static const sujianDarkTextTertiary = Color(0xFF9A9587);
-  static const sujianDarkTextOnAccent = Color(0xFF171815);
-  static const sujianDarkBorder = Color(0xFF33342E);
-  static const sujianDarkBorderFocus = Color(0xFF8FBBAE);
-  static const sujianDarkError = Color(0xFFE8988A);
-  static const sujianDarkSuccess = Color(0xFFA3C088);
-  static const sujianDarkWarning = Color(0xFFD9B56C);
-  static const sujianDarkInk = Color(0xFFC9C3B4);
-  static const sujianDarkInkLight = Color(0xCC77736A);
-  static const sujianDarkGold = Color(0xFFC9A96A);
-  static const sujianDarkPaperLine = Color(0xFF2E2F29);
-  static const sujianDarkSeal = Color(0xFFD9796A);
-  static const sujianDarkSunken = Color(0xFF121310);
+  static const sujianDarkBackground = Color(0xFF141719);
+  static const sujianDarkCard = Color(0xFF1B1F21);
+  static const sujianDarkCardElevated = Color(0xFF22262A);
+  static const sujianDarkAccent = Color(0xFF8AACAE); // 烟青
+  static const sujianDarkAccentLight = Color(0xFFA4C2C0);
+  static const sujianDarkAccentMuted = Color(0x338AACAE);
+  static const sujianDarkTextPrimary = Color(0xFFE2E6E1);
+  static const sujianDarkTextSecondary = Color(0xFFB0B8B4);
+  static const sujianDarkTextTertiary = Color(0xFF8C9592);
+  static const sujianDarkTextOnAccent = Color(0xFF141719);
+  static const sujianDarkBorder = Color(0xFF2C3134);
+  static const sujianDarkBorderFocus = Color(0xFF8AACAE);
+  static const sujianDarkError = Color(0xFFE09488);
+  static const sujianDarkSuccess = Color(0xFF94B494);
+  static const sujianDarkWarning = Color(0xFFD4BA78);
+  static const sujianDarkInk = Color(0xFFC2C8C4);
+  static const sujianDarkInkLight = Color(0xCC71787A);
+  static const sujianDarkGold = Color(0xFFA8906C); // 暗木
+  static const sujianDarkPaperLine = Color(0xFF262B2D);
+  static const sujianDarkSeal = Color(0xFFC4695C);
+  static const sujianDarkSunken = Color(0xFF0F1214);
 
-  static const sujianDarkWashi1 = Color(0xFF4A3F3D);
-  static const sujianDarkWashi2 = Color(0xFF3D4A44);
-  static const sujianDarkWashi3 = Color(0xFF3E4852);
-  static const sujianDarkWashi4 = Color(0xFF4A4436);
+  static const sujianDarkWashi1 = Color(0xFF3C4446);
+  static const sujianDarkWashi2 = Color(0xFF38423F);
+  static const sujianDarkWashi3 = Color(0xFF3E423C);
+  static const sujianDarkWashi4 = Color(0xFF354049);
 }

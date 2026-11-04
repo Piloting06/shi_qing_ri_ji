@@ -115,7 +115,7 @@ class _HomePageState extends State<HomePage> {
             _weather = data;
             _currentCity = city;
             _weatherUpdatedAt = updatedAt;
-                _loading = false;
+            _loading = false;
           });
         }
       } catch (_) {}
@@ -395,9 +395,7 @@ class _HomePageState extends State<HomePage> {
   Future<_WeatherLocation?> _chinaIpLocation() async {
     try {
       final res = await http
-          .get(
-            Uri.parse('https://whois.pconline.com.cn/ipJson.jsp?json=true'),
-          )
+          .get(Uri.parse('https://whois.pconline.com.cn/ipJson.jsp?json=true'))
           .timeout(const Duration(seconds: 4));
       final body = gbk.decode(res.bodyBytes);
       final i = body.indexOf('{');
@@ -500,13 +498,16 @@ class _HomePageState extends State<HomePage> {
               curve: Curves.easeOutCubic,
             ),
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.03),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.03),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             ),
           );
@@ -537,16 +538,17 @@ class _HomePageState extends State<HomePage> {
     final greet = hour < 5
         ? '夜深了'
         : hour < 11
-            ? '早上好'
-            : hour < 14
-                ? '中午好'
-                : hour < 18
-                    ? '下午好'
-                    : '晚上好';
+        ? '早上好'
+        : hour < 14
+        ? '中午好'
+        : hour < 18
+        ? '下午好'
+        : '晚上好';
     final name = appState.displayName.isNotEmpty ? appState.displayName : '朋友';
     final term = currentSolarTerm(now);
-    final current =
-        _weather != null ? _weather!['current'] as Map<String, dynamic>? : null;
+    final current = _weather != null
+        ? _weather!['current'] as Map<String, dynamic>?
+        : null;
     final cond = current?['weather'];
     final temp = current?['temp_current'];
 
@@ -658,39 +660,32 @@ class _HomePageState extends State<HomePage> {
                             const SizedBox(height: 8),
                             StaggerIn(
                               index: 5,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: theme.accentColor.withAlpha(70),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 6),
+                              child: SizedBox(
+                                height: 48,
+                                child: FilledButton(
+                                  onPressed: _openMood,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: theme.accentColor,
+                                    foregroundColor: theme.textOnAccent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
-                                  ],
-                                ),
-                                child: SizedBox(
-                                  height: 48,
-                                  child: FilledButton(
-                                    onPressed: _openMood,
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: theme.accentColor,
-                                      foregroundColor: theme.textOnAccent,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 16,
-                                        letterSpacing: 8,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 16,
+                                      letterSpacing: 8,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    child: const Text('记一笔'),
                                   ),
+                                  child: const Text('记一笔'),
                                 ),
                               ),
                             ),
-                            // 远山留白区：山体不与文字重叠
-                            const SizedBox(height: 236),
+                            // 远山留白区：占屏约 38%，文字与按钮都在山顶线之上
+                            SizedBox(
+                              height: (constraints.maxHeight * 0.38)
+                                  .clamp(220.0, 320.0)
+                                  .toDouble(),
+                            ),
                           ],
                         ),
                       ),
@@ -708,59 +703,42 @@ class _HomePageState extends State<HomePage> {
   /// 今日纸片：浮在烟雨山水之上的一枚信息笺
   Widget _buildTodayLine(ThemeState theme, dynamic cond, dynamic temp) {
     final body = _loading && _weather == null
-        ? Text('天气正在路上…',
-            style: TextStyle(color: theme.textTertiary, fontSize: 15))
+        ? Text(
+            '天气正在路上…',
+            style: TextStyle(color: theme.textTertiary, fontSize: 15),
+          )
         : (cond != null && temp != null)
-            ? Text(
-                '$cond $temp° · ${_currentCity.isEmpty ? "城市待确认" : _currentCity.split("，").first}',
-                style: TextStyle(
-                  color: theme.textPrimary,
-                  fontSize: 15.5,
-                  letterSpacing: 0.5,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              )
-            : GestureDetector(
-                onTap: _loadWeather,
-                child: Text(
-                  '天气未取到 · 点按重试',
-                  style: TextStyle(color: theme.accentColor, fontSize: 14),
-                ),
-              );
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      decoration: BoxDecoration(
-        color: theme.cardColor.withAlpha(242),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.borderColor, width: 0.6),
-        boxShadow: [
-          BoxShadow(
-            color: theme.ink.withAlpha(14),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(child: body),
-          GestureDetector(
-            onTap: _openWeatherDetail,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('详情',
-                    style: TextStyle(
-                        color: theme.accentColor,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600)),
-                Icon(Icons.chevron_right_rounded,
-                    size: 15, color: theme.accentColor),
-              ],
+        ? Text(
+            '$cond $temp° · ${_currentCity.isEmpty ? "城市待确认" : _currentCity.split("，").first}',
+            style: TextStyle(
+              color: theme.textPrimary,
+              fontSize: 15.5,
+              letterSpacing: 0.5,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          )
+        : GestureDetector(
+            onTap: _loadWeather,
+            child: Text(
+              '天气未取到 · 点按重试',
+              style: TextStyle(color: theme.accentColor, fontSize: 14),
+            ),
+          );
+    return Row(
+      children: [
+        Expanded(child: body),
+        GestureDetector(
+          onTap: _openWeatherDetail,
+          child: Text(
+            '详情 ›',
+            style: TextStyle(
+              color: theme.accentColor,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -795,7 +773,10 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           color: theme.cardColor.withAlpha(242),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: theme.borderColor.withAlpha(120), width: 0.6),
+          border: Border.all(
+            color: theme.borderColor.withAlpha(120),
+            width: 0.6,
+          ),
           boxShadow: [
             BoxShadow(
               color: theme.ink.withAlpha(12),

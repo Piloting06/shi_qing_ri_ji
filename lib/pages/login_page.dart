@@ -5,7 +5,6 @@ import '../api/api_client.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_typography.dart';
-import '../theme/xq_decorations.dart';
 import '../widgets/auth_frame.dart';
 import '../widgets/main_scaffold.dart';
 import '../services/notification_service.dart';
@@ -213,124 +212,25 @@ class _LoginPageState extends State<LoginPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                '欢迎回来',
-                                style: XqTypography.headlineMedium.copyWith(
-                                  color: theme.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
                                 '欢迎回来，今天想记点什么？',
-                                style: XqTypography.bodySmall.copyWith(
-                                  color: theme.textSecondary,
-                                ),
+                                style: TextStyle(color: theme.textSecondary, fontSize: 13),
                               ),
                               const SizedBox(height: 16),
-                              // 手机号 / 邮箱切换
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: theme.surfaceAlpha,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.all(4),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => _useEmail = false),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: !_useEmail
-                                                ? theme.cardColor
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                            boxShadow: !_useEmail
-                                                ? XqDecorations.shadowSubtle(dark: theme.isDark)
-                                                : null,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.phone_iphone_rounded,
-                                                size: 16,
-                                                color: !_useEmail
-                                                    ? theme.accentColor
-                                                    : theme.textTertiary,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                '手机号',
-                                                style: XqTypography.labelMedium.copyWith(
-                                                  color: !_useEmail
-                                                      ? theme.accentColor
-                                                      : theme.textTertiary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => _useEmail = true),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _useEmail
-                                                ? theme.cardColor
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                            boxShadow: _useEmail
-                                                ? XqDecorations.shadowSubtle(dark: theme.isDark)
-                                                : null,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.email_outlined,
-                                                size: 16,
-                                                color: _useEmail
-                                                    ? theme.accentColor
-                                                    : theme.textTertiary,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                '邮箱',
-                                                style: XqTypography.labelMedium.copyWith(
-                                                  color: _useEmail
-                                                      ? theme.accentColor
-                                                      : theme.textTertiary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              // 手机号 / 邮箱切换：文字 + 细线（无底色块）
+                              Row(
+                                children: [
+                                  LoginAuthTab(
+                                    label: '手机号',
+                                    active: !_useEmail,
+                                    onTap: () => setState(() => _useEmail = false),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  LoginAuthTab(
+                                    label: '邮箱',
+                                    active: _useEmail,
+                                    onTap: () => setState(() => _useEmail = true),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 16),
                               if (_useEmail) ...[
@@ -471,6 +371,50 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 登录页切换 Tab：文字 + 2px 底线（无底色块）
+class LoginAuthTab extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const LoginAuthTab({
+    super.key,
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+              color: active ? t.colorScheme.primary : t.textTheme.bodySmall?.color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: active ? 20 : 0,
+            height: 2,
+            decoration: BoxDecoration(
+              color: active ? t.colorScheme.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ],
       ),
     );
   }

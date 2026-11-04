@@ -730,7 +730,7 @@ class _CapsulePageState extends State<CapsulePage> {
           ? '通知权限未开启，请在系统设置中允许拾晴日记发送通知'
           : err);
     } else {
-      XqToast.success(context, '测试通知已设置，1分钟后弹出！关掉app回到桌面等待');
+      XqToast.success(context, '测试通知已设置，1 分钟后弹出，可回到桌面等待');
     }
   }
 

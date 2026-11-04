@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/xq_typography.dart';
-import '../theme/xq_hand_drawn.dart';
 import '../theme/xq_paper_textures.dart';
 import '../theme/xq_decorations.dart';
 import 'package:provider/provider.dart';
@@ -77,7 +76,7 @@ class _MoodPageState extends State<MoodPage>
       if (e.statusCode == 401) return;
       if (mounted) XqToast.error(context, '加载心情统计失败：${e.message}');
     } catch (_) {
-      if (mounted) XqToast.error(context, '加载心情统计失败，请稍后重试');
+      if (mounted) XqToast.error(context, '没连上网络，稍后再试');
     }
   }
 
@@ -387,6 +386,8 @@ class _MoodPageState extends State<MoodPage>
 
     return Scaffold(
       backgroundColor: t.backgroundColor,
+      // 保存条吸底：Scaffold 自动避让键盘
+      bottomNavigationBar: _buildInlineSaveBar(t),
       body: SafeArea(
         child: Stack(
           children: [
@@ -414,15 +415,7 @@ class _MoodPageState extends State<MoodPage>
                               color: t.textPrimary,
                             ),
                           ),
-                          SizedBox(
-                            width: 80,
-                            height: 6,
-                            child: CustomPaint(
-                              painter: HandDrawnDividerPainter(
-                                inkColor: t.accentColor.withAlpha(60),
-                              ),
-                            ),
-                          ),
+                          const SizedBox(height: 6),
                         ],
                       ),
                       const Spacer(),
@@ -623,9 +616,7 @@ class _MoodPageState extends State<MoodPage>
                   ),
                   const SizedBox(height: 12),
 
-                  // Save bar
-                  _buildInlineSaveBar(t),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 100), // 为吸底保存条留出缓冲
 
                   // ── 回顾区 ──
                   Text(
@@ -1483,7 +1474,7 @@ class _MoodPageState extends State<MoodPage>
   String _placeholderForScore(int score) {
     switch (score) {
       case 1:
-        return '太棒了！发生了什么好事呢？';
+        return '开心的事，记下来';
       case 2:
         return '这样的平静也很珍贵...';
       case 3:

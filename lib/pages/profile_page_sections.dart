@@ -249,11 +249,8 @@ extension _ProfilePageSections on _ProfilePageState {
               Container(
                 width: 36,
                 height: 36,
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha(18),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: iconColor, size: 20),
+                alignment: Alignment.center,
+                child: Icon(icon, color: iconColor, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -726,11 +723,8 @@ extension _ProfilePageSections on _ProfilePageState {
               Container(
                 width: 42,
                 height: 42,
-                decoration: BoxDecoration(
-                  color: theme.accentColor.withAlpha(18),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: theme.accentColor, size: 20),
+                alignment: Alignment.center,
+                child: Icon(icon, color: theme.accentColor, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(

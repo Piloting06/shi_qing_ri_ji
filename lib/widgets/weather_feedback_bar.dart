@@ -257,7 +257,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '收到啦！下次会更准的～',
+            '收到，这些反馈会帮助下次更准',
             style: TextStyle(
               color: theme.successColor,
               fontSize: 13,

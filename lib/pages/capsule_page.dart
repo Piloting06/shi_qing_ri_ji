@@ -143,7 +143,7 @@ class _CapsulePageState extends State<CapsulePage> {
       HapticFeedback.mediumImpact();
       if (mounted) {
         final msg = _days == 1 ? '胶囊已封存，明天会提醒你' : '胶囊已封存，到时会提醒你';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        XqToast.success(context, msg);
       }
       await _load();
       // 封存成功后，弹出品牌引导（帮助用户确保通知能收到）
@@ -212,9 +212,7 @@ class _CapsulePageState extends State<CapsulePage> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('打开失败，请稍后重试')));
+        XqToast.error(context, '打开失败，请稍后再试');
       }
     }
   }
@@ -343,7 +341,7 @@ class _CapsulePageState extends State<CapsulePage> {
                                   child: Icon(b.icon, color: theme.accentColor, size: 26),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(b.name, style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+                                Text(b.name, style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                                 const SizedBox(height: 2),
                                 Text(b.system, style: TextStyle(color: theme.textTertiary, fontSize: 12)),
                                 const SizedBox(height: 20),
@@ -612,7 +610,7 @@ class _CapsulePageState extends State<CapsulePage> {
                 style: TextStyle(
                   color: theme.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
@@ -798,7 +796,7 @@ class _CapsulePageState extends State<CapsulePage> {
           style: TextStyle(
             color: active ? theme.accentColor : theme.textTertiary,
             fontSize: 12,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
       ),
@@ -865,7 +863,7 @@ class _CapsulePageState extends State<CapsulePage> {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),

@@ -633,7 +633,7 @@ class _MoodPageState extends State<MoodPage>
                     style: TextStyle(
                       color: t.textPrimary,
                       fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1028,7 +1028,7 @@ class _MoodPageState extends State<MoodPage>
                           'SHI QING',
                           style: TextStyle(
                             fontSize: 8,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 1.5,
                             color: t.accentColor.withAlpha(60),
                           ),

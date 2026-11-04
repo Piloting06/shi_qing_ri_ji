@@ -314,7 +314,7 @@ class _TreeholePageState extends State<TreeholePage>
                   style: TextStyle(
                     color: theme.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -421,7 +421,7 @@ class _TreeholePageState extends State<TreeholePage>
                   style: TextStyle(
                     color: isOwn ? theme.accentColor : theme.textSecondary,
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -754,7 +754,7 @@ class _TreeholePageState extends State<TreeholePage>
               style: TextStyle(
                 color: color,
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],

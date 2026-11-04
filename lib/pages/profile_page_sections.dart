@@ -148,7 +148,7 @@ extension _ProfilePageSections on _ProfilePageState {
             style: TextStyle(
               color: theme.accentColor,
               fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -542,7 +542,7 @@ extension _ProfilePageSections on _ProfilePageState {
                                 ? colors[0]
                                 : _readableTextOn(colors[2]),
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -670,7 +670,7 @@ extension _ProfilePageSections on _ProfilePageState {
           style: TextStyle(
             color: theme.textPrimary,
             fontSize: 17,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         if (subtitle != null) ...[
@@ -745,7 +745,7 @@ extension _ProfilePageSections on _ProfilePageState {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -767,7 +767,7 @@ extension _ProfilePageSections on _ProfilePageState {
                 style: TextStyle(
                   color: onTap == null ? theme.textTertiary : theme.accentColor,
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               if (onTap != null) ...[

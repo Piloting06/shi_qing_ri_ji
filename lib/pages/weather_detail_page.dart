@@ -95,7 +95,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
                     style: TextStyle(
                       color: theme.textPrimary,
                       fontSize: 20,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -134,7 +134,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
                                 style: TextStyle(
                                   color: theme.textPrimary,
                                   fontSize: 23,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -171,7 +171,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
                                 style: TextStyle(
                                   color: theme.textPrimary,
                                   fontSize: 26,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -326,7 +326,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
                     style: TextStyle(
                       color: theme.textPrimary,
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -571,7 +571,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage>
                   '$rain%',
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: isHigh ? theme.accentColor : theme.textPrimary,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),

@@ -5,6 +5,8 @@ import '../api/api_client.dart';
 import '../services/notification_service.dart';
 import '../stores/theme_state.dart';
 import '../stores/app_state.dart';
+import '../widgets/xq/xq_icons.dart';
+import '../widgets/xq_toast.dart';
 import '../pages/home_page.dart';
 import '../pages/mood_page.dart';
 import '../pages/city_map_page.dart';
@@ -135,36 +137,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         if (_lastBackPress == null ||
             now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
           _lastBackPress = now;
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.exit_to_app_rounded, size: 14, color: Colors.white70),
-                  const SizedBox(width: 6),
-                  Text(
-                    '再按一次退出',
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(200),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: theme.textPrimary.withAlpha(160),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              margin: EdgeInsets.fromLTRB(
-                80, 0, 80, 16 + MediaQuery.of(context).padding.bottom,
-              ),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          XqToast.info(context, '再按一次退出');
         } else {
           SystemNavigator.pop();
         }
@@ -242,10 +215,10 @@ class _SujianBottomBar extends StatelessWidget {
 
   static const _labels = ['天气', '心情', '城迹', '我的'];
   static const _icons = [
-    Icons.wb_sunny_outlined,
-    Icons.favorite_border,
-    Icons.explore_outlined,
-    Icons.person_outline,
+    XqIcons.sunny,
+    XqIcons.heart,
+    XqIcons.compass,
+    XqIcons.person,
   ];
 
   @override
@@ -292,7 +265,7 @@ class _SujianBottomBar extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(1),
                               ),
                             ),
-                            Icon(_icons[i], size: 21, color: color),
+                            XqIcon(_icons[i], size: 21, color: color),
                             const SizedBox(height: 2),
                             AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 200),

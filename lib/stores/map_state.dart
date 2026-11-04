@@ -727,7 +727,7 @@ class MapState extends ChangeNotifier {
           }
         }
       } catch (e) {
-        _locationError = 'GPS定位失败，正在尝试IP定位';
+        _locationError = '手机定位没成功，正在按网络大致定位';
         notifyListeners();
       }
 

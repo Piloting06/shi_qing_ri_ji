@@ -8,7 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/api_client.dart';
 import '../stores/theme_state.dart';
-import '../theme/xq_decorations.dart';
+import '../widgets/xq/xq_paper.dart';
+import '../widgets/xq/xq_surface.dart';
 import 'legal_page.dart';
 
 class AboutPage extends StatelessWidget {
@@ -27,125 +28,76 @@ class AboutPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         foregroundColor: theme.textPrimary,
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 48),
-        children: [
-          // ── App 头部 ──
-          _buildAppHeader(theme),
-          const SizedBox(height: 28),
-
-          // ── 项目信息 ──
-          _sectionTitle('项目信息', theme),
-          const SizedBox(height: 10),
-          _card(theme, children: [
-            _infoRow(
-              theme,
-              icon: XqIcons.code,
-              title: 'GitHub 仓库',
-              subtitle: 'Piloting06/shi_qing_ri_ji',
-              onTap: () => _launchUrl('https://github.com/Piloting06/shi_qing_ri_ji'),
-            ),
-            _divider(theme),
-            _infoRow(
-              theme,
-              icon: XqIcons.doc,
-              title: '开源许可',
-              subtitle: 'MIT License',
-              onTap: () => _showLicenseDialog(context, theme),
-            ),
-          ]),
-          const SizedBox(height: 22),
-
-          // ── 合规信息 ──
-          _sectionTitle('合规信息', theme, subtitle: '备案与个人信息合规'),
-          const SizedBox(height: 10),
-          _card(theme, children: [
-            _infoRow(
-              theme,
-              icon: XqIcons.shield,
-              title: 'ICP 备案号',
-              subtitle: '赣ICP备2026009414号-3A',
-              onTap: () => _launchUrl('https://beian.miit.gov.cn/'),
-            ),
-            _divider(theme),
-            _infoRow(
-              theme,
-              icon: XqIcons.shield,
-              title: '隐私政策',
-              subtitle: '数据收集、存储与使用说明',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LegalPage(isPrivacy: true)),
+      body: XqPaperPage(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+          children: [
+            _buildAppHeader(theme),
+            const SizedBox(height: 8),
+            // 缘起：一段话讲名字和这本笺谱想做的事
+            XqSurface(
+              padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
+              child: Text(
+                '「拾晴」，是把晴天一片一片拾起来。\n'
+                '天气每天都在变，心情也是。拾晴日记想做一本小小的笺谱：每天印一张笺，记下那天的天色、节气，和你写下的几句话。'
+                '日子久了再翻回去，有阴天，也有晴天，都是你走过的日子。',
+                style: TextStyle(
+                  fontFamily: XqTypography.content,
+                  fontFamilyFallback: XqTypography.contentFallback,
+                  color: theme.textSecondary,
+                  fontSize: 15,
+                  height: 1.85,
+                ),
               ),
             ),
-            _divider(theme),
-            _infoRow(
-              theme,
-              icon: XqIcons.doc,
-              title: '用户协议',
-              subtitle: '服务条款与使用约定',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LegalPage(isPrivacy: false)),
+            const SizedBox(height: 28),
+            XqSurface(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  _row(theme, '隐私政策', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LegalPage(isPrivacy: true)))),
+                  _rule(theme),
+                  _row(theme, '用户协议', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LegalPage(isPrivacy: false)))),
+                  _rule(theme),
+                  _row(theme, '权限说明', () => _showPermissionsSheet(context, theme)),
+                  _rule(theme),
+                  _row(theme, '意见反馈', () => _showFeedbackSheet(context, theme)),
+                ],
               ),
             ),
-            _divider(theme),
-            _infoRow(
-              theme,
-              icon: XqIcons.key,
-              title: '权限说明',
-              subtitle: '查看应用所使用的系统权限',
-              onTap: () => _showPermissionsSheet(context, theme),
-            ),
-            _divider(theme),
-            _infoRow(
-              theme,
-              icon: XqIcons.doc,
-              title: '国标合规',
-              subtitle: 'GB/T 35273 · GB/T 41391 · GB/T 42574',
-              onTap: () => _showComplianceSheet(context, theme),
-            ),
-          ]),
-          const SizedBox(height: 22),
-
-          // ── 联系与反馈 ──
-          _sectionTitle('联系与反馈', theme),
-          const SizedBox(height: 10),
-          _card(theme, children: [
-            _infoRow(
-              theme,
-              icon: XqIcons.mail,
-              title: '意见反馈',
-              subtitle: '哪里不好用，直接说',
-              onTap: () => _showFeedbackSheet(context, theme),
-            ),
-          ]),
-          const SizedBox(height: 22),
-
-          // ── 技术信息 ──
-          _sectionTitle('技术信息', theme),
-          const SizedBox(height: 10),
-          _buildTechInfo(theme),
-          const SizedBox(height: 32),
-
-          // ── 底部版权 ──
-          Center(
-            child: Text(
-              '© 2026 拾晴日记',
-              style: TextStyle(color: theme.textTertiary, fontSize: 11),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Center(
-            child: Text(
-              '天气加心情。写下来，发给 Ta。',
-              style: TextStyle(
-                color: theme.textTertiary.withAlpha(120),
-                fontSize: 10,
+            const SizedBox(height: 40),
+            Center(
+              child: GestureDetector(
+                onTap: () => _launchUrl('https://beian.miit.gov.cn/'),
+                child: Text('赣ICP备2026009414号-3A', style: TextStyle(color: theme.textTertiary, fontSize: 11.5)),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Center(
+              child: Text('© 2026 拾晴日记', style: TextStyle(color: theme.textTertiary, fontSize: 11.5)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _rule(ThemeState theme) => Container(height: 0.6, color: theme.borderColor);
+
+  Widget _row(ThemeState theme, String title, VoidCallback onTap) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: SizedBox(
+        height: 52,
+        child: Row(
+          children: [
+            Expanded(child: Text(title, style: TextStyle(color: theme.textPrimary, fontSize: 15))),
+            XqIcon(XqIcons.chevronRight, color: theme.frameColor, size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -157,7 +109,7 @@ class AboutPage extends StatelessWidget {
       child: Column(
         children: [
           // 品牌印：与登录页同一方朱砂「拾」
-          XqSeal(char: '拾', color: theme.sealColor, size: 64),
+          XqSeal(char: '拾', color: theme.sealColor, size: 60, style: XqSealStyle.bai),
           const SizedBox(height: 14),
           Text(
             '拾晴日记',
@@ -169,12 +121,12 @@ class AboutPage extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '天气加心情。写下来，发给 Ta。',
-            style: TextStyle(color: theme.textSecondary, fontSize: 13),
+            '记下每天的天气与心情',
+            style: TextStyle(color: theme.textSecondary, fontSize: 13, letterSpacing: 1),
           ),
           const SizedBox(height: 10),
           Text(
-            'v$appVersion',
+            '版本 $appVersion',
             style: TextStyle(
               color: theme.gold,
               fontSize: 13,
@@ -187,204 +139,36 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  // ── Section 标题 ──
-  Widget _sectionTitle(String text, ThemeState theme, {String? subtitle}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          text,
-          style: TextStyle(
-            color: theme.textPrimary,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: TextStyle(color: theme.textTertiary, fontSize: 11),
-          ),
-        ],
-      ],
-    );
-  }
-
-  // ── 卡片容器 ──
-  Widget _card(ThemeState theme, {required List<Widget> children}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: XqDecorations.actionCard(
-        theme.cardColor.withAlpha(theme.isDark ? 224 : 245),
-        theme.borderColor,
-        dark: theme.isDark,
-        accent: theme.accentColor,
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  // ── 行组件 ──
-  Widget _infoRow(
-    ThemeState theme, {
-    required XqIcons icon,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: onTap != null
-            ? () {
-                HapticFeedback.selectionClick();
-                onTap();
-              }
-            : null,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 54),
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 38,
-                height: 38,
-                child: XqIcon(icon, color: theme.textSecondary, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: theme.textTertiary,
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              if (onTap != null)
-                XqIcon(XqIcons.chevronRight,
-                    color: theme.textTertiary.withAlpha(120), size: 18),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _divider(ThemeState theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Divider(color: theme.borderColor.withAlpha(60), height: 1),
-    );
-  }
-
-  // ── 技术信息 ──
-  Widget _buildTechInfo(ThemeState theme) {
-    final items = [
-      ['框架', 'Flutter 3.38 / Dart 3.10'],
-      ['平台', 'Android arm64'],
-      ['后端', 'Node.js / Express / SQLite'],
-      ['域名', 'xqrj.glxgo.xin (HTTPS)'],
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: XqDecorations.actionCard(
-        theme.cardColor.withAlpha(theme.isDark ? 224 : 245),
-        theme.borderColor,
-        dark: theme.isDark,
-      ),
-      child: Column(
-        children: items.map((item) {
-          final isLast = item == items.last;
-          return Padding(
-            padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 52,
-                  child: Text(
-                    item[0],
-                    style: TextStyle(
-                      color: theme.textTertiary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    item[1],
-                    style: TextStyle(
-                      color: theme.textSecondary,
-                      fontSize: 12,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   // ── 权限说明弹窗 ──
   static void _showPermissionsSheet(BuildContext context, ThemeState theme) {
     final permissions = [
       _PermissionItem(
         icon: XqIcons.pin,
         name: '位置信息',
-        code: 'ACCESS_FINE_LOCATION',
         purpose: '获取当前城市天气和城迹足迹功能',
         required: true,
       ),
       _PermissionItem(
         icon: XqIcons.bell,
         name: '通知',
-        code: 'POST_NOTIFICATIONS',
         purpose: '时光胶囊到期提醒',
         required: false,
       ),
       _PermissionItem(
         icon: XqIcons.wifi,
         name: '网络访问',
-        code: 'INTERNET',
         purpose: '数据同步、天气获取、心情记录',
         required: true,
       ),
       _PermissionItem(
         icon: XqIcons.bell,
         name: '精确闹钟',
-        code: 'SCHEDULE_EXACT_ALARM',
         purpose: '胶囊定时提醒（精确到分钟）',
         required: false,
       ),
       _PermissionItem(
         icon: XqIcons.folder,
         name: '本地存储',
-        code: 'READ/WRITE_STORAGE',
         purpose: '心情卡片导出、缓存天气和城市数据',
         required: true,
       ),
@@ -555,15 +339,6 @@ class AboutPage extends StatelessWidget {
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    p.code,
-                    style: TextStyle(
-                      color: theme.textTertiary,
-                      fontSize: 10,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -573,235 +348,6 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  // ── 开源许可弹窗 ──
-  static void _showLicenseDialog(BuildContext context, ThemeState theme) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8)),
-        backgroundColor: theme.cardColor,
-        title: Row(
-          children: [
-            XqIcon(XqIcons.doc, color: theme.accentColor, size: 20),
-            const SizedBox(width: 8),
-            const Text('MIT License'),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Text(
-            'MIT License\n\n'
-            'Copyright (c) 2026 拾晴日记\n\n'
-            'Permission is hereby granted, free of charge, to any person '
-            'obtaining a copy of this software and associated documentation '
-            'files (the "Software"), to deal in the Software without '
-            'restriction, including without limitation the rights to use, '
-            'copy, modify, merge, publish, distribute, sublicense, and/or '
-            'sell copies of the Software, and to permit persons to whom the '
-            'Software is furnished to do so, subject to the following '
-            'conditions:\n\n'
-            'The above copyright notice and this permission notice shall be '
-            'included in all copies or substantial portions of the Software.\n\n'
-            'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, '
-            'EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES '
-            'OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND '
-            'NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT '
-            'HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, '
-            'WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING '
-            'FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR '
-            'OTHER DEALINGS IN THE SOFTWARE.',
-            style: TextStyle(
-              color: theme.textSecondary,
-              fontSize: 12,
-              height: 1.6,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('关闭', style: TextStyle(color: theme.accentColor)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── 国标合规弹窗 ──
-  static void _showComplianceSheet(BuildContext context, ThemeState theme) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 10, bottom: 4),
-                child: Container(
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.borderColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-                child: Row(
-                  children: [
-                    XqIcon(XqIcons.doc,
-                        color: theme.accentColor, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '国标合规声明',
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                child: Text(
-                  '拾晴日记遵循以下国家标准与法规',
-                  style: TextStyle(color: theme.textTertiary, fontSize: 12),
-                ),
-              ),
-              _buildComplianceTile(
-                theme,
-                standard: 'GB/T 35273-2020',
-                name: '个人信息安全规范',
-                status: '已达标',
-                detail: '提供完整的隐私政策，明确数据收集目的与范围',
-              ),
-              _buildComplianceTile(
-                theme,
-                standard: 'GB/T 41391-2022',
-                name: 'APP收集个人信息基本要求',
-                status: '已达标',
-                detail: '仅收集手机号和心情数据，遵循最小必要原则',
-              ),
-              _buildComplianceTile(
-                theme,
-                standard: 'GB/T 42574-2023',
-                name: '告知和同意的实施指南',
-                status: '已达标',
-                detail: '注册时展示用户协议与隐私政策，获得明确同意',
-              ),
-              _buildComplianceTile(
-                theme,
-                standard: 'ICP备案',
-                name: '互联网信息服务备案',
-                status: '已备案',
-                detail: '赣ICP备2026009414号-3A',
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      foregroundColor: theme.accentColor,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: theme.borderColor),
-                      ),
-                    ),
-                    child: const Text('关闭'),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Widget _buildComplianceTile(
-    ThemeState theme, {
-    required String standard,
-    required String name,
-    required String status,
-    required String detail,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: theme.backgroundColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: theme.borderColor.withAlpha(60)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    standard,
-                    style: TextStyle(
-                      color: theme.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: theme.successColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: theme.successColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              name,
-              style: TextStyle(color: theme.textSecondary, fontSize: 12),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              detail,
-              style: TextStyle(
-                color: theme.textTertiary,
-                fontSize: 11,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── 意见反馈弹窗 ──
   static void _showFeedbackSheet(BuildContext context, ThemeState theme) {
     final ctrl = TextEditingController();
     var sending = false;
@@ -978,14 +524,12 @@ class AboutPage extends StatelessWidget {
 class _PermissionItem {
   final XqIcons icon;
   final String name;
-  final String code;
   final String purpose;
   final bool required;
 
   const _PermissionItem({
     required this.icon,
     required this.name,
-    required this.code,
     required this.purpose,
     required this.required,
   });

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'xq_colors.dart';
 
-/// 一张纸的全部颜色。P10 起主题 = 纸：浅色四张（素笺/暖笺/青笺/藕笺），深色两张（磁青/黛笺）。
+/// 一张纸的全部颜色与来历。主题 = 纸：浅色素笺 / 薛涛笺，深色磁青 / 乌金（ADR-0007）。
 /// 纸纹、印、栏线、笺头画全部共用，只换纸色、墨色与印泥。对比度见 test/theme_regression_test.dart。
 @immutable
 class XqPalette {
@@ -10,6 +10,7 @@ class XqPalette {
     required this.name,
     required this.paper,
     required this.story,
+    required this.legend,
     required this.dark,
     required this.background,
     required this.card,
@@ -43,8 +44,11 @@ class XqPalette {
   /// 一句话：这是什么纸
   final String paper;
 
-  /// 来历（选择器里再点一次时展示）
+  /// 来历（「我」页纸样下方）
   final String story;
+
+  /// 换纸时浮现的两列竖排小字（按阅读顺序，右起）
+  final List<String> legend;
   final bool dark;
 
   final Color background; // L0 裱绫
@@ -80,7 +84,8 @@ class XqPalette {
     id: 'sujian',
     name: '素笺',
     paper: '生宣，本色',
-    story: '没染过色的宣纸，偏一点米黄。墨落上去最清楚，适合大多数时候。',
+    story: '宣纸出在安徽泾县，旧属宣州，因此得名。用青檀树皮和沙田稻草做成，有「纸寿千年」的说法。素笺是不染色的那一张，墨落上去最清楚。',
+    legend: ['宣州造纸，青檀为皮', '一张白纸，纸寿千年'],
     dark: false,
     background: XqColors.sujianBackground,
     card: XqColors.sujianCard,
@@ -107,100 +112,37 @@ class XqPalette {
     washi: [XqColors.sujianWashi1, XqColors.sujianWashi2, XqColors.sujianWashi3, XqColors.sujianWashi4],
   );
 
-  /// 暖笺：竹纸。纸色黄一些，墨偏褐，印泥用老朱。
-  static const warm = XqPalette(
-    id: 'warm',
-    name: '暖笺',
-    paper: '竹纸，微黄',
-    story: '竹子做的纸，比宣纸黄、纤维更粗，旧书多用它印。夜里灯下看着不刺眼。',
-    dark: false,
-    background: Color(0xFFE2D5BB),
-    card: Color(0xFFF2E9D5),
-    cardElevated: Color(0xFFF6EFDF),
-    sunken: Color(0xFFE9DEC6),
-    frame: Color(0xFFC2B08C),
-    border: Color(0xFFDACBAE),
-    paperLine: Color(0xFFDCCDB0),
-    controlBorder: Color(0xFF7D6F55),
-    accent: Color(0xFF33281C),
-    accentLight: Color(0xFF54473A),
-    textPrimary: Color(0xFF2A2118),
-    textSecondary: Color(0xFF54483A),
-    textTertiary: Color(0xFF615444),
-    textOnAccent: Color(0xFFF2E9D5),
-    error: Color(0xFF8C3523),
-    success: Color(0xFF475F3A),
-    warning: Color(0xFF6A5526),
-    ink: Color(0xFF3A2E22),
-    inkLight: Color(0x998A7A62),
-    gold: Color(0xFF774B24),
-    seal: Color(0xFFA6361C),
-    fiber: Color(0xFF5A4220),
-    washi: [Color(0xFFD9C59E), Color(0xFFBFC2A2), Color(0xFFE3D2AE), Color(0xFFC4BBA6)],
-  );
-
-  /// 青笺：浅碧染笺，墨偏青黑。
-  static const mint = XqPalette(
-    id: 'mint',
-    name: '青笺',
-    paper: '染笺，浅碧',
-    story: '用靛青极淡地染过一遍的笺，像雨后的天色。墨也跟着偏一点青。',
-    dark: false,
-    background: Color(0xFFD5DDD6),
-    card: Color(0xFFEDF1EB),
-    cardElevated: Color(0xFFF2F5F0),
-    sunken: Color(0xFFE2E8E1),
-    frame: Color(0xFFADBDB2),
-    border: Color(0xFFCCD6CD),
-    paperLine: Color(0xFFCFD9D0),
-    controlBorder: Color(0xFF68796F),
-    accent: Color(0xFF21302A),
-    accentLight: Color(0xFF3D4D46),
-    textPrimary: Color(0xFF1C2622),
-    textSecondary: Color(0xFF44524B),
-    textTertiary: Color(0xFF4F5D56),
-    textOnAccent: Color(0xFFEDF1EB),
-    error: Color(0xFF8A3428),
-    success: Color(0xFF3B5E45),
-    warning: Color(0xFF615729),
-    ink: Color(0xFF26332D),
-    inkLight: Color(0x99708078),
-    gold: Color(0xFF6B4D2E),
-    seal: Color(0xFFA2352A),
-    fiber: Color(0xFF2E4A3E),
-    washi: [Color(0xFFB9CCC0), Color(0xFFC9D3BE), Color(0xFFD6DCCF), Color(0xFFB6C3C6)],
-  );
-
-  /// 藕笺：薛涛笺一路的浅红染笺，淡到只剩一点藕色。
-  static const blush = XqPalette(
+  /// 薛涛笺：桃红小笺。纸色明显偏红，印泥更深。
+  static const xuetao = XqPalette(
     id: 'blush',
-    name: '藕笺',
-    paper: '染笺，藕色',
-    story: '照薛涛笺的路子染的浅红笺，淡到只剩一点藕色。写信、写想念的人合适。',
+    name: '薛涛笺',
+    paper: '桃红小笺',
+    story: '唐代诗人薛涛住在成都浣花溪边，嫌常用的纸幅太大，自己用木芙蓉皮和芙蓉花汁做成桃红色的小笺，专门写诗。后人就叫它薛涛笺。',
+    legend: ['浣花溪上，芙蓉染纸', '一笺桃红，只写短诗'],
     dark: false,
-    background: Color(0xFFE5D6D1),
-    card: Color(0xFFF5EDE9),
-    cardElevated: Color(0xFFF8F2EF),
-    sunken: Color(0xFFECE1DC),
-    frame: Color(0xFFC9B2AA),
-    border: Color(0xFFDCCBC5),
-    paperLine: Color(0xFFDECDC7),
-    controlBorder: Color(0xFF7D6A64),
-    accent: Color(0xFF30252A),
-    accentLight: Color(0xFF52454A),
-    textPrimary: Color(0xFF2A1F22),
-    textSecondary: Color(0xFF55464A),
-    textTertiary: Color(0xFF625257),
-    textOnAccent: Color(0xFFF5EDE9),
-    error: Color(0xFF8E3230),
-    success: Color(0xFF4A5E46),
-    warning: Color(0xFF6A5229),
-    ink: Color(0xFF3A2C30),
-    inkLight: Color(0x99877479),
-    gold: Color(0xFF784735),
-    seal: Color(0xFFA0302A),
-    fiber: Color(0xFF5A3238),
-    washi: [Color(0xFFDDC2BE), Color(0xFFC9C5BA), Color(0xFFE4D3CB), Color(0xFFC6BAC4)],
+    background: Color(0xFFE6CCC3),
+    card: Color(0xFFF4E2DB),
+    cardElevated: Color(0xFFF7E9E3),
+    sunken: Color(0xFFEBD3CA),
+    frame: Color(0xFFCCA497),
+    border: Color(0xFFE0C1B6),
+    paperLine: Color(0xFFE2C5BA),
+    controlBorder: Color(0xFF835C53),
+    accent: Color(0xFF3A2224),
+    accentLight: Color(0xFF5C4042),
+    textPrimary: Color(0xFF2E1C1E),
+    textSecondary: Color(0xFF573C3E),
+    textTertiary: Color(0xFF664649),
+    textOnAccent: Color(0xFFF4E2DB),
+    error: Color(0xFF85281F),
+    success: Color(0xFF41553A),
+    warning: Color(0xFF654A22),
+    ink: Color(0xFF3E2628),
+    inkLight: Color(0x998C6A6A),
+    gold: Color(0xFF773C28),
+    seal: Color(0xFF962420),
+    fiber: Color(0xFF7A2E2A),
+    washi: [Color(0xFFDDB5AA), Color(0xFFC9BBAE), Color(0xFFE6CABF), Color(0xFFC7B1B3)],
   );
 
   // ── 深：两张纸 ──
@@ -209,7 +151,8 @@ class XqPalette {
     id: 'sujian_dark',
     name: '磁青',
     paper: '磁青纸，泥金',
-    story: '靛蓝反复染出来的深青纸，古人用泥金在上面写经。夜里看着最安静。',
+    story: '用靛蓝一遍遍染出来的深青纸，颜色像青花瓷，所以叫磁青。明代宫里和寺院用泥金在上面抄经，纸是夜色，字是金的。',
+    legend: ['靛蓝层层，染作夜色', '泥金一笔一笔写经'],
     dark: true,
     background: XqColors.sujianDarkBackground,
     card: XqColors.sujianDarkCard,
@@ -236,12 +179,13 @@ class XqPalette {
     washi: [XqColors.sujianDarkWashi1, XqColors.sujianDarkWashi2, XqColors.sujianDarkWashi3, XqColors.sujianDarkWashi4],
   );
 
-  /// 黛笺：乌金纸一路的暖黑纸，银泥写字。
-  static const dai = XqPalette(
+  /// 乌金：暖黑纸，银泥写字。
+  static const wujin = XqPalette(
     id: 'dark',
-    name: '黛笺',
+    name: '乌金',
     paper: '乌金纸，银泥',
-    story: '近乎黑的暖色纸，字用银泥写。比磁青更沉，屏幕更暗，适合关了灯以后。',
+    story: '乌金纸本是打金箔时垫在中间的黑纸，又黑又亮。拓碑的人把墨色黑亮的拓本叫「乌金拓」。这一张取它的暖黑，字用银泥写，关了灯看最舒服。',
+    legend: ['金箔之间的一张黑纸', '拓碑的墨色，黑而有光'],
     dark: true,
     background: Color(0xFF171614),
     card: Color(0xFF201E1B),
@@ -268,14 +212,16 @@ class XqPalette {
     washi: [Color(0xFF423D35), Color(0xFF34403A), Color(0xFF4A4034), Color(0xFF3A3D44)],
   );
 
-  static const lights = [sujian, warm, mint, blush];
-  static const darks = [cixing, dai];
+  static const lights = [sujian, xuetao];
+  static const darks = [cixing, wujin];
   static const all = [...lights, ...darks];
 
   static XqPalette? byId(String? id) {
     for (final p in all) {
       if (p.id == id) return p;
     }
+    // 已合并的旧纸：暖笺（竹纸）、青笺（浅碧）并入素笺
+    if (id == 'warm' || id == 'mint') return sujian;
     return null;
   }
 }

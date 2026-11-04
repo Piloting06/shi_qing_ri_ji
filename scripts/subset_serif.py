@@ -32,6 +32,8 @@ def charset() -> str:
         chars.update(re.findall(r'[　-〿一-鿿＀-￯]', f.read_text('utf-8')))
     chars.update(chr(c) for c in range(0x20, 0x7F))
     chars.update('·—…“”‘’、。，：；！？「」『』《》（）【】〔〕°℃‹›←→↑↓×～')
+    # 汉字纪年的〇与竖排标点（卡片竖写用；字形取自原字体）
+    chars.update('〇︙︱﹁﹂﹃﹄︵︶︹︺︽︾﹇﹈︐︑︒')
     return ''.join(sorted(chars))
 
 

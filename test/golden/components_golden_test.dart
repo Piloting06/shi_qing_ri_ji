@@ -14,7 +14,7 @@ import 'package:xin_qing_ri_ji/widgets/xq/xq_icons.dart';
 import 'package:xin_qing_ri_ji/widgets/xq/xq_kit.dart';
 import 'package:xin_qing_ri_ji/widgets/xq/xq_paper.dart';
 
-/// 截图对比：只锁和日期无关的部分（全部卡片模板、图标、印、颜料、六张纸）。
+/// 截图对比：只锁和日期无关的部分（全部卡片模板、图标、印、颜料、四张纸）。
 /// 整页跟着今天的天色和日期变，不适合做像素对比。
 /// 只在 macOS 上比对（字体光栅化跨平台不一致）。更新基准：
 ///   flutter test test/golden --update-goldens
@@ -22,9 +22,7 @@ const _data = MoodCardData(
   dateText: '2026年11月5日 星期四',
   rawDate: '2026-11-05',
   moodScore: 7,
-  moodEmoji: '',
   moodLabel: '期待',
-  moodEn: 'HOPE',
   bodyText: '周末要去看外婆。她说院子里的桂花还没落完，让我早点回去。',
   tags: ['家人'],
   username: '晚风',
@@ -71,6 +69,10 @@ void main() {
     // 界面黑体在测试里没有系统字体，用楷体顶上（只为稳定，不代表真机效果）
     await _font('Roboto', ['assets/fonts/LXGWWenKai-Regular.ttf']);
     await XqPaper.ensureLoaded();
+    // 册页 / 邮票里的点景线稿走 XqPaper.loadImage 缓存：必须在真实异步里先载好，
+    // 否则第一次在 build（假异步）里发起的加载永远不完成，又被缓存住
+    await XqPaper.loadImage('assets/motifs/boat.png');
+    await XqPaper.loadImage('assets/motifs/sail.png');
   });
 
   Future<void> shoot(WidgetTester tester, Size size, Widget child, String name) async {
@@ -98,10 +100,10 @@ void main() {
     await expectLater(find.byType(RepaintBoundary).first, matchesGoldenFile('goldens/$name.png'));
   }
 
-  testWidgets('全部卡片模板', (tester) async {
+  testWidgets('全部卡片模板（横幅）', (tester) async {
     await shoot(
       tester,
-      const Size(760, 1760),
+      const Size(760, 1260),
       Padding(
         padding: const EdgeInsets.all(12),
         child: Wrap(

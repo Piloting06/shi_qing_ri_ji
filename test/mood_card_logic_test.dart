@@ -54,13 +54,15 @@ void main() {
       expect(s.streak, 1);
     });
 
-    test('一周窗口：今天在最前，未记录日 emoji 为空', () {
+    test('一周窗口：今天在最前，记过的那天有颜料与心情字，没记的为空', () {
       final moods = [...mood('2026-09-01', 7)];
       final s = computeMoodStats(moods, now);
       expect(s.week.length, 7);
       expect(s.week.first.isToday, isTrue);
-      expect(s.week.first.emoji, moodEmojis[7]);
-      expect(s.week[1].emoji, isNull);
+      expect(s.week.first.color, moodColors[7]);
+      expect(s.week.first.mood, moodLabels[7]);
+      expect(s.week[1].color, isNull);
+      expect(s.week[1].mood, isNull);
       expect(s.week[6].label, '三'); // 8月26日是周三
     });
 

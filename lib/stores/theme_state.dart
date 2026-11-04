@@ -8,7 +8,7 @@ import '../theme/xq_palette.dart';
 /// 深浅怎么定：跟随系统 / 总是浅 / 总是深
 enum XqAppearance { system, light, dark }
 
-/// 主题 = 纸。浅色、深色各记一张纸；跟随系统时按手机深浅在两张之间切换。
+/// 主题 = 纸（素笺 / 薛涛笺 · 磁青 / 乌金）。浅色、深色各记一张纸；跟随系统时按手机深浅在两张之间切换。
 /// 页面通过各颜色 getter 取色，换纸时由 [XqThemeReveal] 把旧画面截下来、让新纸从点按处晕开。
 class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
   XqAppearance _appearance = XqAppearance.system;
@@ -23,6 +23,9 @@ class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
 
   /// 下一次换纸从哪里晕开（全局坐标）；用一次就清掉
   Offset? revealOrigin;
+
+  /// 这次换纸要不要讲这张纸的来历（从纸样点进来的才讲）；用一次就清掉
+  XqPalette? storyPaper;
 
   ThemeState() {
     WidgetsBinding.instance.addObserver(this);
@@ -111,7 +114,7 @@ class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   /// 换纸：点哪张就用哪张。点的纸和当前深浅不同时，顺带把深浅固定过去，否则点了看不到变化。
-  void setPaper(XqPalette p, {Offset? origin}) {
+  void setPaper(XqPalette p, {Offset? origin, bool story = false}) {
     final before = palette;
     if (p.dark) {
       _darkPaper = p;
@@ -121,6 +124,7 @@ class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
     if (p.dark != isDark) _appearance = p.dark ? XqAppearance.dark : XqAppearance.light;
     if (palette == before) return;
     revealOrigin = origin;
+    storyPaper = story ? p : null;
     notifyListeners();
     _save();
   }

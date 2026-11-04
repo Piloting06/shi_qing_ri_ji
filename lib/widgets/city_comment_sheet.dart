@@ -4,9 +4,12 @@ import '../utils/time_utils.dart';
 import '../theme/xq_hand_drawn.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'xq/xq_kit.dart';
+import 'xq/xq_icons.dart';
 import 'package:provider/provider.dart';
 import '../stores/map_state.dart';
 import '../stores/theme_state.dart';
+import '../constants/mood.dart';
 
 Future<void> _deleteCityComment(int id, BuildContext ctx) async {
   final theme = ctx.read<ThemeState>();
@@ -15,7 +18,7 @@ Future<void> _deleteCityComment(int id, BuildContext ctx) async {
     builder: (c) => AlertDialog(
       backgroundColor: theme.cardColor,
       title: Text('撤回评论', style: TextStyle(color: theme.textPrimary)),
-      content: const Text('确定撤回这条评论吗？此操作不可撤销。'),
+      content: const Text('撤回后找不回来。'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(c, false),
@@ -23,7 +26,7 @@ Future<void> _deleteCityComment(int id, BuildContext ctx) async {
         ),
         TextButton(
           onPressed: () => Navigator.pop(c, true),
-          child: const Text('撤回', style: TextStyle(color: Color(0xFFD9706A))),
+          child: Text('撤回', style: TextStyle(color: theme.errorColor)),
         ),
       ],
     ),
@@ -121,8 +124,7 @@ class CityCommentSheet extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_forward_ios,
+                            XqIcon(XqIcons.chevronRight,
                               size: 12,
                               color: theme.textTertiary,
                             ),
@@ -142,7 +144,7 @@ class CityCommentSheet extends StatelessWidget {
                           );
                         },
                         child: Text(
-                          '轻触城市名，认识一下这座城市',
+                          '点城市名看简介',
                           style: TextStyle(
                             color: theme.textTertiary.withAlpha(130),
                             fontSize: 11,
@@ -188,8 +190,7 @@ class CityCommentSheet extends StatelessWidget {
                                   return const Center(
                                     child: Padding(
                                       padding: EdgeInsets.all(16),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                                      child: XqInkLoader(
                                       ),
                                     ),
                                   );
@@ -217,12 +218,12 @@ class CityCommentSheet extends StatelessWidget {
 
   Widget _moodSummary(String mood, ThemeState theme) {
     final text = switch (mood) {
-      'warm' => '最近 7 天，这座城市充满了温暖 💛',
-      'sad' => '最近 7 天，这座城市的心情偏忧伤 💙',
-      'anxious' => '最近 7 天，大家在这里一起加油 💜',
-      'calm' => '最近 7 天，这座城市正在安静地思考 🤍',
-      'excited' => '最近 7 天，这里热闹得像过年 🧡',
-      _ => '这座城市的心情很复杂，什么都有一些 🌈',
+      'warm' => '近七天，这里写得最多的是温暖',
+      'sad' => '近七天，这里偏忧伤',
+      'anxious' => '近七天，这里焦虑的人多一些',
+      'calm' => '近七天，这里大多平静',
+      'excited' => '近七天，这里很热闹',
+      _ => '近七天，这里什么心情都有',
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -244,10 +245,10 @@ class CityCommentSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.explore_outlined, size: 48, color: theme.borderColor),
+            XqIcon(XqIcons.compass, size: 48, color: theme.borderColor),
             const SizedBox(height: 12),
             Text(
-              canPost ? '这是你的城市，说点什么吧' : '还没有人来过，做第一个留下足迹的人吧',
+              canPost ? '你就在这儿，写一句' : '这里还没人写',
               style: TextStyle(color: theme.textSecondary, fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -309,8 +310,7 @@ class CityCommentSheet extends StatelessWidget {
                             _deleteCityComment(c['id'] as int, sheetCtx),
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),
-                          child: Icon(
-                            Icons.close,
+                          child: XqIcon(XqIcons.close,
                             size: 14,
                             color: theme.textTertiary.withAlpha(140),
                           ),
@@ -324,8 +324,8 @@ class CityCommentSheet extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            liked ? Icons.favorite : Icons.favorite_border,
+                          XqIcon(
+                            liked ? XqIcons.heartFill : XqIcons.heart,
                             size: 14,
                             color: liked
                                 ? theme.accentColor
@@ -378,7 +378,7 @@ class CityCommentSheet extends StatelessWidget {
                     minLines: 1,
                     style: TextStyle(color: theme.textPrimary, fontSize: 13),
                     decoration: InputDecoration(
-                      hintText: '留下你的足迹...',
+                      hintText: '写一句…',
                       hintStyle: TextStyle(
                         color: theme.textTertiary,
                         fontSize: 13,
@@ -406,9 +406,9 @@ class CityCommentSheet extends StatelessWidget {
                         ? const SizedBox(
                             width: 14,
                             height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: XqInkLoader(),
                           )
-                        : const Icon(Icons.send_rounded, size: 16),
+                        : const XqIcon(XqIcons.send, size: 16),
                     color: theme.accentColor,
                     style: IconButton.styleFrom(
                       backgroundColor: theme.accentColor.withAlpha(20),
@@ -441,14 +441,16 @@ class CityCommentSheet extends StatelessWidget {
 
   String _fmt(String? iso) => TimeUtils.relative(iso);
 
+  /// 城市情绪 → 心情釉色（与城迹页同一映射，取 constants/mood.dart）
   static Color? _moodTint(String? mood) {
-    return switch (mood) {
-      'warm' => const Color(0xFFF0A830),
-      'sad' => const Color(0xFF7B9BB8),
-      'anxious' => const Color(0xFFB090C8),
-      'calm' => const Color(0xFF78B090),
-      'excited' => const Color(0xFFF08848),
-      _ => null,
+    final score = switch (mood) {
+      'warm' => 1,
+      'sad' => 3,
+      'anxious' => 5,
+      'calm' => 2,
+      'excited' => 7,
+      _ => 0,
     };
+    return score == 0 ? null : Color(moodColors[score]!);
   }
 }

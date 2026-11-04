@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../utils/helpers.dart';
@@ -154,7 +156,7 @@ class _FriendsPageState extends State<FriendsPage> {
             return AlertDialog(
               backgroundColor: theme.cardColor,
               title: Text(
-                '添加友人',
+                '添加好友',
                 style: XqTypography.headlineMedium.copyWith(
                   color: theme.textPrimary,
                 ),
@@ -236,8 +238,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         ? SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                            child: XqInkLoader(
                               color: theme.textOnAccent,
                             ),
                           )
@@ -262,7 +263,7 @@ class _FriendsPageState extends State<FriendsPage> {
       await Api.addFriend(phone);
       if (mounted) {
         HapticFeedback.mediumImpact();
-        XqToast.success(context, '申请发出去啦～');
+        XqToast.success(context, '申请已发送');
       }
       return true;
     } on ApiException catch (e) {
@@ -346,7 +347,7 @@ class _FriendsPageState extends State<FriendsPage> {
                 Navigator.pop(context);
                 await _load();
                 if (!mounted) return;
-                XqToast.success(this.context, '小纸条已经送出啦');
+                XqToast.success(this.context, '纸条送到了');
               } on ApiException catch (e) {
                 if (e.statusCode == 401) return;
                 if (!context.mounted) return;
@@ -382,7 +383,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              '留张小纸条',
+                              '留张纸条',
                               style: XqTypography.headlineMedium.copyWith(
                                 color: theme.textPrimary,
                               ),
@@ -390,12 +391,12 @@ class _FriendsPageState extends State<FriendsPage> {
                           ),
                           IconButton(
                             onPressed: () => Navigator.pop(context),
-                            icon: Icon(Icons.close, color: theme.textSecondary),
+                            icon: XqIcon(XqIcons.close, color: theme.textSecondary),
                           ),
                         ],
                       ),
                       Text(
-                        '写给 $name 的一句轻轻的话。',
+                        '写给 $name，一句就行。',
                         style: TextStyle(
                           color: theme.textSecondary,
                           fontSize: 13,
@@ -417,7 +418,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         onChanged: (_) => setSheetState(() {}),
                         decoration: InputDecoration(
                           counterText: '',
-                          hintText: '写一句想对TA说的话...',
+                          hintText: '想对 Ta 说什么…',
                           hintStyle: TextStyle(
                             color: theme.textSecondary.withAlpha(150),
                           ),
@@ -446,11 +447,10 @@ class _FriendsPageState extends State<FriendsPage> {
                               ? const SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                  child: XqInkLoader(
                                   ),
                                 )
-                              : const Text('送出这张纸条'),
+                              : const Text('送出'),
                         ),
                       ),
                     ],
@@ -524,7 +524,7 @@ class _FriendsPageState extends State<FriendsPage> {
       body: SafeArea(
         child: _loading
             ? Center(child: InkWritingLoader(inkColor: theme.gold, size: 40))
-            : RefreshIndicator(
+            : XqRefresh(
                 onRefresh: _load,
                 child: ListView(
                   padding: const EdgeInsets.all(16),
@@ -542,15 +542,10 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
+  /// 页头：宋体页题 + 一行计数；「添加」为文字按钮，不用底卡
   Widget _header(ThemeState theme) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-        border: Border.all(color: theme.borderColor.withAlpha(80)),
-        boxShadow: XqDecorations.shadowSubtle(dark: theme.isDark),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
       child: Row(
         children: [
           Expanded(
@@ -559,7 +554,7 @@ class _FriendsPageState extends State<FriendsPage> {
               children: [
                 Text(
                   '好友',
-                  style: XqTypography.headlineLarge.copyWith(
+                  style: XqTypography.displayMedium.copyWith(
                     color: theme.textPrimary,
                   ),
                 ),
@@ -576,18 +571,9 @@ class _FriendsPageState extends State<FriendsPage> {
             children: [
               SizedBox(
                 height: 44,
-                child: FilledButton.icon(
+                child: OutlinedButton(
                   onPressed: _openAddFriendSheet,
-                  icon: const Icon(Icons.person_add_alt_1, size: 17),
-                  label: const Text('添加'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: theme.accentColor,
-                    foregroundColor: theme.textOnAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                  child: const Text('添加好友'),
                 ),
               ),
               if (_requests.isNotEmpty) ...[
@@ -599,7 +585,7 @@ class _FriendsPageState extends State<FriendsPage> {
                   ),
                   decoration: BoxDecoration(
                     color: theme.errorColor.withAlpha(22),
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                   child: Text(
                     '${_requests.length} 个申请',
@@ -646,7 +632,7 @@ class _FriendsPageState extends State<FriendsPage> {
       ),
       child: Row(
         children: [
-          _avatar(theme, Icons.person_outline, null),
+          _avatar(theme, XqIcons.person, null),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -697,7 +683,7 @@ class _FriendsPageState extends State<FriendsPage> {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: theme.errorColor),
+          XqIcon(XqIcons.alert, color: theme.errorColor),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -743,7 +729,7 @@ class _FriendsPageState extends State<FriendsPage> {
         children: [
           Row(
             children: [
-              _avatar(theme, Icons.person_add_alt_1, null),
+              _avatar(theme, XqIcons.personAdd, null),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -765,21 +751,21 @@ class _FriendsPageState extends State<FriendsPage> {
               _actionChip(
                 theme,
                 '同意并开放心情',
-                Icons.favorite_border,
+                XqIcons.heart,
                 theme.accentColor,
                 id == null ? null : () => _respond(id, '1', canView: true),
               ),
               _actionChip(
                 theme,
                 '仅同意',
-                Icons.check,
+                XqIcons.check,
                 theme.successColor,
                 id == null ? null : () => _respond(id, '1'),
               ),
               _actionChip(
                 theme,
                 '拒绝',
-                Icons.close,
+                XqIcons.close,
                 theme.errorColor,
                 id == null ? null : () => _respond(id, '-1'),
               ),
@@ -798,9 +784,9 @@ class _FriendsPageState extends State<FriendsPage> {
         const SizedBox(height: 10),
         if (_friends.isEmpty)
           XqEmptyState(
-            icon: Icons.people_outline,
+            icon: XqIcons.people,
             title: '还没有好友',
-            subtitle: '用手机号添加一个愿意分享心情的人',
+            subtitle: '用手机号加好友。看对方的心情，要对方同意。',
             actionLabel: '添加好友',
             onAction: _openAddFriendSheet,
           )
@@ -826,27 +812,22 @@ class _FriendsPageState extends State<FriendsPage> {
     final latestNoteIsMine = friend['latest_note_is_mine'] == true;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.zero,
       child: Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
         onTap: () => _openFriend(friend),
         child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(XqDecorations.radiusCard),
-            border: Border.all(color: theme.borderColor.withAlpha(80)),
-            boxShadow: XqDecorations.shadowSubtle(dark: theme.isDark),
-          ),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+          decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Row 1: avatar + name + note button + more menu
               Row(
                 children: [
-                  _avatar(theme, Icons.person_outline, mood),
+                  _avatar(theme, XqIcons.person, mood),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -886,8 +867,7 @@ class _FriendsPageState extends State<FriendsPage> {
                     child: SizedBox(
                       width: 44,
                       height: 44,
-                      child: Icon(
-                        Icons.edit_note_rounded,
+                      child: XqIcon(XqIcons.write,
                         size: 20,
                         color: theme.accentColor.withAlpha(160),
                       ),
@@ -896,7 +876,7 @@ class _FriendsPageState extends State<FriendsPage> {
                   // More menu
                   PopupMenuButton<String>(
                     color: theme.cardColor,
-                    icon: Icon(Icons.more_horiz, color: theme.textSecondary, size: 18),
+                    icon: XqIcon(XqIcons.more, color: theme.textSecondary, size: 18),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
                     onSelected: (value) {
@@ -986,19 +966,27 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  Widget _avatar(ThemeState theme, IconData icon, int? mood) {
-    final emoji = mood == null ? null : moodEmojis[mood];
+  /// 头像位：素底圆 + 线性图标；有今日心情时换成釉色点（不用 emoji）
+  Widget _avatar(ThemeState theme, XqIcons icon, int? mood) {
+    final moodColor = mood == null ? null : moodColors[mood];
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: theme.accentColor.withAlpha(22),
+        color: theme.sunkenColor,
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: emoji != null
-            ? Text(emoji, style: const TextStyle(fontSize: 21))
-            : Icon(icon, color: theme.accentColor, size: 22),
+        child: moodColor != null
+            ? Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: Color(moodColor),
+                  shape: BoxShape.circle,
+                ),
+              )
+            : XqIcon(icon, color: theme.textSecondary, size: 21),
       ),
     );
   }
@@ -1006,13 +994,13 @@ class _FriendsPageState extends State<FriendsPage> {
   Widget _actionChip(
     ThemeState theme,
     String label,
-    IconData icon,
+    XqIcons icon,
     Color color,
     VoidCallback? onTap,
   ) {
     return OutlinedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, size: 16),
+      icon: XqIcon(icon, size: 16),
       label: Text(label),
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
@@ -1173,8 +1161,7 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.arrow_back_ios_new,
+                        icon: XqIcon(XqIcons.back,
                           color: theme.textPrimary,
                           size: 20,
                         ),
@@ -1269,9 +1256,13 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
           ),
           child: Row(
             children: [
-              Text(
-                moodEmojis[score] ?? '•',
-                style: const TextStyle(fontSize: 28),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Color(moodColors[score] ?? 0xFF7C918C),
+                  shape: BoxShape.circle,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1325,10 +1316,10 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
           ),
           const SizedBox(height: 10),
           if (_commentsLoading)
-            LinearProgressIndicator(color: theme.accentColor)
+            XqInkLoader(color: theme.accentColor)
           else if (_comments.isEmpty)
             Text(
-              '还没有评论，给对方一点回应吧。',
+              '还没有评论。',
               style: TextStyle(color: theme.textSecondary, fontSize: 13),
             )
           else
@@ -1345,7 +1336,7 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
                   style: TextStyle(color: theme.textPrimary),
                   decoration: InputDecoration(
                     counterText: '',
-                    hintText: '写一句评论...',
+                    hintText: '写一句…',
                     hintStyle: TextStyle(
                       color: theme.textSecondary.withAlpha(150),
                     ),
@@ -1391,8 +1382,7 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
           CircleAvatar(
             radius: 14,
             backgroundColor: theme.accentColor.withAlpha(24),
-            child: Icon(
-              Icons.person_outline,
+            child: XqIcon(XqIcons.person,
               size: 16,
               color: theme.accentColor,
             ),

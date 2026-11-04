@@ -12,16 +12,28 @@ import '../constants/mood.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
 import '../utils/solar_term_utils.dart';
+import '../utils/time_utils.dart';
 import '../utils/weather_utils.dart';
 import '../utils/geo_utils.dart';
-import '../widgets/jiangnan_scene.dart';
+import '../widgets/weather_sky.dart';
+import '../theme/xq_colors.dart';
 import '../widgets/main_scaffold.dart';
 import '../widgets/mood_card_maker.dart';
+import '../theme/xq_typography.dart';
 import '../widgets/stagger_in.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_icons.dart';
+import '../widgets/xq/xq_surface.dart';
+import '../widgets/xq/xq_paper.dart';
+import '../theme/xq_paper_textures.dart';
+import '../data/poems.dart';
+import 'story_page.dart';
+import 'capsule_page.dart';
+import 'card_album_page.dart';
 import 'weather_detail_page.dart';
 
-/// 素笺版首页：一屏一主角。
-/// 书眉（日期·星期·节气）→ 时段问候 → 今日一行 → 那年今日（偶现）→ 主操作「记一笔」→ 江南远山。
+/// 首页「天色」：上半屏是今天真实的天（天况 × 时辰），宋体大字压在天上；
+/// 下半屏宣纸上是问候 → 今天（楷体摘句）→ 主操作「记一笔」→ 那年今日。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -47,27 +59,68 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> _cityResults = [];
   bool _loading = true;
   Map<String, dynamic>? _memory; // 那年今日
+  List<Map<String, dynamic>> _todayMoods = const [];
+  Map<String, int> _weekScores = const {}; // 本周（周一起）每天最后一笔的心情
+  int _seenMoodRevision = 0;
+  final _scrollCtrl = ScrollController();
+  bool? _reveal; // 今天第一次打开：笺头画按版序套印显影；null = 还没判断
 
   @override
   void initState() {
     super.initState();
+    _decideReveal();
     _loadCachedFirst();
     _loadMemory();
   }
 
-  /// 那年今日：往年同月同日最近的一条记录
+  Future<void> _decideReveal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final today = '${now.year}-${now.month}-${now.day}';
+    final first = prefs.getString('sky_reveal_day') != today;
+    if (first) await prefs.setString('sky_reveal_day', today);
+    if (mounted) setState(() => _reveal = first);
+  }
+
+  /// 今天的记录 + 那年今日（往年同月同日最近的一条），共用一次全量拉取
   Future<void> _loadMemory() async {
     try {
       final data = await Api.getAllMoods();
       final moods = (data['moods'] as List?) ?? const [];
       final now = DateTime.now();
-      final suffix =
-          '-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final mm = now.month.toString().padLeft(2, '0');
+      final dd = now.day.toString().padLeft(2, '0');
+      final today = '${now.year}-$mm-$dd';
+      final suffix = '-$mm-$dd';
+      final todays = <Map<String, dynamic>>[];
+      final monday = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1));
+      String key(DateTime d) =>
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      final weekKeys = {
+        for (var i = 0; i < 7; i++) key(monday.add(Duration(days: i))),
+      };
+      final week = <String, (String, int)>{}; // date → (created_at, score)
       Map<String, dynamic>? best;
       var bestYear = 0;
       for (final m in moods) {
         if (m is! Map) continue;
         final date = m['date']?.toString() ?? '';
+        final score = (m['emotion_type'] as num?)?.toInt() ?? 0;
+        if (weekKeys.contains(date) && score > 0) {
+          final at = m['created_at']?.toString() ?? '';
+          final prev = week[date];
+          if (prev == null || at.compareTo(prev.$1) > 0) {
+            week[date] = (at, score);
+          }
+        }
+        if (date == today) {
+          todays.add(Map<String, dynamic>.from(m));
+          continue;
+        }
         if (!date.endsWith(suffix)) continue;
         final year = int.tryParse(date.substring(0, 4)) ?? 0;
         if (year >= now.year) continue;
@@ -76,8 +129,17 @@ class _HomePageState extends State<HomePage> {
           best = Map<String, dynamic>.from(m);
         }
       }
+      todays.sort(
+        (a, b) => (b['created_at']?.toString() ?? '').compareTo(
+          a['created_at']?.toString() ?? '',
+        ),
+      );
       if (!mounted) return;
-      setState(() => _memory = best);
+      setState(() {
+        _memory = best;
+        _todayMoods = todays;
+        _weekScores = {for (final e in week.entries) e.key: e.value.$2};
+      });
     } catch (_) {
       // 未登录/网络失败都静默
     }
@@ -132,6 +194,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _citySearchCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -267,8 +330,8 @@ class _HomePageState extends State<HomePage> {
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('允许定位天气'),
-          content: const Text('用于显示你所在城市天气，不会用于好友或公开展示。'),
+          title: const Text('用定位看天气'),
+          content: const Text('只用来显示你所在城市的天气，不给好友看，也不公开。'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -287,7 +350,7 @@ class _HomePageState extends State<HomePage> {
 
     if (permission == LocationPermission.denied) throw Exception('未开启定位权限');
     if (permission == LocationPermission.deniedForever) {
-      throw Exception('定位权限已被系统拒绝，请在设置中开启或手动选择城市');
+      throw Exception('定位被系统关了。可以去设置里打开，或者手动选城市。');
     }
 
     Position position;
@@ -530,164 +593,564 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeState>();
     final appState = context.watch<AppState>();
+    if (appState.moodRevision != _seenMoodRevision) {
+      _seenMoodRevision = appState.moodRevision;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadMemory());
+    }
     final now = DateTime.now();
+    final media = MediaQuery.of(context);
 
-    final weekdaysFull = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-    final weekday = weekdaysFull[now.weekday == 7 ? 0 : now.weekday];
-    final hour = now.hour;
-    final greet = hour < 5
-        ? '夜深了'
-        : hour < 11
-        ? '早上好'
-        : hour < 14
-        ? '中午好'
-        : hour < 18
-        ? '下午好'
-        : '晚上好';
-    final name = appState.displayName.isNotEmpty ? appState.displayName : '朋友';
-    final term = currentSolarTerm(now);
     final current = _weather != null
         ? _weather!['current'] as Map<String, dynamic>?
         : null;
-    final cond = current?['weather'];
-    final temp = current?['temp_current'];
+    final today = _weather != null
+        ? weatherDay(_weather, key: 'today')
+        : const <String, dynamic>{};
+    final cond = current?['weather']?.toString();
+    final temp = weatherInt(current?['temp_current']);
+    final condition = skyConditionFor(
+      weatherInt(current?['weather_code']),
+      cond,
+    );
+    final time = skyTimeFor(
+      now,
+      sunrise: today['sunrise']?.toString(),
+      sunset: today['sunset']?.toString(),
+    );
+    final palette = SkyPalette.of(condition, time);
+    final dayOfYear = now.difference(DateTime(now.year)).inDays;
 
     return Scaffold(
       backgroundColor: theme.backgroundColor,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadWeather,
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Stack(
-                    children: [
-                      // 江南远山：三层淡墨山形，随节气微变
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: CustomPaint(
-                            painter: JiangnanScenePainter(
-                              paper: theme.backgroundColor,
-                              accent: theme.accentColor,
-                              ink: theme.ink,
-                              surface: theme.cardColor,
-                              hour: now.hour,
-                              seed: now.month * 2 + (now.day > 15 ? 1 : 0),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // 面板起点：天色占首屏约 58%
+          final sheetTop = (constraints.maxHeight * 0.58)
+              .clamp(400.0, 540.0)
+              .toDouble();
+          return Stack(
+            children: [
+              // 背后：会动的天，固定不随内容走（只做视差）
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: sheetTop + 90,
+                child: AnnotatedRegion<SystemUiOverlayStyle>(
+                  value: palette.darkText
+                      ? SystemUiOverlayStyle.dark
+                      : SystemUiOverlayStyle.light,
+                  child: _reveal == null
+                      ? ColoredBox(color: palette.top)
+                      : WeatherSkyScene(
+                          reveal: _reveal!,
+                          palette: palette,
+                          condition: condition,
+                          paper: theme.backgroundColor,
+                          seed: now.month * 31 + now.day,
+                          orbAt: const Offset(0.655, 0.1),
+                          scroll: _scrollCtrl,
+                          motif: skyMotifFor(condition),
+                        ),
+                ),
+              ),
+              // 前面：天上的字 + 自下而上覆盖天色的纸面面板
+              XqRefresh(
+                edgeOffset: media.padding.top,
+                onRefresh: () async {
+                  await Future.wait([_loadWeather(), _loadMemory()]);
+                },
+                child: CustomScrollView(
+                  controller: _scrollCtrl,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: AnimatedBuilder(
+                        animation: _scrollCtrl,
+                        builder: (context, child) {
+                          final y = _scrollCtrl.hasClients
+                              ? _scrollCtrl.offset
+                              : 0.0;
+                          return Opacity(
+                            opacity: (1 - y / (sheetTop * 0.45)).clamp(
+                              0.0,
+                              1.0,
                             ),
-                          ),
+                            child: child,
+                          );
+                        },
+                        child: _buildHero(
+                          theme: theme,
+                          palette: palette,
+                          condition: condition,
+                          time: time,
+                          height: sheetTop,
+                          topInset: media.padding.top,
+                          cond: cond,
+                          temp: temp,
+                          now: now,
+                          dayOfYear: dayOfYear,
+                          reveal: _reveal ?? false,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            StaggerIn(
-                              index: 0,
-                              child: Text(
-                                '${now.year}年${now.month}月${now.day}日 · $weekday · $term',
-                                style: TextStyle(
-                                  color: theme.textTertiary,
-                                  fontSize: 12,
-                                  letterSpacing: 1.2,
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildSheet(theme, appState, now, cond),
+                    ),
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: XqPaperPage(child: SizedBox.expand()),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  String _greeting(DateTime now, AppState appState) {
+    final h = now.hour;
+    final greet = h < 5
+        ? '夜深了'
+        : h < 11
+        ? '早上好'
+        : h < 14
+        ? '中午好'
+        : h < 18
+        ? '下午好'
+        : '晚上好';
+    final name = appState.displayName.isNotEmpty ? appState.displayName : '朋友';
+    return '$greet，$name';
+  }
+
+  /// 天上的字：城市、展示体大字温度、一句短句与日期节气；右上角题跋（公版古诗竖排两列 + 落款作者 + 节气白文印）
+  Widget _buildHero({
+    required ThemeState theme,
+    required SkyPalette palette,
+    required SkyCondition condition,
+    required SkyTime time,
+    required double height,
+    required double topInset,
+    required String? cond,
+    required int? temp,
+    required DateTime now,
+    required int dayOfYear,
+    bool reveal = false,
+  }) {
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    final city = _currentCity.isEmpty ? '城市待确认' : _currentCity.split('，').first;
+    final ready = cond != null && temp != null;
+    final seal = palette.darkText
+        ? XqColors.sujianSeal
+        : XqColors.sujianDarkSeal;
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    final term = currentSolarTerm(now);
+    final poem = poemFor(condition, time, now);
+    final dateLine =
+        '${chineseNumber(now.month)}月${chineseNumber(now.day)}日 ${weekdays[now.weekday % 7]} · $term第${chineseNumber(daysIntoSolarTerm(now))}天';
+
+    Widget vertical(String text, {double size = 17, Color? color}) => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final ch in text.characters)
+          Text(
+            ch,
+            style: XqTypography.headlineSmall.copyWith(
+              color: color ?? palette.onSkySoft,
+              fontSize: size,
+              height: 1.16,
+            ),
+          ),
+      ],
+    );
+
+    return SizedBox(
+      height: height,
+      child: Stack(
+        children: [
+          // 题跋：右起第一列是首句；落款低一字起，下压节气印
+          Positioned(
+            top: topInset + 22,
+            right: 18,
+            child: _printIn(
+              reveal && !reduce,
+              const Interval(0.5, 0.8),
+              child: Semantics(
+                label:
+                    '${poem.lines.join('，')}。${poem.author}《${poem.title}》。今日$term',
+                excludeSemantics: true,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: Column(
+                        children: [
+                          vertical(poem.author, size: 12.5),
+                          const SizedBox(height: 8),
+                          _printIn(
+                            reveal && !reduce,
+                            const Interval(0.8, 1),
+                            stamp: true,
+                            child: XqSeal(
+                              char: term,
+                              color: seal,
+                              size: 28,
+                              style: XqSealStyle.bai,
+                              angle: 0.03,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    vertical(
+                      poem.lines[1],
+                      color: palette.onSky.withAlpha(215),
+                    ),
+                    const SizedBox(width: 6),
+                    vertical(
+                      poem.lines[0],
+                      color: palette.onSky.withAlpha(215),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, topInset + 10, 104, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  button: true,
+                  label: '换城市，当前$city',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: _openCitySheet,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          XqIcon(
+                            XqIcons.locate,
+                            size: 15,
+                            color: palette.onSkySoft,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            city,
+                            style: TextStyle(
+                              color: palette.onSky,
+                              fontSize: 15,
+                            ),
+                          ),
+                          XqIcon(
+                            XqIcons.chevronDown,
+                            size: 18,
+                            color: palette.onSkySoft,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Semantics(
+                  button: ready,
+                  label: ready ? '$cond，$temp 度，查看天气详情' : null,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: ready
+                        ? _openWeatherDetail
+                        : (_loading ? null : _loadWeather),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: ready
+                          ? TweenAnimationBuilder<double>(
+                              tween: Tween(begin: reduce ? 1 : 0, end: 1),
+                              duration: const Duration(milliseconds: 700),
+                              curve: Curves.easeOutQuart,
+                              builder: (context, v, child) => Opacity(
+                                opacity: v,
+                                child: Transform.translate(
+                                  offset: Offset(0, (1 - v) * 14),
+                                  child: child,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            StaggerIn(
-                              index: 1,
-                              child: Text(
-                                '$greet，$name',
-                                style: TextStyle(
-                                  color: theme.textPrimary,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 2,
-                                  height: 1.2,
-                                  fontFamily: 'SerifSC',
-                                  fontFamilyFallback: [
-                                    'Noto Serif SC',
-                                    'Source Han Serif SC',
-                                    'Songti SC',
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            StaggerIn(
-                              index: 2,
-                              child: _buildTodayLine(theme, cond, temp),
-                            ),
-                            if (_memory != null) ...[
-                              const SizedBox(height: 16),
-                              StaggerIn(
-                                index: 3,
-                                child: _buildMemoryLine(theme),
-                              ),
-                            ],
-                            const Spacer(),
-                            StaggerIn(
-                              index: 4,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextButton(
-                                    onPressed: _openWeatherDetail,
-                                    child: Text(
-                                      '天气详情',
-                                      style: TextStyle(
-                                        color: theme.textSecondary,
-                                        fontSize: 13,
-                                      ),
+                                  Text(
+                                    chineseTemperature(temp),
+                                    style: XqTypography.displayLarge.copyWith(
+                                      color: palette.onSky,
+                                      fontSize: height < 450 ? 60 : 72,
+                                      height: 1.05,
+                                      letterSpacing: 2,
                                     ),
                                   ),
-                                  TextButton(
-                                    onPressed: _openCitySheet,
-                                    child: Text(
-                                      '换城市',
-                                      style: TextStyle(
-                                        color: theme.textSecondary,
-                                        fontSize: 13,
-                                      ),
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    '$cond。${skyLine(condition, time, dayOfYear: dayOfYear)}',
+                                    style: XqTypography.headlineSmall.copyWith(
+                                      color: palette.onSkySoft,
+                                      fontSize: 17,
+                                      height: 1.6,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    dateLine,
+                                    style: TextStyle(
+                                      color: palette.onSkySoft,
+                                      fontSize: 12.5,
+                                      height: 1.5,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            StaggerIn(
-                              index: 5,
-                              child: SizedBox(
-                                height: 48,
-                                child: FilledButton(
-                                  onPressed: _openMood,
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: theme.accentColor,
-                                    foregroundColor: theme.textOnAccent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 16,
-                                      letterSpacing: 8,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  child: const Text('记一笔'),
-                                ),
+                            )
+                          : Text(
+                              _loading ? '正在看天…' : '天气没取到，点这里重试',
+                              style: XqTypography.headlineLarge.copyWith(
+                                color: palette.onSky,
                               ),
                             ),
-                            // 远山留白区：占屏约 38%，文字与按钮都在山顶线之上
-                            SizedBox(
-                              height: (constraints.maxHeight * 0.38)
-                                  .clamp(220.0, 320.0)
-                                  .toDouble(),
-                            ),
-                          ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 套印显影里的一版：按 [iv] 区间淡入；[stamp] 时像印落下（1.5 → 1）
+  Widget _printIn(
+    bool on,
+    Interval iv, {
+    required Widget child,
+    bool stamp = false,
+  }) {
+    if (!on) return child;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 1500),
+      builder: (context, v, child) {
+        final t = Curves.easeOutQuart.transform(iv.transform(v));
+        return Opacity(
+          opacity: t,
+          child: stamp
+              ? Transform.scale(scale: 1.5 - 0.5 * t, child: child)
+              : child,
+        );
+      },
+      child: child,
+    );
+  }
+
+  /// 叠上来的一张纸（L2）：招呼 → 今日笺（地脚是墨色「记一笔」）→ 本周 → 那年今日 → 目录
+  Widget _buildSheet(
+    ThemeState theme,
+    AppState appState,
+    DateTime now,
+    String? cond,
+  ) {
+    final n = _todayMoods.length;
+    final sub = n == 0 ? '今天还没写。' : '今天写了${chineseCount(n)}笔。';
+    return XqDeckleSheet(
+      seed: now.day,
+      padding: const EdgeInsets.fromLTRB(18, 30, 18, 36),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          StaggerIn(
+            index: 0,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _greeting(now, appState),
+                    style: XqTypography.headlineLarge.copyWith(
+                      color: theme.textPrimary,
+                      fontSize: 23,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    sub,
+                    style: TextStyle(color: theme.textTertiary, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          StaggerIn(index: 1, child: _buildToday(theme, cond)),
+          const SizedBox(height: 30),
+          StaggerIn(index: 2, child: _buildWeek(theme, now)),
+          if (_memory != null) ...[
+            const SizedBox(height: 30),
+            StaggerIn(index: 3, child: _buildMemoryCard(theme)),
+          ],
+          const SizedBox(height: 30),
+          StaggerIn(index: 4, child: _buildShortcuts(theme)),
+        ],
+      ),
+    );
+  }
+
+  /// 朱丝栏：信笺上的淡朱界行
+  Widget _ruled(ThemeState theme, Widget child, {double spacing = 32}) => Stack(
+    children: [
+      Positioned.fill(
+        child: CustomPaint(
+          painter: LinedPaperPainter(
+            lineColor: theme.sealColor.withAlpha(theme.isDark ? 70 : 52),
+            lineSpacing: spacing,
+            showMarginLine: false,
+          ),
+        ),
+      ),
+      child,
+    ],
+  );
+
+  /// 今日笺（L1）：今天写下的每一笔（时间 · 颜料 · 心情 · 楷体摘句，写在朱丝栏上），
+  /// 记过的右下钤「记」；笺的地脚是墨色一栏「记一笔」，按钮和笺是一张纸。
+  Widget _buildToday(ThemeState theme, String? cond) {
+    final entries = _todayMoods.take(3).toList();
+    final body = entries.isEmpty
+        ? _ruled(
+            theme,
+            Text(
+              cond != null ? '$cond。\n这一页还空着。' : '这一页还空着。',
+              style: XqTypography.handwrittenBody.copyWith(
+                color: theme.textTertiary,
+                fontSize: 18,
+                height: 32 / 18,
+              ),
+            ),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < entries.length; i++) ...[
+                if (i > 0) const SizedBox(height: 14),
+                _todayEntry(theme, entries[i], lead: i == 0),
+              ],
+              if (_todayMoods.length > entries.length)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    '还有${chineseCount(_todayMoods.length - entries.length)}笔，在心情页',
+                    style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+                  ),
+                ),
+            ],
+          );
+
+    return XqSurface(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            button: true,
+            label: '今日笺，去心情页',
+            child: InkWell(
+              onTap: _openMood,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '今日笺',
+                          style: XqTypography.headlineSmall.copyWith(
+                            color: theme.textSecondary,
+                            fontSize: 15,
+                            letterSpacing: 2,
+                          ),
                         ),
+                        const SizedBox(height: 10),
+                        body,
+                      ],
+                    ),
+                  ),
+                  if (entries.isNotEmpty)
+                    Positioned(
+                      right: 16,
+                      top: 14,
+                      child: XqSeal(
+                        char: '记',
+                        color: theme.sealColor,
+                        size: 30,
+                        style: XqSealStyle.bai,
+                        angle: 0.09,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // 地脚：墨色一栏
+          Semantics(
+            button: true,
+            label: entries.isEmpty ? '记一笔' : '再记一笔',
+            excludeSemantics: true,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _openMood();
+              },
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: theme.accentColor,
+                  image: XqPaper.grain(theme.textOnAccent, strength: 0.35),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      XqIcon(
+                        XqIcons.write,
+                        size: 18,
+                        color: theme.textOnAccent,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        entries.isEmpty ? '记一笔' : '再记一笔',
+                        style: TextStyle(
+                          color: theme.textOnAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const Spacer(),
+                      XqIcon(
+                        XqIcons.chevronRight,
+                        size: 16,
+                        color: theme.textOnAccent.withAlpha(170),
                       ),
                     ],
                   ),
@@ -695,46 +1158,185 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  /// 今日纸片：浮在烟雨山水之上的一枚信息笺
-  Widget _buildTodayLine(ThemeState theme, dynamic cond, dynamic temp) {
-    final body = _loading && _weather == null
-        ? Text(
-            '天气正在路上…',
-            style: TextStyle(color: theme.textTertiary, fontSize: 15),
-          )
-        : (cond != null && temp != null)
-        ? Text(
-            '$cond $temp° · ${_currentCity.isEmpty ? "城市待确认" : _currentCity.split("，").first}',
-            style: TextStyle(
-              color: theme.textPrimary,
-              fontSize: 15.5,
-              letterSpacing: 0.5,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          )
-        : GestureDetector(
-            onTap: _loadWeather,
-            child: Text(
-              '天气未取到 · 点按重试',
-              style: TextStyle(color: theme.accentColor, fontSize: 14),
-            ),
-          );
-    return Row(
+  /// 今日笺里的一笔：第一笔写全（朱丝栏楷体，三行内），其余一行
+  Widget _todayEntry(
+    ThemeState theme,
+    Map<String, dynamic> m, {
+    required bool lead,
+  }) {
+    final score = (m['emotion_type'] as num?)?.toInt() ?? 0;
+    final notes = (m['notes']?.toString() ?? '').trim();
+    final hm = TimeUtils.hm(m['created_at']);
+    final head = Row(
       children: [
-        Expanded(child: body),
-        GestureDetector(
-          onTap: _openWeatherDetail,
-          child: Text(
-            '详情 ›',
-            style: TextStyle(
-              color: theme.accentColor,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
+        Text(
+          hm,
+          style: TextStyle(
+            color: theme.gold,
+            fontSize: 13,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(width: 10),
+        XqPigmentDab(
+          color: Color(moodColors[score] ?? 0xFF7A7871),
+          size: 14,
+          seed: score,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          moodLabels[score] ?? '',
+          style: TextStyle(
+            color: theme.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+    if (!lead) {
+      return Row(
+        children: [
+          head,
+          if (notes.isNotEmpty) ...[
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                notes,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: XqTypography.content,
+                  fontFamilyFallback: XqTypography.contentFallback,
+                  color: theme.textSecondary,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        head,
+        if (notes.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          _ruled(
+            theme,
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                notes,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: XqTypography.handwrittenBody.copyWith(
+                  color: theme.textPrimary,
+                  fontSize: 18,
+                  height: 32 / 18,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 本周：一到日七格，记过的那天落一抹颜料，今天下面一笔墨线
+  Widget _buildWeek(ThemeState theme, DateTime now) {
+    const names = ['一', '二', '三', '四', '五', '六', '日'];
+    final monday = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
+    String key(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final recorded = _weekScores.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        XqSectionTitle(
+          '本周',
+          trailing: Text(
+            recorded == 0 ? '还没记过' : '记了${chineseCount(recorded)}天',
+            style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
+          ),
+        ),
+        Semantics(
+          button: true,
+          label: '本周记了$recorded天，去心情页',
+          excludeSemantics: true,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _openMood,
+            child: Row(
+              children: [
+                for (var i = 0; i < 7; i++)
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        final d = monday.add(Duration(days: i));
+                        final score = _weekScores[key(d)];
+                        final isToday =
+                            d.day == now.day && d.month == now.month;
+                        final future = d.isAfter(now);
+                        return Column(
+                          children: [
+                            Text(
+                              names[i],
+                              style: XqTypography.headlineSmall.copyWith(
+                                color: isToday
+                                    ? theme.textPrimary
+                                    : theme.textTertiary,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 24,
+                              child: Center(
+                                child: score != null
+                                    ? XqPigmentDab(
+                                        color: Color(
+                                          moodColors[score] ?? 0xFF7A7871,
+                                        ),
+                                        size: 22,
+                                        seed: score + i,
+                                      )
+                                    : Container(
+                                        width: 4,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: theme.frameColor.withAlpha(
+                                            future ? 90 : 255,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              width: 12,
+                              height: 1.2,
+                              color: isToday
+                                  ? theme.textPrimary
+                                  : Colors.transparent,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -742,69 +1344,131 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// 那年今日：由卡片降级为一行素笺（点击仍可制卡）
-  Widget _buildMemoryLine(ThemeState theme) {
+  /// 目录：一行三栏，上下笺框线、栏间界线（不是三张一样的卡片）
+  Widget _buildShortcuts(ThemeState theme) {
+    Widget entry(XqIcons icon, String title, String sub, Widget page) =>
+        Expanded(
+          child: Semantics(
+            button: true,
+            label: '$title，$sub',
+            excludeSemantics: true,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => page),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  children: [
+                    XqIcon(icon, size: 20, color: theme.textSecondary),
+                    const SizedBox(height: 8),
+                    Text(
+                      title,
+                      style: XqTypography.headlineSmall.copyWith(
+                        color: theme.textPrimary,
+                        fontSize: 16,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      sub,
+                      style: TextStyle(color: theme.textTertiary, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+    Widget rule() => Container(width: 0.6, height: 44, color: theme.frameColor);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.symmetric(
+          horizontal: BorderSide(color: theme.frameColor, width: 0.6),
+        ),
+      ),
+      child: Row(
+        children: [
+          entry(XqIcons.book, '素笺', '写长一点的', const StoryListPage()),
+          rule(),
+          entry(XqIcons.hourglass, '胶囊', '写给以后', const CapsulePage()),
+          rule(),
+          entry(XqIcons.cards, '卡片册', '做过的卡片', const CardAlbumPage()),
+        ],
+      ),
+    );
+  }
+
+  /// 那年今日：一张泛黄的旧笺，点击制成卡片
+  Widget _buildMemoryCard(ThemeState theme) {
     final m = _memory!;
     final date = m['date']?.toString() ?? '';
     final year = int.tryParse(date.substring(0, 4));
-    final yearsAgo = year == null ? '' : '${DateTime.now().year - year}年前';
+    final yearsAgo = year == null ? '' : '${DateTime.now().year - year} 年前';
     final score = (m['emotion_type'] as num?)?.toInt() ?? 0;
-    final emoji = moodEmojis[score] ?? '';
     final code = int.tryParse(m['weather_code']?.toString() ?? '');
     final weatherText = weatherTextForCode(code);
     final notes = (m['notes']?.toString() ?? '').trim();
+    final meta = [
+      if (yearsAgo.isNotEmpty) yearsAgo,
+      if (weatherText.isNotEmpty) weatherText,
+      moodLabels[score] ?? '',
+    ].where((s) => s.isNotEmpty).join(' · ');
+    final aged = Color.lerp(
+      theme.cardColor,
+      theme.isDark ? const Color(0xFF3A3526) : const Color(0xFFE9D8B2),
+      theme.isDark ? 0.35 : 0.42,
+    )!;
 
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        MoodCardMaker.show(
-          context,
-          date: date,
-          moodLabel: moodLabels[score] ?? '',
-          moodScore: score,
-          text: notes,
-          tags: const [],
-          weatherText: weatherText,
-          cityName: '那年今日',
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: theme.cardColor.withAlpha(242),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: theme.borderColor.withAlpha(120),
-            width: 0.6,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: theme.ink.withAlpha(12),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 15)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '那年今日$yearsAgo —— ${notes.isEmpty ? "只留下了一个心情" : notes}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: theme.textSecondary, fontSize: 13),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        XqSectionTitle('那年今日', caption: meta),
+        XqSurface(
+          color: aged,
+          onTap: () {
+            MoodCardMaker.show(
+              context,
+              date: date,
+              moodLabel: moodLabels[score] ?? '',
+              moodScore: score,
+              text: notes,
+              tags: const [],
+              weatherText: weatherText,
+              cityName: '那年今日',
+            );
+          },
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  notes.isEmpty ? '那天只选了心情，没写字。' : notes,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: XqTypography.content,
+                    fontFamilyFallback: XqTypography.contentFallback,
+                    color: theme.textSecondary,
+                    fontSize: 16,
+                    height: 1.7,
+                  ),
+                ),
               ),
-            ),
-            if (weatherText.isNotEmpty)
+              const SizedBox(width: 12),
               Text(
-                weatherText,
-                style: TextStyle(color: theme.gold, fontSize: 11.5),
+                '制成卡片',
+                style: TextStyle(color: theme.accentColor, fontSize: 13),
               ),
-          ],
+              XqIcon(XqIcons.chevronRight, size: 18, color: theme.accentColor),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -838,7 +1502,7 @@ class _HomePageState extends State<HomePage> {
                 onChanged: _onCitySearch,
                 style: TextStyle(color: theme.textPrimary),
                 decoration: InputDecoration(
-                  hintText: '搜索城市...',
+                  hintText: '搜城市',
                   hintStyle: TextStyle(
                     color: theme.textSecondary.withAlpha(150),
                   ),
@@ -857,8 +1521,8 @@ class _HomePageState extends State<HomePage> {
                       width: 1.2,
                     ),
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
+                  prefixIcon: XqIcon(
+                    XqIcons.search,
                     size: 20,
                     color: theme.accentColor,
                   ),
@@ -868,7 +1532,7 @@ class _HomePageState extends State<HomePage> {
             ),
             IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.close, color: theme.textSecondary),
+              icon: XqIcon(XqIcons.close, color: theme.textSecondary),
             ),
           ],
         ),
@@ -876,7 +1540,7 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Text(
-              '暂无结果，换个城市名试试',
+              '没找到这个城市',
               style: TextStyle(color: theme.textSecondary, fontSize: 13),
             ),
           ),
@@ -902,9 +1566,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-/// 江南远山：三层淡墨山形，随节气微变轮廓。
-/// 颜色只取主题 ink（低透明度分层表现远近），深浅主题自然成立。
 
 /// 心情定位数据（首页内部使用）
 class _WeatherLocation {

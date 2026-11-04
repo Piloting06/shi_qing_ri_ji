@@ -18,6 +18,16 @@ class ThemeState extends ChangeNotifier {
     _ => borderColor,
   };
 
+  /// 笺的外框细墨线（L1 装裱边）
+  Color get frameColor => switch (_themeMode) {
+    'sujian' => XqColors.sujianFrame,
+    'sujian_dark' => XqColors.sujianDarkFrame,
+    _ => borderColor,
+  };
+
+  /// 纸纹染色：浅色暖墨纤维、深色月白纤维
+  Color get paperFiber => isDark ? XqColors.sujianDarkPaperFiber : XqColors.sujianPaperFiber;
+
   /// 凹陷区（素笺：比纸深一层的标签/代码底），其余主题回退到卡片色
   Color get sunkenColor => switch (_themeMode) {
     'sujian' => XqColors.sujianSunken,
@@ -32,23 +42,22 @@ class ThemeState extends ChangeNotifier {
     _ => gold,
   };
 
+  /// P9 起只有两套：素笺（浅）/ 磁青（深）。老主题（暖笺/黛笺/青笺/藕笺）2026-11-04 用户决定下线，存值自动迁移。
   static const Map<String, String> themeNames = {
     'sujian': '素笺',
-    'sujian_dark': '素笺 · 夜墨',
-    'warm': '暖笺',
-    'dark': '黛笺',
-    'mint': '青笺',
-    'blush': '藕笺',
+    'sujian_dark': '磁青',
   };
 
   static const Map<String, List<Color>> themeColors = {
     'sujian': [XqColors.sujianAccent, XqColors.sujianCard, XqColors.sujianBackground],
     'sujian_dark': [XqColors.sujianDarkAccent, XqColors.sujianDarkCard, XqColors.sujianDarkBackground],
-    'warm': [XqColors.lightAccent, XqColors.lightCard, XqColors.lightBackground],
-    'dark': [XqColors.darkAccent, XqColors.darkCard, XqColors.darkBackground],
-    'mint': [XqColors.mintAccent, XqColors.mintCard, XqColors.mintBackground],
-    'blush': [XqColors.blushAccent, XqColors.blushCard, XqColors.blushBackground],
   };
+
+  /// 旧主题存值 → 新主题：深色系（黛笺）迁到磁青，其余迁到素笺
+  static String migrate(String? stored) => switch (stored) {
+        'sujian_dark' || 'dark' => 'sujian_dark',
+        _ => 'sujian',
+      };
 
   ThemeState() {
     _load();
@@ -56,23 +65,15 @@ class ThemeState extends ChangeNotifier {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    var stored = prefs.getString(StorageKeys.themeMode) ?? 'warm';
-    // Migrate old 'light' → 'warm'
-    if (stored == 'light') stored = 'warm';
-    // 素笺默认迁移：从未显式挑过主题（仍是出厂默认 warm）的用户迁到素笺；
-    // 显式选过（mint/blush/dark 等）的尊重其选择。
-    final explicit = prefs.getBool(StorageKeys.themeExplicit) ?? false;
-    var next = themeNames.containsKey(stored) ? stored : 'warm';
-    if (!explicit && stored == 'warm') next = 'sujian';
+    final stored = prefs.getString(StorageKeys.themeMode);
+    final next = migrate(stored);
     _themeMode = next;
-    if (next != stored || !explicit) {
-      await prefs.setString(StorageKeys.themeMode, next);
-    }
+    if (next != stored) await prefs.setString(StorageKeys.themeMode, next);
     notifyListeners();
   }
 
   Future<void> setTheme(String mode) async {
-    final next = themeNames.containsKey(mode) ? mode : 'sujian';
+    final next = migrate(mode);
     if (_themeMode == next) return;
     _transitioning = true;
     _themeMode = next;

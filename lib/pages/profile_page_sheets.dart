@@ -83,8 +83,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                           color: theme.textSecondary,
                           fontSize: 13,
                         ),
-                        prefixIcon: Icon(
-                          Icons.email_outlined,
+                        prefixIcon: XqIcon(XqIcons.mail,
                           color: theme.accentColor,
                           size: 18,
                         ),
@@ -120,8 +119,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                 color: theme.textSecondary,
                                 fontSize: 13,
                               ),
-                              prefixIcon: Icon(
-                                Icons.pin_outlined,
+                              prefixIcon: XqIcon(XqIcons.lock,
                                 color: theme.accentColor,
                                 size: 18,
                               ),
@@ -187,8 +185,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                                    child: XqInkLoader(
                                     ),
                                   )
                                 : const Text(
@@ -252,8 +249,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                child: XqInkLoader(
                                   color: Colors.white,
                                 ),
                               )
@@ -387,14 +383,13 @@ extension _ProfilePageSheets on _ProfilePageState {
                         color: theme.textSecondary,
                         fontSize: 13,
                       ),
-                      prefixIcon: Icon(
-                        Icons.lock_outline,
+                      prefixIcon: XqIcon(XqIcons.lock,
                         color: theme.accentColor,
                         size: 18,
                       ),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureOld ? Icons.visibility_off : Icons.visibility,
+                        icon: XqIcon(
+                          obscureOld ? XqIcons.eyeOff : XqIcons.eye,
                           color: theme.textSecondary,
                           size: 18,
                         ),
@@ -423,14 +418,13 @@ extension _ProfilePageSheets on _ProfilePageState {
                         color: theme.textSecondary,
                         fontSize: 13,
                       ),
-                      prefixIcon: Icon(
-                        Icons.lock_reset,
+                      prefixIcon: XqIcon(XqIcons.lock,
                         color: theme.accentColor,
                         size: 18,
                       ),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureNew ? Icons.visibility_off : Icons.visibility,
+                        icon: XqIcon(
+                          obscureNew ? XqIcons.eyeOff : XqIcons.eye,
                           color: theme.textSecondary,
                           size: 18,
                         ),
@@ -459,8 +453,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                         color: theme.textSecondary,
                         fontSize: 13,
                       ),
-                      prefixIcon: Icon(
-                        Icons.lock_reset,
+                      prefixIcon: XqIcon(XqIcons.lock,
                         color: theme.accentColor,
                         size: 18,
                       ),
@@ -650,8 +643,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.auto_awesome,
+                              XqIcon(XqIcons.spark,
                                 size: 16,
                                 color: colors[0],
                               ),
@@ -698,7 +690,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                 height: 44,
                                 child: OutlinedButton.icon(
                                   onPressed: () => _saveCard(repaintKey, name),
-                                  icon: const Icon(Icons.download, size: 17),
+                                  icon: const XqIcon(XqIcons.save, size: 17),
                                   label: const Text(
                                     '保存',
                                     style: TextStyle(fontSize: 12),
@@ -721,7 +713,7 @@ extension _ProfilePageSheets on _ProfilePageState {
                                 height: 44,
                                 child: FilledButton.icon(
                                   onPressed: () => _shareCard(repaintKey, name),
-                                  icon: const Icon(Icons.share, size: 17),
+                                  icon: const XqIcon(XqIcons.share, size: 17),
                                   label: const Text(
                                     '分享',
                                     style: TextStyle(fontSize: 12),

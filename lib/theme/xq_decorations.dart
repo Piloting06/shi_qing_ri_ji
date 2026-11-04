@@ -5,13 +5,49 @@ import 'xq_colors.dart';
 class XqDecorations {
   XqDecorations._();
 
-  // ── 圆角（微信风格：克制、精确）──
-  static const radiusSmall = 4.0;
-  static const radiusMedium = 8.0;
-  static const radiusCard = 8.0;
-  static const radiusLarge = 8.0;
-  static const radiusHero = 8.0;
-  static const radiusSheet = 8.0;
+  // ── 圆角：纸是方的（P9 笺谱）。笺 3、控件 4、弹层 6；圆角只为抗锯齿，不为「圆润」──
+  static const radiusSmall = 2.0;
+  static const radiusControl = 4.0;
+  static const radiusMedium = 4.0;
+  static const radiusCard = 3.0;
+  static const radiusLarge = 3.0;
+  static const radiusHero = 3.0;
+  static const radiusSheet = 6.0;
+
+  static const _warmInk = Color(0xFF3B2F22);
+
+  /// L1 笺的「纸厚」：一道 1px 的接触影，不是浮起来的投影
+  static List<BoxShadow> lift({bool dark = false}) => [
+    BoxShadow(
+      color: (dark ? Colors.black : _warmInk).withAlpha(dark ? 60 : 16),
+      blurRadius: 1.5,
+      offset: const Offset(0, 1),
+    ),
+  ];
+
+  /// L2 叠上来的一张纸（首页覆盖天色的纸、弹层）：全 App 唯一的投影
+  static List<BoxShadow> sheetLift({bool dark = false}) => [
+    BoxShadow(
+      color: (dark ? Colors.black : _warmInk).withAlpha(dark ? 120 : 40),
+      blurRadius: 24,
+      offset: const Offset(0, -6),
+    ),
+  ];
+
+  /// L1 笺：更亮的纸 + 一圈细墨线（装裱的画心边）+ 纸厚
+  static BoxDecoration surface(
+    Color card, {
+    bool dark = false,
+    Color? edge,
+    double radius = radiusCard,
+    DecorationImage? grain,
+  }) => BoxDecoration(
+    color: card,
+    image: grain,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: edge ?? (dark ? const Color(0xFF3A4556) : const Color(0xFFC6BDAA)), width: 0.6),
+    boxShadow: lift(dark: dark),
+  );
 
   // ── 阴影 ──
   static List<BoxShadow> shadowSubtle({bool dark = false}) => [
@@ -55,20 +91,14 @@ class XqDecorations {
   //  卡片模式
   // ═══════════════════════════════════════
 
+  // 三个历史卡片助手保留签名，统一产出 L1 笺
+
   /// 高级卡片（天气轮播等）
   static BoxDecoration elevatedCard(
     Color cardElevated,
     Color accent, {
     bool dark = false,
-  }) => BoxDecoration(
-    color: cardElevated,
-    borderRadius: BorderRadius.circular(radiusLarge),
-    border: borderAccent(accent),
-    boxShadow: [
-      ...shadowMedium(dark: dark),
-      ...shadowGlow(accent),
-    ],
-  );
+  }) => surface(cardElevated, dark: dark);
 
   /// Hero 卡片（天气、语录、档案）
   static BoxDecoration heroCard(
@@ -77,18 +107,7 @@ class XqDecorations {
     Color border, {
     bool dark = false,
     Color? glow,
-  }) => BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [start, end],
-    ),
-    borderRadius: BorderRadius.circular(radiusHero),
-    border: borderMedium(border),
-    boxShadow: glow == null
-        ? shadowMedium(dark: dark)
-        : [...shadowMedium(dark: dark), ...shadowGlow(glow)],
-  );
+  }) => surface(start, dark: dark, edge: border, radius: radiusHero);
 
   /// 操作卡片（快捷入口、反馈）
   static BoxDecoration actionCard(
@@ -96,12 +115,7 @@ class XqDecorations {
     Color border, {
     bool dark = false,
     Color? accent,
-  }) => BoxDecoration(
-    color: card,
-    borderRadius: BorderRadius.circular(radiusLarge),
-    border: borderThin(accent == null ? border : accent.withAlpha(55)),
-    boxShadow: shadowSubtle(dark: dark),
-  );
+  }) => surface(card, dark: dark, edge: border);
 
   /// Sheet 表面（底部弹层）
   static BoxDecoration sheetSurface(

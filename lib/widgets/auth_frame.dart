@@ -1,52 +1,50 @@
 import 'package:flutter/material.dart';
+import 'xq/xq_kit.dart';
+import 'xq/xq_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_typography.dart';
+import 'weather_sky.dart';
+import '../theme/xq_decorations.dart';
 
 /// 登录/注册共用组件（素笺规范）：
 /// 无外层大卡片、无金色图标；品牌 = 朱砂小印 + 宋体名；
 /// 输入框无边框内图标，控件边框走 controlBorder。
 
+/// 登录页的天：固定晴天（「拾晴」），浅色主题为晴昼、深色为晴夜，铺到状态栏下。
+/// 品牌头压在天上，表单落在下方纸面（调用页负责把表单排到远山之下）。
 class XqAuthBackdrop extends StatelessWidget {
   final ThemeState theme;
 
   const XqAuthBackdrop({super.key, required this.theme});
 
+  /// 天的高度；调用页据此安排品牌头与表单的位置
+  static double skyHeight(BuildContext context) =>
+      (MediaQuery.sizeOf(context).height * 0.46).clamp(340.0, 420.0).toDouble();
+
   @override
   Widget build(BuildContext context) {
-    // 烟雨雾：两团极淡的冷色雾，替代旧彩色光晕
-    return Stack(
-      children: [
-        Positioned(
-          top: -70,
-          right: -60,
-          child: _AuthMist(size: 200, color: theme.accentColor.withAlpha(theme.isDark ? 16 : 12)),
-        ),
-        Positioned(
-          left: -70,
-          bottom: 70,
-          child: _AuthMist(size: 160, color: theme.inkLight.withAlpha(theme.isDark ? 14 : 8)),
-        ),
-      ],
+    final palette = SkyPalette.of(
+      SkyCondition.clear,
+      theme.isDark ? SkyTime.night : SkyTime.day,
     );
-  }
-}
-
-class _AuthMist extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _AuthMist({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [color, Colors.transparent]),
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      height: skyHeight(context),
+      child: IgnorePointer(
+        child: RepaintBoundary(
+          child: CustomPaint(
+            painter: WeatherSkyPainter(
+              palette: palette,
+              condition: SkyCondition.clear,
+              paper: theme.backgroundColor,
+              seed: 3,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -56,14 +54,14 @@ class _AuthMist extends StatelessWidget {
 class XqAuthHero extends StatelessWidget {
   final ThemeState theme;
   final String title;
-  final IconData icon;
+  final XqIcons icon;
   final double size;
 
   const XqAuthHero({
     super.key,
     required this.theme,
     required this.title,
-    this.icon = Icons.auto_stories_outlined,
+    this.icon = XqIcons.book,
     this.size = 68,
   });
 
@@ -110,7 +108,7 @@ class XqAuthHero extends StatelessWidget {
   }
 }
 
-/// 表单容器：素笺无外层卡片，仅保留布局分组语义。
+/// 表单卡：浮在远山前的一张纸（L1，圆角 24），与首页面板同一层级语言。
 class XqAuthCard extends StatelessWidget {
   final ThemeState theme;
   final Widget child;
@@ -119,7 +117,16 @@ class XqAuthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return child;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+      decoration: XqDecorations.surface(
+        theme.cardColor,
+        dark: theme.isDark,
+        edge: theme.borderColor,
+        radius: XqDecorations.radiusSheet,
+      ),
+      child: child,
+    );
   }
 }
 
@@ -128,7 +135,7 @@ class XqAuthInput extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
-  final IconData icon; // 兼容旧调用签名，不再渲染
+  final XqIcons icon; // 兼容旧调用签名，不再渲染
   final bool obscure;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
@@ -219,8 +226,7 @@ class XqAuthButton extends StatelessWidget {
             ? SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                child: XqInkLoader(
                   color: theme.textOnAccent,
                 ),
               )

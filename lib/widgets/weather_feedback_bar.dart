@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'xq/xq_icons.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
 import '../stores/theme_state.dart';
@@ -81,7 +82,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '哪里需要我记一下？',
+                    '哪里不准？',
                     style: TextStyle(
                       color: theme.textPrimary,
                       fontSize: 17,
@@ -90,7 +91,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '这会帮助之后的天气感受更贴近你。',
+                    '选一项就行。',
                     style: TextStyle(color: theme.textSecondary, fontSize: 12),
                   ),
                   const SizedBox(height: 14),
@@ -102,7 +103,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                       return _feedbackChip(
                         theme,
                         label: r,
-                        icon: active ? Icons.check_rounded : Icons.tune_rounded,
+                        icon: active ? XqIcons.check : XqIcons.tune,
                         active: active,
                         onTap: () => setSheetState(() => selectedReason = r),
                       );
@@ -115,7 +116,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
                     style: TextStyle(color: theme.textPrimary, fontSize: 13),
                     cursorColor: theme.accentColor,
                     decoration: InputDecoration(
-                      hintText: '补充一句也可以（选填）',
+                      hintText: '补充说明（选填）',
                       hintStyle: TextStyle(
                         color: theme.textTertiary,
                         fontSize: 13,
@@ -185,15 +186,14 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.thermostat_auto_outlined,
+            XqIcon(XqIcons.thermo,
               color: theme.accentColor,
               size: 17,
             ),
             const SizedBox(width: 7),
             Expanded(
               child: Text(
-                '今天的天气感受对吗？',
+                '今天的天气准吗？',
                 style: TextStyle(
                   color: theme.textPrimary,
                   fontSize: 13,
@@ -211,32 +211,32 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
             _feedbackChip(
               theme,
               label: '准确',
-              icon: Icons.check_rounded,
+              icon: XqIcons.check,
               active: true,
               onTap: () => _submit('准确'),
             ),
             _feedbackChip(
               theme,
               label: '偏冷',
-              icon: Icons.ac_unit_rounded,
+              icon: XqIcons.snow,
               onTap: () => _submit('偏冷'),
             ),
             _feedbackChip(
               theme,
               label: '偏热',
-              icon: Icons.wb_sunny_outlined,
+              icon: XqIcons.sunny,
               onTap: () => _submit('偏热'),
             ),
             _feedbackChip(
               theme,
               label: '降雨不准',
-              icon: Icons.grain_outlined,
+              icon: XqIcons.spark,
               onTap: () => _submit('降雨不准'),
             ),
             _feedbackChip(
               theme,
               label: '补充说明',
-              icon: Icons.edit_note_rounded,
+              icon: XqIcons.write,
               onTap: _showNoteSheet,
             ),
           ],
@@ -249,15 +249,14 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
     return Row(
       key: const ValueKey('submitted'),
       children: [
-        Icon(
-          Icons.check_circle_outline_rounded,
+        XqIcon(XqIcons.checkCircle,
           color: theme.successColor,
           size: 19,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '收到，这些反馈会帮助下次更准',
+            '收到，谢谢',
             style: TextStyle(
               color: theme.successColor,
               fontSize: 13,
@@ -273,7 +272,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
   Widget _feedbackChip(
     ThemeState theme, {
     required String label,
-    required IconData icon,
+    required XqIcons icon,
     required VoidCallback onTap,
     bool active = false,
   }) {
@@ -282,7 +281,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
       child: GlowWrap(
         accentColor: theme.accentColor,
         radius: 30,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(2),
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 38),
@@ -291,7 +290,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
             color: active
                 ? theme.accentColor.withAlpha(22)
                 : theme.cardElevated.withAlpha(theme.isDark ? 170 : 220),
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(2),
             border: Border.all(
               color: active
                   ? theme.accentColor.withAlpha(90)
@@ -301,7 +300,7 @@ class _WeatherFeedbackBarState extends State<WeatherFeedbackBar> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              XqIcon(
                 icon,
                 size: 15,
                 color: active ? theme.accentColor : theme.textSecondary,

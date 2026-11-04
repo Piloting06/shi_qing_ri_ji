@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,9 +9,11 @@ import 'stores/app_state.dart';
 import 'stores/theme_state.dart';
 import 'stores/map_state.dart';
 import 'theme/xq_theme.dart';
+import 'theme/xq_colors.dart';
 import 'widgets/splash_screen.dart';
 import 'pages/login_page.dart';
 import 'widgets/main_scaffold.dart';
+import 'widgets/xq/xq_paper.dart';
 import 'constants/keys.dart';
 import 'api/api_client.dart';
 import 'services/notification_service.dart';
@@ -21,6 +24,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService.bindNavigatorKey(appNavigatorKey);
   unawaited(NotificationService.initialize());
+  unawaited(XqPaper.ensureLoaded()); // 纸纹：天色版画与印章的侵蚀用，越早解码越好
   Api.onUnauthorized = () {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ctx = appNavigatorKey.currentContext;
@@ -63,7 +67,15 @@ class XinQingRiJiApp extends StatelessWidget {
             title: '拾晴日记',
             debugShowCheckedModeBanner: false,
             theme: XqTheme.forMode(theme.themeMode),
-            darkTheme: XqTheme.forMode(theme.isDark ? theme.themeMode : 'dark'),
+            darkTheme: XqTheme.forMode('sujian_dark'),
+            // 中文本地化：日期选择、文本选择菜单（复制/粘贴）等系统文案
+            locale: const Locale('zh', 'CN'),
+            supportedLocales: const [Locale('zh', 'CN')],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
             // 主题切换时全 App 颜色平滑过渡，避免生硬跳变
             themeAnimationDuration: const Duration(milliseconds: 420),
@@ -143,7 +155,7 @@ class _SplashGateState extends State<SplashGate> {
   Widget build(BuildContext context) {
     if (!_ready) {
       return const Scaffold(
-        backgroundColor: Color(0xFFFBF7F0),
+        backgroundColor: XqColors.sujianBackground,
         body: Center(child: SizedBox.shrink()),
       );
     }

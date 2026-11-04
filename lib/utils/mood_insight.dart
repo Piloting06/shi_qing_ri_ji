@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import '../constants/mood.dart';
 
 class MoodInsight {
   final String text;
-  final IconData icon;
+  final XqIcons icon;
 
   const MoodInsight(this.text, this.icon);
 }
@@ -45,16 +45,16 @@ MoodInsight? computeMoodInsight(
   // Priority 1: Full week
   if (thisWeekDays == 7) {
     return const MoodInsight(
-      '整整一周都没落下，你在认真对自己好',
-      Icons.emoji_events_outlined,
+      '这周七天都记了',
+      XqIcons.spark,
     );
   }
 
   // Priority 2: 5-6 days this week
   if (thisWeekDays >= 5) {
     return MoodInsight(
-      '这周记了 $thisWeekDays 天，坚持得不错',
-      Icons.local_fire_department_outlined,
+      '这周记了 $thisWeekDays 天',
+      XqIcons.flame,
     );
   }
 
@@ -70,8 +70,8 @@ MoodInsight? computeMoodInsight(
     if (allPositive) {
       final label = moodLabels[scores.first] ?? '开心';
       return MoodInsight(
-        '最近 3 天都在$label，好事在发生吧',
-        Icons.wb_sunny_outlined,
+        '最近三天都是「$label」',
+        XqIcons.sunny,
       );
     }
   }
@@ -86,8 +86,8 @@ MoodInsight? computeMoodInsight(
       .length;
   if (toughWeekCount >= 4) {
     return const MoodInsight(
-      '这几天不容易，但你都撑过来了',
-      Icons.favorite_outline,
+      '这几天心情不太好',
+      XqIcons.heart,
     );
   }
 
@@ -101,8 +101,8 @@ MoodInsight? computeMoodInsight(
   }).fold(0, (sum, d) => sum + (byDate[d]?.length ?? 0));
   if (monthCount >= 20) {
     return MoodInsight(
-      '这个月已经记了 $monthCount 条心情了',
-      Icons.auto_stories_outlined,
+      '这个月记了 $monthCount 条',
+      XqIcons.book,
     );
   }
 
@@ -110,7 +110,7 @@ MoodInsight? computeMoodInsight(
   if (thisWeekDays > lastWeekDays + 1 && lastWeekDays > 0) {
     return MoodInsight(
       '上周记了 $lastWeekDays 天，这周 $thisWeekDays 天',
-      Icons.trending_up_outlined,
+      XqIcons.trend,
     );
   }
 
@@ -124,9 +124,8 @@ MoodInsight? computeMoodInsight(
     final top =
         freq.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
     final label = moodLabels[top] ?? '';
-    final emoji = moodEmojis[top] ?? '';
     return MoodInsight(
-      '你最常和「$emoji $label」待在一起',
+      '这阵子记得最多的是「$label」',
       _moodIcon(top),
     );
   }
@@ -143,16 +142,16 @@ int _readScore(dynamic v) {
 String _fmt(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-IconData _moodIcon(int score) {
+XqIcons _moodIcon(int score) {
   return switch (score) {
-    1 => Icons.sentiment_satisfied_outlined,
-    2 => Icons.spa_outlined,
-    3 => Icons.sentiment_dissatisfied_outlined,
-    4 => Icons.sentiment_very_dissatisfied_outlined,
-    5 => Icons.psychology_outlined,
-    6 => Icons.bedtime_outlined,
-    7 => Icons.celebration_outlined,
-    8 => Icons.favorite_border_outlined,
-    _ => Icons.mood_outlined,
+    1 => XqIcons.faceGood,
+    2 => XqIcons.leaf,
+    3 => XqIcons.faceMeh,
+    4 => XqIcons.faceBad,
+    5 => XqIcons.spark,
+    6 => XqIcons.moon,
+    7 => XqIcons.spark,
+    8 => XqIcons.heart,
+    _ => XqIcons.faceGood,
   };
 }

@@ -175,28 +175,28 @@ String? inspirationLine({
 
   // 2) 连续记录
   if (streak >= 3) {
-    candidates.add('连续记录 $streak 天，火焰正旺');
+    candidates.add('连续记了 $streak 天');
   }
 
   // 3) 天气情景
   final weatherLines = <String>[
-    if (w.contains('晴')) '晴天限定的心情，值得装进卡片',
-    if (w.contains('雨')) '雨声是最好的白噪音，适合记录',
-    if (w.contains('雪')) '落雪的日子，字也变得安静',
-    if (w.contains('云')) '云层后面，太阳一直都在',
-    if (w.contains('阴')) '阴天适合向内看',
+    if (w.contains('晴')) '晴天写的',
+    if (w.contains('雨')) '雨天写的',
+    if (w.contains('雪')) '下雪那天写的',
+    if (w.contains('云')) '多云那天写的',
+    if (w.contains('阴')) '阴天写的',
   ];
   candidates.addAll(weatherLines);
 
   // 4) 时段
   candidates.add(
     d.hour < 6
-        ? '夜色里的心事，替你收好'
+        ? '夜里写的'
         : d.hour < 11
-            ? '清晨写下的一笔，会亮一整天'
+            ? '早上写的'
             : d.hour < 18
-                ? '下午的一笔，是今天的注脚'
-                : '暮色里写下的，最诚实',
+                ? '下午写的'
+                : '傍晚写的',
   );
 
   if (candidates.isEmpty) return null;

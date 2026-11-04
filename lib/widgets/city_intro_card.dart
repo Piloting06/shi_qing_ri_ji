@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'xq/xq_icons.dart';
 import 'package:provider/provider.dart';
 import '../data/city_intro_data.dart';
 import '../stores/map_state.dart';
@@ -53,32 +54,32 @@ class _CityIntroCardState extends State<CityIntroCard>
     _CityTheme(
       primary: Color(0xFFD4775B),
       light: Color(0xFFF5E6E0),
-      icon: Icons.local_fire_department,
+      icon: XqIcons.flame,
     ),
     _CityTheme(
       primary: Color(0xFF6B9DAD),
       light: Color(0xFFE0EEF2),
-      icon: Icons.water,
+      icon: XqIcons.drop,
     ),
     _CityTheme(
       primary: Color(0xFF5B8A72),
       light: Color(0xFFE5EDE8),
-      icon: Icons.auto_stories,
+      icon: XqIcons.book,
     ),
     _CityTheme(
       primary: Color(0xFF9B7EC8),
       light: Color(0xFFEDE6F5),
-      icon: Icons.nightlife,
+      icon: XqIcons.moon,
     ),
     _CityTheme(
       primary: Color(0xFF8EACC1),
       light: Color(0xFFE3EDF3),
-      icon: Icons.ac_unit,
+      icon: XqIcons.snow,
     ),
     _CityTheme(
       primary: Color(0xFFC4A44A),
       light: Color(0xFFF0EBD8),
-      icon: Icons.grass,
+      icon: XqIcons.leaf,
     ),
   ];
 
@@ -145,7 +146,7 @@ class _CityIntroCardState extends State<CityIntroCard>
                       ),
                       child: Column(
                         children: [
-                          Icon(ct.icon, color: Colors.white.withAlpha(180),
+                          XqIcon(ct.icon, color: Colors.white.withAlpha(180),
                               size: 24),
                           const SizedBox(height: 8),
                           Text(
@@ -202,7 +203,7 @@ class _CityIntroCardState extends State<CityIntroCard>
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.lightbulb_outline,
+                              XqIcon(XqIcons.spark,
                                   size: 16, color: ct.primary),
                               const SizedBox(width: 8),
                               Expanded(
@@ -271,7 +272,7 @@ class _CityIntroCardState extends State<CityIntroCard>
                       width: double.infinity,
                       color: theme.cardColor,
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: Icon(Icons.keyboard_arrow_down,
+                      child: XqIcon(XqIcons.chevronDown,
                           color: theme.textTertiary, size: 28),
                     ),
                   ),
@@ -288,7 +289,7 @@ class _CityIntroCardState extends State<CityIntroCard>
 class _CityTheme {
   final Color primary;
   final Color light;
-  final IconData icon;
+  final XqIcons icon;
 
   const _CityTheme({
     required this.primary,

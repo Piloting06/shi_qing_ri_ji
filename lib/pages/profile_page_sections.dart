@@ -1,154 +1,81 @@
 part of 'profile_page.dart';
 
 extension _ProfilePageSections on _ProfilePageState {
+  /// 名帖：宋体名字 + 一方小印（无头像时以名字首字作印，本屏唯一朱砂）
   Widget _profileHeader(ThemeState theme, AppState appState) {
-    final name = appState.displayName.isNotEmpty ? appState.displayName : '用户';
-    final accountText = _phone.isEmpty ? '账号信息已同步' : _phone;
+    final name = appState.displayName.isNotEmpty ? appState.displayName : '未署名';
+    final accountText = _phone.isEmpty ? '已登录' : _phone;
+    final initial = name.characters.first;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-      decoration: XqDecorations.heroCard(
-        theme.cardColor.withAlpha(theme.isDark ? 238 : 248),
-        theme.cardElevated.withAlpha(theme.isDark ? 210 : 236),
-        theme.borderColor,
-        dark: theme.isDark,
-        glow: theme.accentColor,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return XqSurface(
+      padding: const EdgeInsets.fromLTRB(22, 22, 20, 22),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: _pickAvatar,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 76,
-                      height: 76,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: XqTypography.displayLarge.copyWith(
+                    color: theme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  accountText,
+                  style: TextStyle(
+                    color: theme.textTertiary,
+                    fontSize: 13,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text.rich(
+                  TextSpan(
+                    style: TextStyle(color: theme.textSecondary, fontSize: 13),
+                    children: [
+                      const TextSpan(text: '连续记录 '),
+                      TextSpan(
+                        text: '$_consecutive',
+                        style: TextStyle(
+                          color: theme.gold,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const TextSpan(text: ' 天'),
+                      const TextSpan(text: '   ·   '),
+                      TextSpan(text: _checkedIn ? '今天已记' : '今天还没记'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Semantics(
+            button: true,
+            label: '更换头像',
+            child: GestureDetector(
+              onTap: _pickAvatar,
+              child: _avatarPath != null
+                  ? Container(
+                      width: 64,
+                      height: 64,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            theme.accentColor.withAlpha(46),
-                            theme.gold.withAlpha(theme.isDark ? 34 : 46),
-                          ],
-                        ),
-                        border: Border.all(
-                          color: theme.accentColor.withAlpha(100),
-                          width: 1.4,
-                        ),
-                        boxShadow: XqDecorations.shadowSubtle(
-                          dark: theme.isDark,
-                        ),
+                        border: Border.all(color: theme.borderColor, width: 0.8),
                       ),
-                      child: _avatarPath != null
-                          ? ClipOval(
-                              child: Image.file(
-                                File(_avatarPath!),
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Icon(
-                              Icons.person_outline_rounded,
-                              size: 34,
-                              color: theme.accentColor,
-                            ),
-                    ),
-                    Positioned(
-                      right: -2,
-                      bottom: -2,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: theme.accentColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: theme.cardColor, width: 2),
-                        ),
-                        child: Icon(
-                          Icons.edit_rounded,
-                          color: theme.textOnAccent,
-                          size: 14,
-                        ),
+                      child: ClipOval(
+                        child: Image.file(File(_avatarPath!), fit: BoxFit.cover),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: XqTypography.headlineMedium.copyWith(
-                        color: theme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      accountText,
-                      style: TextStyle(
-                        color: theme.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 7,
-                      runSpacing: 7,
-                      children: [
-                        _profilePill(
-                          theme,
-                          Icons.local_fire_department_outlined,
-                          '连续 $_consecutive 天',
-                        ),
-                        _profilePill(
-                          theme,
-                          _checkedIn
-                              ? Icons.check_circle_outline
-                              : Icons.radio_button_unchecked,
-                          _checkedIn ? '今日已记' : '今日未记',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _profilePill(ThemeState theme, IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: theme.accentColor.withAlpha(20),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: theme.accentColor.withAlpha(55)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: theme.accentColor, size: 13),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              color: theme.accentColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+                    )
+                  : XqSeal(char: initial, color: theme.sealColor, size: 56),
             ),
           ),
         ],
@@ -160,27 +87,25 @@ extension _ProfilePageSections on _ProfilePageState {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('记录概览', theme),
-        const SizedBox(height: 8),
         _listTile(
           theme,
           icon: _checkedIn
-              ? Icons.check_circle_outline_rounded
-              : Icons.local_fire_department_outlined,
+              ? XqIcons.checkCircle
+              : XqIcons.flame,
           iconColor: _checkedIn ? theme.successColor : theme.accentColor,
           title: _checkedIn ? '今日已记录' : '今天还没记',
           subtitle: _checkedIn
               ? '连续 $_consecutive 天'
-              : (_checkingIn ? '正在记录' : '轻点签到'),
+              : (_checkingIn ? '正在记录' : '点一下签到'),
           onTap: (_checkedIn || _checkingIn) ? null : _doCheckin,
         ),
-        Divider(height: 1, color: theme.borderColor.withAlpha(80)),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.style_outlined,
+          icon: XqIcons.cards,
           iconColor: theme.gold,
           title: '卡片册',
-          subtitle: '你做过的所有心情卡片',
+          subtitle: '做过的卡片都在这',
           onTap: () {
             Navigator.push(
               context,
@@ -188,13 +113,13 @@ extension _ProfilePageSections on _ProfilePageState {
             );
           },
         ),
-        Divider(height: 1, color: theme.borderColor.withAlpha(80)),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.spa_outlined,
+          icon: XqIcons.leaf,
           iconColor: theme.accentColor,
           title: '素笺',
-          subtitle: '写一篇故事，或让节气替你起个头',
+          subtitle: '写长文，或从节气起个头',
           onTap: () {
             Navigator.push(
               context,
@@ -202,10 +127,10 @@ extension _ProfilePageSections on _ProfilePageState {
             );
           },
         ),
-        Divider(height: 1, color: theme.borderColor.withAlpha(80)),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.hourglass_empty_rounded,
+          icon: XqIcons.hourglass,
           iconColor: theme.accentColor,
           title: '时光胶囊',
           subtitle: _capsuleNotify ? '提醒已开启' : '提醒未开启',
@@ -214,13 +139,13 @@ extension _ProfilePageSections on _ProfilePageState {
             MaterialPageRoute(builder: (_) => const CapsulePage()),
           ),
         ),
-        Divider(height: 1, color: theme.borderColor.withAlpha(80)),
+        Padding(padding: const EdgeInsets.only(left: 50), child: Divider(height: 1, color: theme.borderColor)),
         _listTile(
           theme,
-          icon: Icons.people_outline_rounded,
+          icon: XqIcons.people,
           iconColor: theme.accentColor,
           title: '好友心情',
-          subtitle: '看看朋友近况',
+          subtitle: '朋友最近的心情',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const FriendsPage()),
@@ -232,7 +157,7 @@ extension _ProfilePageSections on _ProfilePageState {
 
   Widget _listTile(
     ThemeState theme, {
-    required IconData icon,
+    required XqIcons icon,
     required Color iconColor,
     required String title,
     required String subtitle,
@@ -243,14 +168,12 @@ extension _ProfilePageSections on _ProfilePageState {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
           child: Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                child: Icon(icon, color: iconColor, size: 22),
+              SizedBox(
+                width: 24,
+                child: XqIcon(icon, color: theme.textSecondary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -261,24 +184,22 @@ extension _ProfilePageSections on _ProfilePageState {
                       title,
                       style: TextStyle(
                         color: theme.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: theme.textSecondary,
-                        fontSize: 12,
+                        color: theme.textTertiary,
+                        fontSize: 12.5,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: theme.textTertiary,
+              XqIcon(XqIcons.chevronRight,
+                color: theme.borderColor,
                 size: 20,
               ),
             ],
@@ -295,18 +216,18 @@ extension _ProfilePageSections on _ProfilePageState {
         children: [
           _infoRow(
             theme,
-            icon: Icons.badge_outlined,
+            icon: XqIcons.badge,
             title: '昵称',
             subtitle: appState.displayName.isNotEmpty
                 ? appState.displayName
-                : '点击设置你的日记署名',
+                : '设置署名',
             trailing: '修改',
             onTap: () => _showNicknameDialog(theme, appState),
           ),
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.email_outlined,
+            icon: XqIcons.mail,
             title: _boundEmail.isEmpty ? '绑定邮箱' : '邮箱',
             subtitle: _boundEmail.isEmpty ? '绑定后可用邮箱登录' : _boundEmail,
             trailing: _boundEmail.isEmpty ? '绑定' : '更换',
@@ -323,22 +244,17 @@ extension _ProfilePageSections on _ProfilePageState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 10),
           _themeSelectorGrid(theme),
           const SizedBox(height: 10),
           Row(
             children: [
-              Icon(
-                Icons.touch_app_outlined,
-                size: 14,
-                color: theme.textTertiary.withAlpha(160),
-              ),
-              const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  '点击已选中的主题，可以查看它的创作故事',
+                  '再点一次当前主题，看它的来历',
                   style: TextStyle(
-                    color: theme.textTertiary.withAlpha(170),
-                    fontSize: 11,
+                    color: theme.textTertiary,
+                    fontSize: 12,
                     height: 1.35,
                   ),
                 ),
@@ -350,10 +266,9 @@ extension _ProfilePageSections on _ProfilePageState {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
-                Icons.notifications_active_outlined,
-                size: 18,
-                color: theme.gold,
+              XqIcon(XqIcons.bell,
+                size: 20,
+                color: theme.textSecondary,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -364,8 +279,7 @@ extension _ProfilePageSections on _ProfilePageState {
                       '胶囊提醒',
                       style: TextStyle(
                         color: theme.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -395,53 +309,13 @@ extension _ProfilePageSections on _ProfilePageState {
                     if (!granted) {
                       // 被拒绝，提示去设置开启
                       if (mounted) {
-                        XqToast.info(context, '需要通知权限才能提醒你，去设置里打开吧～');
+                        XqToast.info(context, '要先在系统设置里打开通知');
                       }
                       return;
                     }
                   }
                   _setCapsuleNotify(v);
                 },
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Divider(color: theme.borderColor.withAlpha(60), height: 1),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(
-                Icons.auto_awesome_outlined,
-                size: 18,
-                color: theme.gold,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '动感光效',
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '胶囊导航和卡片的彩色光效',
-                      style: TextStyle(
-                        color: theme.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              GlowSwitch(
-                value: context.watch<AppState>().animActive,
-                onChanged: (v) => context.read<AppState>().setAnimActive(v),
               ),
             ],
           ),
@@ -488,15 +362,6 @@ extension _ProfilePageSections on _ProfilePageState {
                             : theme.borderColor.withAlpha(100),
                         width: active ? 1.6 : 0.7,
                       ),
-                      boxShadow: active
-                          ? [
-                              BoxShadow(
-                                color: colors[0].withAlpha(32),
-                                blurRadius: 12,
-                                offset: const Offset(0, 5),
-                              ),
-                            ]
-                          : null,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,10 +387,9 @@ extension _ProfilePageSections on _ProfilePageState {
                                 ),
                             const Spacer(),
                             if (active)
-                              Icon(
-                                Icons.check_circle_rounded,
+                              XqIcon(XqIcons.check,
                                 color: colors[0],
-                                size: 17,
+                                size: 16,
                               ),
                           ],
                         ),
@@ -538,7 +402,7 @@ extension _ProfilePageSections on _ProfilePageState {
                             color: active
                                 ? colors[0]
                                 : _readableTextOn(colors[2]),
-                            fontSize: 12,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -548,8 +412,8 @@ extension _ProfilePageSections on _ProfilePageState {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: _readableTextOn(colors[2]).withAlpha(165),
-                            fontSize: 10,
+                            color: _readableTextOn(colors[2]).withAlpha(180),
+                            fontSize: 11,
                           ),
                         ),
                       ],
@@ -569,7 +433,7 @@ extension _ProfilePageSections on _ProfilePageState {
       theme,
       child: _infoRow(
         theme,
-        icon: Icons.lock_outline_rounded,
+        icon: XqIcons.lock,
         title: '修改密码',
         subtitle: '更改当前登录密码',
         trailing: '修改',
@@ -585,7 +449,7 @@ extension _ProfilePageSections on _ProfilePageState {
         children: [
           _infoRow(
             theme,
-            icon: Icons.info_outline_rounded,
+            icon: XqIcons.info,
             title: '关于拾晴日记',
             subtitle: '版本、合规、开源许可',
             trailing: '查看',
@@ -597,7 +461,7 @@ extension _ProfilePageSections on _ProfilePageState {
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.description_outlined,
+            icon: XqIcons.doc,
             title: '隐私政策',
             subtitle: '查看数据和隐私说明',
             trailing: '查看',
@@ -611,7 +475,7 @@ extension _ProfilePageSections on _ProfilePageState {
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.article_outlined,
+            icon: XqIcons.doc,
             title: '用户协议',
             subtitle: '查看使用约定',
             trailing: '查看',
@@ -625,9 +489,9 @@ extension _ProfilePageSections on _ProfilePageState {
           _divider(theme),
           _infoRow(
             theme,
-            icon: Icons.chat_bubble_outline_rounded,
+            icon: XqIcons.chat,
             title: '加入交流群',
-            subtitle: '和更多用户一起聊聊',
+            subtitle: 'QQ 群',
             trailing: '加入',
             onTap: _openQqGroup,
           ),
@@ -658,53 +522,25 @@ extension _ProfilePageSections on _ProfilePageState {
 
   // ── Reusable components ──
 
-  Widget _sectionTitle(String text, ThemeState theme, {String? subtitle}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          text,
-          style: TextStyle(
-            color: theme.textPrimary,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 3),
-          Text(
-            subtitle,
-            style: TextStyle(color: theme.textTertiary, fontSize: 12),
-          ),
-        ],
-      ],
-    );
-  }
+  Widget _sectionTitle(String text, ThemeState theme, {String? subtitle}) =>
+      XqSectionTitle(text, caption: subtitle);
 
-  Widget _card(ThemeState theme, {required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: XqDecorations.actionCard(
-        theme.cardColor.withAlpha(theme.isDark ? 224 : 245),
-        theme.borderColor,
-        dark: theme.isDark,
-        accent: theme.accentColor,
-      ),
-      child: child,
-    );
-  }
+  /// 分组卡片（L1）
+  Widget _card(ThemeState theme, {required Widget child}) => XqSurface(
+        padding: const EdgeInsets.fromLTRB(16, 6, 14, 6),
+        child: child,
+      );
 
   Widget _divider(ThemeState theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.only(left: 50),
       child: Divider(color: theme.borderColor, height: 1),
     );
   }
 
   Widget _infoRow(
     ThemeState theme, {
-    required IconData icon,
+    required XqIcons icon,
     required String title,
     required String subtitle,
     required String trailing,
@@ -713,18 +549,15 @@ extension _ProfilePageSections on _ProfilePageState {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 58),
           padding: const EdgeInsets.symmetric(vertical: 7),
           child: Row(
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                alignment: Alignment.center,
-                child: Icon(icon, color: theme.accentColor, size: 22),
+              SizedBox(
+                width: 24,
+                child: XqIcon(icon, color: theme.textSecondary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -738,8 +571,7 @@ extension _ProfilePageSections on _ProfilePageState {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: theme.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -760,15 +592,13 @@ extension _ProfilePageSections on _ProfilePageState {
                 trailing,
                 style: TextStyle(
                   color: onTap == null ? theme.textTertiary : theme.accentColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
                 ),
               ),
               if (onTap != null) ...[
                 const SizedBox(width: 2),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: theme.accentColor.withAlpha(150),
+                XqIcon(XqIcons.chevronRight,
+                  color: theme.borderColor,
                   size: 18,
                 ),
               ],

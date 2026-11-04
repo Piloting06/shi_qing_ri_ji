@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
+import '../constants/app_info.dart';
+import '../theme/xq_typography.dart';
+import '../widgets/xq/xq_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,7 +40,7 @@ class AboutPage extends StatelessWidget {
           _card(theme, children: [
             _infoRow(
               theme,
-              icon: Icons.code_rounded,
+              icon: XqIcons.code,
               title: 'GitHub 仓库',
               subtitle: 'Piloting06/shi_qing_ri_ji',
               onTap: () => _launchUrl('https://github.com/Piloting06/shi_qing_ri_ji'),
@@ -44,7 +48,7 @@ class AboutPage extends StatelessWidget {
             _divider(theme),
             _infoRow(
               theme,
-              icon: Icons.balance_rounded,
+              icon: XqIcons.doc,
               title: '开源许可',
               subtitle: 'MIT License',
               onTap: () => _showLicenseDialog(context, theme),
@@ -53,12 +57,12 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 22),
 
           // ── 合规信息 ──
-          _sectionTitle('合规信息', theme, subtitle: '符合国家标准与法规要求'),
+          _sectionTitle('合规信息', theme, subtitle: '备案与个人信息合规'),
           const SizedBox(height: 10),
           _card(theme, children: [
             _infoRow(
               theme,
-              icon: Icons.verified_outlined,
+              icon: XqIcons.shield,
               title: 'ICP 备案号',
               subtitle: '赣ICP备2026009414号-3A',
               onTap: () => _launchUrl('https://beian.miit.gov.cn/'),
@@ -66,7 +70,7 @@ class AboutPage extends StatelessWidget {
             _divider(theme),
             _infoRow(
               theme,
-              icon: Icons.shield_outlined,
+              icon: XqIcons.shield,
               title: '隐私政策',
               subtitle: '数据收集、存储与使用说明',
               onTap: () => Navigator.push(
@@ -77,7 +81,7 @@ class AboutPage extends StatelessWidget {
             _divider(theme),
             _infoRow(
               theme,
-              icon: Icons.article_outlined,
+              icon: XqIcons.doc,
               title: '用户协议',
               subtitle: '服务条款与使用约定',
               onTap: () => Navigator.push(
@@ -88,7 +92,7 @@ class AboutPage extends StatelessWidget {
             _divider(theme),
             _infoRow(
               theme,
-              icon: Icons.key_outlined,
+              icon: XqIcons.key,
               title: '权限说明',
               subtitle: '查看应用所使用的系统权限',
               onTap: () => _showPermissionsSheet(context, theme),
@@ -96,7 +100,7 @@ class AboutPage extends StatelessWidget {
             _divider(theme),
             _infoRow(
               theme,
-              icon: Icons.gavel_rounded,
+              icon: XqIcons.doc,
               title: '国标合规',
               subtitle: 'GB/T 35273 · GB/T 41391 · GB/T 42574',
               onTap: () => _showComplianceSheet(context, theme),
@@ -110,9 +114,9 @@ class AboutPage extends StatelessWidget {
           _card(theme, children: [
             _infoRow(
               theme,
-              icon: Icons.mail_outline_rounded,
+              icon: XqIcons.mail,
               title: '意见反馈',
-              subtitle: '告诉我们你的想法和建议',
+              subtitle: '哪里不好用，直接说',
               onTap: () => _showFeedbackSheet(context, theme),
             ),
           ]),
@@ -134,7 +138,7 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 4),
           Center(
             child: Text(
-              '记录天气，也记录你',
+              '天气加心情。写下来，发给 Ta。',
               style: TextStyle(
                 color: theme.textTertiary.withAlpha(120),
                 fontSize: 10,
@@ -152,63 +156,30 @@ class AboutPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          // App 图标
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.accentColor.withAlpha(200),
-                  theme.accentColor.withAlpha(140),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.accentColor.withAlpha(50),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.water_drop_rounded,
-              color: Colors.white,
-              size: 36,
-            ),
-          ),
+          // 品牌印：与登录页同一方朱砂「拾」
+          XqSeal(char: '拾', color: theme.sealColor, size: 64),
           const SizedBox(height: 14),
           Text(
             '拾晴日记',
-            style: TextStyle(
+            style: XqTypography.displaySmall.copyWith(
               color: theme.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
+              fontSize: 24,
+              letterSpacing: 4,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            '记录天气，也记录你',
+            '天气加心情。写下来，发给 Ta。',
             style: TextStyle(color: theme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.accentColor.withAlpha(15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'v2.6.0',
-              style: TextStyle(
-                color: theme.accentColor,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
+          Text(
+            'v$appVersion',
+            style: TextStyle(
+              color: theme.gold,
+              fontSize: 13,
+              letterSpacing: 0.5,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ],
@@ -258,7 +229,7 @@ class AboutPage extends StatelessWidget {
   // ── 行组件 ──
   Widget _infoRow(
     ThemeState theme, {
-    required IconData icon,
+    required XqIcons icon,
     required String title,
     required String subtitle,
     VoidCallback? onTap,
@@ -278,14 +249,10 @@ class AboutPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
-              Container(
+              SizedBox(
                 width: 38,
                 height: 38,
-                decoration: BoxDecoration(
-                  color: theme.accentColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: theme.accentColor, size: 18),
+                child: XqIcon(icon, color: theme.textSecondary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -315,7 +282,7 @@ class AboutPage extends StatelessWidget {
                 ),
               ),
               if (onTap != null)
-                Icon(Icons.chevron_right_rounded,
+                XqIcon(XqIcons.chevronRight,
                     color: theme.textTertiary.withAlpha(120), size: 18),
             ],
           ),
@@ -387,35 +354,35 @@ class AboutPage extends StatelessWidget {
   static void _showPermissionsSheet(BuildContext context, ThemeState theme) {
     final permissions = [
       _PermissionItem(
-        icon: Icons.location_on_outlined,
+        icon: XqIcons.pin,
         name: '位置信息',
         code: 'ACCESS_FINE_LOCATION',
         purpose: '获取当前城市天气和城迹足迹功能',
         required: true,
       ),
       _PermissionItem(
-        icon: Icons.notifications_outlined,
+        icon: XqIcons.bell,
         name: '通知',
         code: 'POST_NOTIFICATIONS',
         purpose: '时光胶囊到期提醒',
         required: false,
       ),
       _PermissionItem(
-        icon: Icons.wifi_outlined,
+        icon: XqIcons.wifi,
         name: '网络访问',
         code: 'INTERNET',
         purpose: '数据同步、天气获取、心情记录',
         required: true,
       ),
       _PermissionItem(
-        icon: Icons.alarm_outlined,
+        icon: XqIcons.bell,
         name: '精确闹钟',
         code: 'SCHEDULE_EXACT_ALARM',
         purpose: '胶囊定时提醒（精确到分钟）',
         required: false,
       ),
       _PermissionItem(
-        icon: Icons.storage_outlined,
+        icon: XqIcons.folder,
         name: '本地存储',
         code: 'READ/WRITE_STORAGE',
         purpose: '心情卡片导出、缓存天气和城市数据',
@@ -455,7 +422,7 @@ class AboutPage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                 child: Row(
                   children: [
-                    Icon(Icons.key_outlined,
+                    XqIcon(XqIcons.key,
                         color: theme.accentColor, size: 20),
                     const SizedBox(width: 8),
                     Text(
@@ -472,7 +439,7 @@ class AboutPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Text(
-                  '拾晴日记遵循最小必要原则，仅申请以下权限',
+                  '只申请下面这些权限',
                   style: TextStyle(color: theme.textTertiary, fontSize: 12),
                 ),
               ),
@@ -491,12 +458,12 @@ class AboutPage extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline_rounded,
+                      XqIcon(XqIcons.info,
                           size: 14, color: theme.accentColor),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '权限可在系统设置中随时关闭，但可能影响部分功能',
+                          '可以随时在系统设置里关掉，对应的功能会用不了',
                           style: TextStyle(
                             color: theme.textSecondary,
                             fontSize: 11,
@@ -537,7 +504,7 @@ class AboutPage extends StatelessWidget {
                     : theme.textTertiary.withAlpha(15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
+              child: XqIcon(
                 p.icon,
                 size: 17,
                 color: p.required ? theme.accentColor : theme.textTertiary,
@@ -616,7 +583,7 @@ class AboutPage extends StatelessWidget {
         backgroundColor: theme.cardColor,
         title: Row(
           children: [
-            Icon(Icons.balance_rounded, color: theme.accentColor, size: 20),
+            XqIcon(XqIcons.doc, color: theme.accentColor, size: 20),
             const SizedBox(width: 8),
             const Text('MIT License'),
           ],
@@ -690,7 +657,7 @@ class AboutPage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                 child: Row(
                   children: [
-                    Icon(Icons.gavel_rounded,
+                    XqIcon(XqIcons.doc,
                         color: theme.accentColor, size: 20),
                     const SizedBox(width: 8),
                     Text(
@@ -875,7 +842,7 @@ class AboutPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                     child: Row(
                       children: [
-                        Icon(Icons.edit_note_rounded,
+                        XqIcon(XqIcons.write,
                             color: theme.accentColor, size: 22),
                         const SizedBox(width: 8),
                         Text(
@@ -892,7 +859,7 @@ class AboutPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                     child: Text(
-                      '写下你的想法，我们会认真阅读每一条反馈',
+                      '哪里不好用、想要什么功能，都可以写。',
                       style: TextStyle(color: theme.textTertiary, fontSize: 12),
                     ),
                   ),
@@ -907,7 +874,7 @@ class AboutPage extends StatelessWidget {
                       minLines: 3,
                       style: TextStyle(color: theme.textPrimary, fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: '例如：希望增加某某功能、某个页面不太方便...',
+                        hintText: '比如：心情页保存按钮不好找',
                         hintStyle: TextStyle(
                           color: theme.textTertiary.withAlpha(120),
                           fontSize: 13,
@@ -950,7 +917,7 @@ class AboutPage extends StatelessWidget {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: const Text('谢谢你愿意告诉我们，每一条都会认真看'),
+                                        content: const Text('收到了，谢谢'),
                                         backgroundColor: theme.successColor,
                                         behavior: SnackBarBehavior.floating,
                                         shape: RoundedRectangleBorder(
@@ -964,7 +931,7 @@ class AboutPage extends StatelessWidget {
                                   if (ctx.mounted) {
                                     ScaffoldMessenger.of(ctx).showSnackBar(
                                       SnackBar(
-                                        content: const Text('没发出去，等一下再试试？'),
+                                        content: const Text('没发出去，等会儿再试'),
                                         backgroundColor: theme.errorColor,
                                         behavior: SnackBarBehavior.floating,
                                         shape: RoundedRectangleBorder(
@@ -985,8 +952,7 @@ class AboutPage extends StatelessWidget {
                         child: sending
                             ? const SizedBox(
                                 width: 18, height: 18,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
+                                child: XqInkLoader( color: Colors.white),
                               )
                             : const Text('提交反馈', style: TextStyle(fontSize: 15)),
                       ),
@@ -1010,7 +976,7 @@ class AboutPage extends StatelessWidget {
 }
 
 class _PermissionItem {
-  final IconData icon;
+  final XqIcons icon;
   final String name;
   final String code;
   final String purpose;

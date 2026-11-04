@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 
 Map<String, dynamic> weatherDay(
   Map<String, dynamic>? data, {
@@ -36,7 +36,7 @@ String weatherUpdatedText(DateTime? time) {
   return '${diff.inDays} 天前更新';
 }
 
-IconData weatherIcon(int code, String text) {
+XqIcons weatherIcon(int code, String text) {
   final isSnow =
       text.contains('雪') ||
       code == 71 ||
@@ -60,19 +60,19 @@ IconData weatherIcon(int code, String text) {
       code == 80 ||
       code == 81 ||
       code == 82;
-  if (isSnow) return Icons.ac_unit;
-  if (isRain) return Icons.water_drop_outlined;
+  if (isSnow) return XqIcons.snow;
+  if (isRain) return XqIcons.drop;
   if (text.contains('雷') || code == 95 || code == 96 || code == 99) {
-    return Icons.thunderstorm_outlined;
+    return XqIcons.rain;
   }
   if (text.contains('云') || code == 1 || code == 2) {
-    return Icons.cloud_outlined;
+    return XqIcons.cloud;
   }
-  if (text.contains('阴') || code == 3) return Icons.wb_cloudy_outlined;
+  if (text.contains('阴') || code == 3) return XqIcons.cloud;
   if (text.contains('雾') || code == 45 || code == 48) {
-    return Icons.blur_on_outlined;
+    return XqIcons.spark;
   }
-  return Icons.wb_sunny_outlined;
+  return XqIcons.sunny;
 }
 
 /// 天气卡片内部提示 — 偏天气感受
@@ -80,14 +80,14 @@ String weatherCardPrompt(Map<String, dynamic>? weather) {
   final current = weatherCurrent(weather);
   final today = weatherDay(weather);
   final text = (current['weather'] ?? today['weather'] ?? '').toString();
-  if (text.contains('雨')) return '下雨天，适合给自己倒杯热的，慢慢写。';
-  if (text.contains('雪')) return '雪落下来的时候，世界变得很安静。写几句今天的感受吧。';
-  if (text.contains('雷')) return '雷声很大也没关系，写下来比放在心里更安全。';
-  if (text.contains('雾')) return '大雾天不适合赶路，适合坐一会儿，想想最想写的事。';
+  if (text.contains('雨')) return '下雨天，倒杯热水，慢慢写。';
+  if (text.contains('雪')) return '下雪了，外面很安静。';
+  if (text.contains('雷')) return '打雷了，待在屋里。';
+  if (text.contains('雾')) return '起雾了，出门慢点。';
   if (text.contains('阴') || text.contains('云')) {
-    return '灰蒙蒙的天也没关系，心情可以是彩色的。';
+    return '阴天，光线暗一些。';
   }
-  return '窗外阳光正好，适合出去走走。或者坐在这里写几个字。';
+  return '外面太阳好，出去走走。';
 }
 
 /// 首页仪表盘提示 — 偏行动引导
@@ -95,14 +95,14 @@ String dashboardPrompt(Map<String, dynamic>? weather) {
   final current = weatherCurrent(weather);
   final today = weatherDay(weather);
   final text = (current['weather'] ?? today['weather'] ?? '').toString();
-  if (text.contains('雨')) return '今天适合慢下来，心事写轻一点，也记下这场雨的感觉。';
-  if (text.contains('雪')) return '雪天的安静值得珍惜，给自己一小段独处的时间。';
-  if (text.contains('雷')) return '今天能量很强，不如把想说的都写下来。';
-  if (text.contains('雾')) return '朦胧的天气里，更值得好好看一眼今天的自己。';
+  if (text.contains('雨')) return '下雨天，记一下今天。';
+  if (text.contains('雪')) return '下雪天，适合待在屋里。';
+  if (text.contains('雷')) return '打雷下雨，别出门。';
+  if (text.contains('雾')) return '有雾，看不远。';
   if (text.contains('阴') || text.contains('云')) {
-    return '天气收着一点，正好把今天的心情也温柔记下来。';
+    return '天阴着，适合写几句。';
   }
-  return '今天心情怎么样？不想写很多的话，一句就够了。';
+  return '今天心情怎么样？写一句也行。';
 }
 
 /// 内部 weather_code → 中文文本（历史记录里的天气码用）

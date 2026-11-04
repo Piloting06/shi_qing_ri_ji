@@ -120,8 +120,8 @@ class FlameCardTemplate {
                             const SizedBox(height: 2),
                             Text(
                               data.streakDays > 0
-                                  ? '连续记录 · 火焰不熄'
-                                  : '从今天开始 · 点燃第一簇火焰',
+                                  ? '连续记录'
+                                  : '从今天开始记',
                               style: TextStyle(
                                 color: Colors.white.withAlpha(150),
                                 fontSize: 10.5,

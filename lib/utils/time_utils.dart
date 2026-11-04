@@ -1,6 +1,26 @@
 /// 统一时间格式化工具。
 /// 所有时间字符串应为 ISO 8601 格式（含 Z 后缀或 UTC offset），通过 .toLocal() 转为本地时间后展示。
 class TimeUtils {
+  /// 解析服务端时间：SQLite `datetime('now')` 产出的裸串（如 `2026-11-03 11:20:00`）
+  /// 实为 UTC 却不带时区标记，直接 tryParse 会被当成本地时间（差 8 小时）。
+  /// 无时区标记的一律按 UTC 解析，再转本地。
+  static DateTime? parseServer(Object? raw) {
+    if (raw == null) return null;
+    var s = raw.toString().trim();
+    if (s.isEmpty) return null;
+    s = s.replaceFirst(' ', 'T');
+    final hasZone = RegExp(r'(Z|[+-]\d{2}:?\d{2})$').hasMatch(s);
+    if (!hasZone && s.contains('T')) s = '${s}Z';
+    return DateTime.tryParse(s)?.toLocal();
+  }
+
+  /// 服务端时间 → 本地 HH:mm
+  static String hm(Object? raw) {
+    final t = parseServer(raw);
+    if (t == null) return '';
+    return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+  }
+
   /// 相对时间：刚刚 / X分钟前 / X小时前 / 昨天 HH:MM / M月D日 HH:MM
   static String relative(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '刚刚';

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../widgets/xq/xq_icons.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +21,8 @@ import '../theme/xq_typography.dart';
 import '../services/notification_service.dart';
 import '../widgets/xq_toast.dart';
 import '../widgets/glow_switch.dart';
+import '../widgets/xq/xq_kit.dart';
+import '../widgets/xq/xq_surface.dart';
 import 'capsule_page.dart';
 import 'friends_page.dart';
 import 'legal_page.dart';
@@ -91,32 +94,27 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
           children: [
             _profileHeader(theme, appState),
-            const SizedBox(height: 18),
+            const SizedBox(height: 32),
 
-            _sectionTitle('记录概览', theme, subtitle: '你的每一天都值得被记住'),
-            const SizedBox(height: 10),
-            _recordsGroup(theme),
-            const SizedBox(height: 22),
+            _sectionTitle('记录', theme),
+            _card(theme, child: _recordsGroup(theme)),
+            const SizedBox(height: 28),
 
             _sectionTitle('个人资料', theme),
-            const SizedBox(height: 10),
             _profileSettingsGroup(theme, appState),
-            const SizedBox(height: 22),
+            const SizedBox(height: 28),
 
             _sectionTitle('外观与偏好', theme),
-            const SizedBox(height: 10),
             _appearanceGroup(theme),
-            const SizedBox(height: 22),
+            const SizedBox(height: 28),
 
             _sectionTitle('账号与安全', theme),
-            const SizedBox(height: 10),
             _securityGroup(theme),
-            const SizedBox(height: 22),
+            const SizedBox(height: 28),
 
             _sectionTitle('关于与帮助', theme),
-            const SizedBox(height: 10),
             _aboutGroup(theme),
-            const SizedBox(height: 22),
+            const SizedBox(height: 28),
 
             // 退出登录（低调 footer 样式）
             Center(

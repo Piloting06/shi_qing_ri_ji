@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import '../theme/xq_typography.dart';
+import 'xq/xq_kit.dart';
+import 'xq/xq_paper.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../api/api_client.dart';
 import '../services/notification_service.dart';
 import '../stores/theme_state.dart';
+import '../theme/xq_colors.dart';
 import '../stores/app_state.dart';
-import '../widgets/xq/xq_icons.dart';
 import '../widgets/xq_toast.dart';
 import '../pages/home_page.dart';
 import '../pages/mood_page.dart';
@@ -30,7 +33,8 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   late int _currentIndex;
-  late final PageController _pageController;
+  // 访问过的 Tab 常驻（Offstage 保活，不再销毁重建、不再重复拉数据）
+  final _visited = <int>{};
   bool _onboardingChecked = false;
   bool _lockoutHandled = false;
   DateTime? _lastBackPress;
@@ -39,7 +43,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex.clamp(0, 3);
-    _pageController = PageController(initialPage: _currentIndex);
+    _visited.add(_currentIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_onboardingChecked && mounted) {
         _onboardingChecked = true;
@@ -47,12 +51,6 @@ class _MainScaffoldState extends State<MainScaffold> {
       }
       _rescheduleCapsuleReminders();
     });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 
   Future<void> _rescheduleCapsuleReminders() async {
@@ -79,13 +77,11 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   void goToTab(int i) {
     if (_currentIndex == i) return;
-    HapticFeedback.lightImpact();
-    _pageController.animateToPage(
-      i,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-    setState(() => _currentIndex = i);
+    HapticFeedback.selectionClick();
+    setState(() {
+      _currentIndex = i;
+      _visited.add(i);
+    });
   }
 
   void _onTabTap(int i) {
@@ -118,7 +114,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           (_) => false,
         );
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('登录过期了，重新登一下吧')),
+          const SnackBar(content: Text('登录已过期，请重新登录')),
         );
       });
     }
@@ -149,14 +145,18 @@ class _MainScaffoldState extends State<MainScaffold> {
         body: Column(
           children: [
             Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (i) => setState(() => _currentIndex = i),
-                children: const [
-                  HomePage(),
-                  MoodPage(),
-                  CityMapPage(),
-                  ProfilePage(),
+              // 切 Tab：只淡入当前页（160ms），其余页 Offstage 保活、暂停动画、不参与绘制
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  for (final (i, page) in const [
+                    HomePage(),
+                    MoodPage(),
+                    CityMapPage(),
+                    ProfilePage(),
+                  ].indexed)
+                    if (_visited.contains(i))
+                      _TabSlot(key: ValueKey(i), active: i == _currentIndex, child: page),
                 ],
               ),
             ),
@@ -191,17 +191,17 @@ class _MainScaffoldState extends State<MainScaffold> {
 
 /// 系统导航栏颜色 — 匹配页面背景（胶囊半透明，底部统一）
 Color _navBarColor(String theme) => switch (theme) {
-  'sujian' => const Color(0xFFF7F7F2), // 素笺通栏 surface
-  'sujian_dark' => const Color(0xFF1B1F21),
+  'sujian' => XqColors.sujianCard, // 素笺通栏 surface
+  'sujian_dark' => XqColors.sujianDarkCard,
   'warm' => const Color(0xFFFAF4EC),
   'dark' => const Color(0xFF0E1222),
   'mint' => const Color(0xFFDDEBE3),
   'blush' => const Color(0xFFF2DED8),
-  _ => const Color(0xFFF7F7F2),
+  _ => XqColors.sujianCard,
 };
 
-/// 素笺贴底通栏导航：surface 底、顶部 1px 线、选中项 accent + 2px 顶线。
-/// 无毛玻璃、无光晕、无循环动画；遵守系统减弱动效。
+/// 笺谱底栏：贴底纸条 + 顶部一道乌丝栏；四个单字「天 · 心 · 城 · 我」（展示体），
+/// 选中的那个变成一枚墨色白文小印（朱砂留给内容里的印）。遵守系统减弱动效。
 class _SujianBottomBar extends StatelessWidget {
   final int currentIndex;
   final ThemeState theme;
@@ -214,79 +214,134 @@ class _SujianBottomBar extends StatelessWidget {
   });
 
   static const _labels = ['天气', '心情', '城迹', '我的'];
-  static const _icons = [
-    XqIcons.sunny,
-    XqIcons.heart,
-    XqIcons.compass,
-    XqIcons.person,
-  ];
+  static const _chars = ['天', '心', '城', '我'];
 
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
+    final reduce = MediaQuery.disableAnimationsOf(context);
     return Semantics(
       container: true,
       child: Container(
-        // 系统导航栏区域同色，视觉与通栏一体
-        color: theme.cardColor,
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          image: XqPaper.grain(theme.paperFiber, strength: theme.isDark ? 0.6 : 0.8),
+          border: Border(top: BorderSide(color: theme.frameColor, width: 0.6)),
+        ),
         padding: EdgeInsets.only(bottom: bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(height: 1, color: theme.borderColor),
-            SizedBox(
-              height: 56,
-              child: Row(
-                children: List.generate(4, (i) {
-                  final active = i == currentIndex;
-                  final color = active ? theme.accentColor : theme.textTertiary;
-                  return Expanded(
-                    child: Semantics(
-                      label: _labels[i],
-                      button: true,
-                      selected: active,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => onTap(i),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // 素笺规范：选中项 2px 顶线
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOut,
-                              width: active ? 16 : 0,
-                              height: 2,
-                              margin: const EdgeInsets.only(bottom: 3),
-                              decoration: BoxDecoration(
-                                color: active
-                                    ? theme.accentColor
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            XqIcon(_icons[i], size: 21, color: color),
-                            const SizedBox(height: 2),
-                            AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 200),
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: active
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                                color: color,
-                              ),
-                              child: Text(_labels[i]),
-                            ),
-                          ],
+        child: SizedBox(
+          height: 58,
+          child: Row(
+            children: List.generate(4, (i) {
+              final active = i == currentIndex;
+              return Expanded(
+                child: Semantics(
+                  label: _labels[i],
+                  button: true,
+                  selected: active,
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onTap(i),
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: reduce ? 0 : 180),
+                        switchInCurve: Curves.easeOutQuart,
+                        transitionBuilder: (child, anim) => FadeTransition(
+                          opacity: anim,
+                          child: ScaleTransition(
+                            scale: Tween(begin: 1.18, end: 1.0).animate(anim),
+                            child: child,
+                          ),
                         ),
+                        child: active
+                            ? XqSeal(
+                                key: ValueKey('on$i'),
+                                char: _chars[i],
+                                color: theme.accentColor,
+                                size: 34,
+                                style: XqSealStyle.bai,
+                                angle: i.isEven ? -0.04 : 0.04,
+                              )
+                            : SizedBox(
+                                key: ValueKey('off$i'),
+                                width: 34,
+                                height: 34,
+                                child: Center(
+                                  child: Text(
+                                    _chars[i],
+                                    style: XqTypography.headlineSmall.copyWith(
+                                      color: theme.textTertiary,
+                                      fontSize: 20,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
                     ),
-                  );
-                }),
-              ),
-            ),
-          ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 一个 Tab 的槽位：当前页淡入；离开后淡出完毕即 Offstage（保留状态，不绘制、不跑动画）
+class _TabSlot extends StatefulWidget {
+  final bool active;
+  final Widget child;
+
+  const _TabSlot({super.key, required this.active, required this.child});
+
+  @override
+  State<_TabSlot> createState() => _TabSlotState();
+}
+
+class _TabSlotState extends State<_TabSlot> with SingleTickerProviderStateMixin {
+  late final AnimationController _fade = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 160),
+    value: widget.active ? 1 : 0,
+  )..addStatusListener((_) => setState(() {}));
+
+  @override
+  void didUpdateWidget(_TabSlot old) {
+    super.didUpdateWidget(old);
+    if (old.active == widget.active) return;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _fade.value = widget.active ? 1 : 0;
+    } else if (widget.active) {
+      _fade.forward();
+    } else {
+      // 离开的页立即让出：不做淡出，避免两页同时绘制
+      _fade.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _fade.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = !widget.active && _fade.isDismissed;
+    return Offstage(
+      offstage: hidden,
+      child: TickerMode(
+        enabled: widget.active,
+        child: IgnorePointer(
+          ignoring: !widget.active,
+          child: FadeTransition(
+            opacity: CurvedAnimation(parent: _fade, curve: Curves.easeOutQuart),
+            child: widget.child,
+          ),
         ),
       ),
     );

@@ -134,16 +134,17 @@ class XqColors {
   static const sujianAccentMuted = Color(0x2E3D5A66);
   static const sujianTextPrimary = Color(0xFF262B2E); // 墨灰
   static const sujianTextSecondary = Color(0xFF4F565B);
-  static const sujianTextTertiary = Color(0xFF6E767C);
+  static const sujianTextTertiary = Color(0xFF5D656B); // 对比度达标
   static const sujianTextOnAccent = Color(0xFFF7F7F2);
   static const sujianBorder = Color(0xFFD9DBD3); // 装饰细线
   static const sujianBorderFocus = Color(0xFF3D5A66);
   static const sujianError = Color(0xFF8F382E);
-  static const sujianSuccess = Color(0xFF4A6B4E);
-  static const sujianWarning = Color(0xFF7C6A3A);
+  static const sujianSuccess = Color(0xFF456548);
+  static const sujianWarning = Color(0xFF6C5C2E);
   static const sujianInk = Color(0xFF34393C); // 手绘装饰用墨
   static const sujianInkLight = Color(0x997C827F);
-  static const sujianGold = Color(0xFF8A6E4F); // 暗木色（低饱和暖点缀）
+  static const sujianGold = Color(0xFF6F5639); // 暗木（作文字达标）
+  static const sujianControlBorder = Color(0xFF78817E); // 控件边框 ≥3:1
   static const sujianPaperLine = Color(0xFFD3D6CD);
   static const sujianSeal = Color(0xFFA8382A); // 朱砂小印
   static const sujianSunken = Color(0xFFE2E3DB); // 凹陷区/标签底
@@ -176,8 +177,9 @@ class XqColors {
   static const sujianDarkInk = Color(0xFFC2C8C4);
   static const sujianDarkInkLight = Color(0xCC71787A);
   static const sujianDarkGold = Color(0xFFA8906C); // 暗木
+  static const sujianDarkControlBorder = Color(0xFF6F7875);
   static const sujianDarkPaperLine = Color(0xFF262B2D);
-  static const sujianDarkSeal = Color(0xFFC4695C);
+  static const sujianDarkSeal = Color(0xFFD47C6E);
   static const sujianDarkSunken = Color(0xFF0F1214);
 
   static const sujianDarkWashi1 = Color(0xFF3C4446);

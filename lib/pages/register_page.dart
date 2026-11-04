@@ -658,7 +658,7 @@ class _RegisterPageState extends State<RegisterPage> {
             '安全问题',
             style: XqTypography.bodyMedium.copyWith(
               color: theme.textPrimary,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),

@@ -158,7 +158,7 @@ class _StoryListPageState extends State<StoryListPage> {
                                   color: t.textPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  fontFamily: 'serif',
+                                  fontFamily: 'SerifSC',
                                   fontFamilyFallback: [
                                     'Noto Serif SC',
                                     'Songti SC',
@@ -301,7 +301,7 @@ class _StoryEditPageState extends State<StoryEditPage> {
   Widget build(BuildContext context) {
     final t = context.watch<ThemeState>();
     final serif = TextStyle(
-      fontFamily: 'serif',
+      fontFamily: 'SerifSC',
       fontFamilyFallback: ['Noto Serif SC', 'Songti SC'],
     );
     return Scaffold(

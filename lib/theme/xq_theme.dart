@@ -19,6 +19,7 @@ class XqTheme {
         accent: XqColors.sujianDarkAccent,
         accentLight: XqColors.sujianDarkAccentLight,
         border: XqColors.sujianDarkBorder,
+        control: XqColors.sujianDarkControlBorder,
         focus: XqColors.sujianDarkBorderFocus,
         text1: XqColors.sujianDarkTextPrimary,
         text2: XqColors.sujianDarkTextSecondary,
@@ -42,6 +43,7 @@ class XqTheme {
         text3: XqColors.darkTextTertiary,
         onAccent: XqColors.darkTextOnAccent,
         error: XqColors.darkError,
+        control: XqColors.sujianDarkControlBorder,
       );
     }
     return _build(
@@ -58,6 +60,7 @@ class XqTheme {
       text3: _textTertiary(mode),
       onAccent: _textOnAccent(),
       error: _error(),
+      control: _controlBorder(mode),
     );
   }
 
@@ -74,6 +77,7 @@ class XqTheme {
     required Color accent,
     required Color accentLight,
     required Color border,
+    required Color control,
     required Color focus,
     required Color text1,
     required Color text2,
@@ -125,11 +129,11 @@ class XqTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: BorderSide(color: border),
+          borderSide: BorderSide(color: control),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: BorderSide(color: border, width: 0.5),
+          borderSide: BorderSide(color: control, width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
@@ -207,6 +211,12 @@ class XqTheme {
     'mint' => XqColors.mintAccentLight,
     'blush' => XqColors.blushAccentLight,
     _ => XqColors.sujianAccentLight,
+  };
+  static Color _controlBorder(String m) => switch (m) {
+    'sujian' => XqColors.sujianControlBorder,
+    'mint' => XqColors.mintTextTertiary,
+    'blush' => XqColors.blushTextTertiary,
+    _ => XqColors.lightTextTertiary,
   };
   static Color _border(String m) => switch (m) {
     'sujian' => XqColors.sujianBorder,

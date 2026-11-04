@@ -53,7 +53,7 @@ class FilmCardTemplate {
                                       style: const TextStyle(
                                         color: _orange,
                                         fontSize: 11.5,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -114,7 +114,7 @@ class FilmCardTemplate {
                                       style: TextStyle(
                                         color: _cream.withAlpha(80),
                                         fontSize: 8.2,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         letterSpacing:
                                             data.watermark == 'sqrj' ? 1.5 : 1.15,
                                       ),

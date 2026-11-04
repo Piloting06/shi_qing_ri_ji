@@ -31,7 +31,7 @@ class XqEmptyState extends StatelessWidget {
           children: [
             Icon(icon, size: 48, color: color),
             const SizedBox(height: 16),
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
+            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
             const SizedBox(height: 6),
             Text(subtitle, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: theme.colorScheme.onSurface.withAlpha(140))),
             if (actionLabel != null && onAction != null) ...[

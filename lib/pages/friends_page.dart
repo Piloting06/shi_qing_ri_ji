@@ -606,7 +606,7 @@ class _FriendsPageState extends State<FriendsPage> {
                     style: TextStyle(
                       color: theme.errorColor,
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -659,7 +659,7 @@ class _FriendsPageState extends State<FriendsPage> {
                   style: TextStyle(
                     color: theme.textPrimary,
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -859,7 +859,7 @@ class _FriendsPageState extends State<FriendsPage> {
                           style: TextStyle(
                             color: theme.textPrimary,
                             fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 3),
@@ -1283,7 +1283,7 @@ class _FriendMoodPageState extends State<FriendMoodPage> {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     if (note.isNotEmpty) ...[

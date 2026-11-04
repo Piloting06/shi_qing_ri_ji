@@ -43,7 +43,7 @@ class TicketCardTemplate {
                                 style: TextStyle(
                                   color: _ink.withAlpha(150),
                                   fontSize: 8.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing: 1,
                                 ),
                               ),
@@ -53,7 +53,7 @@ class TicketCardTemplate {
                                 style: TextStyle(
                                   color: _stamp.withAlpha(190),
                                   fontSize: 8.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing: 1,
                                 ),
                               ),
@@ -114,7 +114,7 @@ class TicketCardTemplate {
                                 style: TextStyle(
                                   color: _ink.withAlpha(90),
                                   fontSize: 8.2,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing:
                                       data.watermark == 'sqrj' ? 1.5 : 1.15,
                                 ),
@@ -145,7 +145,7 @@ class TicketCardTemplate {
                             style: TextStyle(
                               color: _stamp.withAlpha(150),
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               letterSpacing: 1,
                             ),
                           ),
@@ -172,7 +172,7 @@ class TicketCardTemplate {
                       style: TextStyle(
                         color: _stamp.withAlpha(170),
                         fontSize: 8,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: 1.4,
                       ),
                     ),
@@ -224,7 +224,7 @@ class TicketCardTemplate {
             style: const TextStyle(
               color: _ink,
               fontSize: 9.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

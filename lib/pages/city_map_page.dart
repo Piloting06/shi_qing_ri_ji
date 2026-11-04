@@ -159,7 +159,7 @@ class _CityMapPageState extends State<CityMapPage>
                             style: TextStyle(
                               color: theme.textPrimary,
                               fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           const Spacer(),
@@ -377,7 +377,7 @@ class _CityMapPageState extends State<CityMapPage>
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -426,7 +426,7 @@ class _CityMapPageState extends State<CityMapPage>
                                       ? theme.gold
                                       : theme.textTertiary,
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const Spacer(),
@@ -444,7 +444,7 @@ class _CityMapPageState extends State<CityMapPage>
                             style: TextStyle(
                               color: theme.textPrimary,
                               fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
@@ -647,7 +647,7 @@ class _CityMapPageState extends State<CityMapPage>
                           style: TextStyle(
                             color: theme.textPrimary,
                             fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -678,7 +678,7 @@ class _CityMapPageState extends State<CityMapPage>
                         style: TextStyle(
                           color: theme.accentColor,
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -807,7 +807,7 @@ class _CityMapPageState extends State<CityMapPage>
                         style: TextStyle(
                           color: Color(0xFFFF9F1C),
                           fontSize: 9,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -818,7 +818,7 @@ class _CityMapPageState extends State<CityMapPage>
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -838,7 +838,7 @@ class _CityMapPageState extends State<CityMapPage>
                         style: TextStyle(
                           color: _moodColor(mood),
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

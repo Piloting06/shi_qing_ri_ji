@@ -186,7 +186,7 @@ class AboutPage extends StatelessWidget {
             style: TextStyle(
               color: theme.textPrimary,
               fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               letterSpacing: 2,
             ),
           ),
@@ -226,7 +226,7 @@ class AboutPage extends StatelessWidget {
           style: TextStyle(
             color: theme.textPrimary,
             fontSize: 15,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         if (subtitle != null) ...[
@@ -463,7 +463,7 @@ class AboutPage extends StatelessWidget {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 17,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -698,7 +698,7 @@ class AboutPage extends StatelessWidget {
                       style: TextStyle(
                         color: theme.textPrimary,
                         fontSize: 17,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -883,7 +883,7 @@ class AboutPage extends StatelessWidget {
                           style: TextStyle(
                             color: theme.textPrimary,
                             fontSize: 17,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

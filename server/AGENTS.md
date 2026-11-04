@@ -18,13 +18,13 @@ Express 5 + helmet + cors + express-rate-limit + sql.js。端口 3001，PM2 进�
 - **幂等/防重**：签到按 `user_id+date`；胶囊按 `user_id+content+open_date+is_opened=0`；树洞每人每天 3 条（CST）；互动/点赞靠 UNIQUE 约束。
 - **好友关系双向查**：`WHERE (user_id=A AND friend_id=B) OR (user_id=B AND friend_id=A)`。
 - **心情记录**：INSERT 语义（一天可多条），写入 `city` + `weather_code`（城迹榜/心晴签/年度报告的数据源，勿去掉）。
-- **新增路由**：只新增 `routes/xxx.js` 并在 `index.js` 挂载到 `/api/` 下；不开新端口。
+- **新增路由**：只新增 `routes/xxx.js` 并在 `index.js` 挂载到 `/api/` 下；不开新端口。唯一例外是 `routes/landing.js`：根路径 `/` 出落地页（分享卡片二维码指向 `/?from=card`），`/sqrj.apk` 下载安装包，静态资源在 `server/landing/`。
 - **安全基线**：`trust proxy 1`（限流按真实 IP）；CORS 白名单在 `index.js`（加域名改那里）；全部 SQL 参数绑定；`sms_codes`/密码只存哈希。
 - **天气缓存**：`routes/weather.js` 内存缓存 10 分钟；`/location` 必须把 `X-Forwarded-For`/`X-Real-IP` 的客户端 IP 放进 ip-api **路径**（`/json/{ip}`），内网 IP 返回未知。
 
 ## 部署
 
-运维凭据、SSH 别名、发布步骤见 `artifacts/ops.md`（本地，git 忽略）。改动后 `pm2 restart xinqingriji` + 内外网 health 双验证；涉 db.js 需确认备份目录出现新文件。
+运维凭据、SSH 别名、发布步骤见 `artifacts/ops.md`（本地，git 忽略）。改动后 `pm2 restart xinqingriji` + 内外网 health 双验证；涉 db.js 需确认备份目录出现新文件。**每次发版**把新 APK 传到服务器 `server/landing/sqrj.apk`（不进 Git），并改 `landing/index.html` 里的版本号与大小。
 
 ## 表结构
 

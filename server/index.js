@@ -59,6 +59,9 @@ app.get('/admin', (_req, res) => res.sendFile(require('path').join(__dirname, 'a
 
   app.get('/api/health', (_, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
+  // 落地页（卡片二维码指向根路径）+ 安装包下载，见 routes/landing.js
+  app.use(require('./routes/landing'));
+
   app.use((err, _req, res, _next) => {
     console.error(err);
     res.status(500).json({ message: '服务器内部错误' });

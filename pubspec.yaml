@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.21.0+43
+version: 2.22.0+44
 
 environment:
   sdk: ^3.10.4
@@ -82,11 +82,9 @@ flutter:
     - family: LXGW WenKai
       fonts:
         - asset: assets/fonts/LXGWWenKai-Regular.ttf
-    # 宋体仪式层：Noto Serif SC 子集（scripts/subset_serif.py 生成，OFL）
+    # 思源宋子集 600（印章字、需要字重的标题、楷体缺字兜底）。P10 去掉 500 字重（-1.4MB），请求 400/500 时落到 600
     - family: SerifSC
       fonts:
-        - asset: assets/fonts/NotoSerifSC-500.otf
-          weight: 500
         - asset: assets/fonts/NotoSerifSC-600.otf
           weight: 600
     # 展示层（P9 笺谱）：朱雀仿宋子集（scripts/subset_display.py 生成，OFL-1.1）

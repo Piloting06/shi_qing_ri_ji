@@ -72,17 +72,12 @@ class TicketCardTemplate {
                               fontSize: 9.5,
                             ),
                           ),
-                          Text(
-                            data.moodEmoji,
-                            style:
-                                const TextStyle(fontSize: 32, height: 1.2),
-                          ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 6),
                           Expanded(
                             child: Text(
                               data.bodyText.isNotEmpty
                                   ? data.bodyText
-                                  : '写点什么吧',
+                                  : '今天没写字。',
                               style: XqTypography.handwrittenBody.copyWith(
                                 color: data.bodyText.isNotEmpty
                                     ? _ink
@@ -168,7 +163,7 @@ class TicketCardTemplate {
                 child: Column(
                   children: [
                     Text(
-                      'SHI QING',
+                      '拾晴',
                       style: TextStyle(
                         color: _stamp.withAlpha(170),
                         fontSize: 8,
@@ -178,7 +173,7 @@ class TicketCardTemplate {
                     ),
                     const SizedBox(height: 10),
                     _ticketField('发车', data.dateText),
-                    _ticketField('检票口', data.moodEn),
+                    _ticketField('心情', data.moodLabel),
                     if (data.weatherText != null &&
                         data.weatherText!.isNotEmpty)
                       _ticketField(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/xq_decorations.dart';
+import '../xq/xq_icons.dart';
 import 'mood_card_data.dart';
 
 /// 火焰卡：连续记录天数 + 最近7天打卡点（社交货币型卡片）
@@ -64,7 +65,7 @@ class FlameCardTemplate {
                         ),
                         const Spacer(),
                         Text(
-                          'KEEP BURNING',
+                          '连续记录',
                           style: TextStyle(
                             color: _ember.withAlpha(150),
                             fontSize: 8.5,
@@ -78,7 +79,7 @@ class FlameCardTemplate {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Text('🔥', style: TextStyle(fontSize: 38)),
+                        const XqIcon(XqIcons.flame, size: 36, color: _ember),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +138,7 @@ class FlameCardTemplate {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: data.week.reversed.map((day) {
-                          final recorded = day.emoji != null && day.emoji!.isNotEmpty;
+                          final recorded = day.color != null;
                           return Column(
                             children: [
                               Container(
@@ -158,10 +159,7 @@ class FlameCardTemplate {
                                   ),
                                 ),
                                 child: recorded
-                                    ? Text(
-                                        day.emoji!,
-                                        style: const TextStyle(fontSize: 12),
-                                      )
+                                    ? null
                                     : Text(
                                         day.label,
                                         style: TextStyle(

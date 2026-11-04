@@ -1,272 +1,162 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/keys.dart';
-import '../theme/xq_colors.dart';
+import '../theme/xq_palette.dart';
 
-class ThemeState extends ChangeNotifier {
-  String _themeMode = 'sujian';
-  bool _transitioning = false;
+/// 深浅怎么定：跟随系统 / 总是浅 / 总是深
+enum XqAppearance { system, light, dark }
 
-  bool get transitioning => _transitioning;
-  String get themeMode => _themeMode;
-  bool get isDark => _themeMode == 'dark' || _themeMode == 'sujian_dark';
+/// 主题 = 纸。浅色、深色各记一张纸；跟随系统时按手机深浅在两张之间切换。
+/// 页面通过各颜色 getter 取色，换纸时由 [XqThemeReveal] 把旧画面截下来、让新纸从点按处晕开。
+class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
+  XqAppearance _appearance = XqAppearance.system;
+  XqPalette _lightPaper = XqPalette.sujian;
+  XqPalette _darkPaper = XqPalette.cixing;
+  bool _systemDark = PlatformDispatcher.instance.platformBrightness == Brightness.dark;
 
-  /// 可操作控件边框（输入框等，≥3:1）；border 仅作装饰分隔
-  Color get controlBorder => switch (_themeMode) {
-    'sujian' => XqColors.sujianControlBorder,
-    'sujian_dark' => XqColors.sujianDarkControlBorder,
-    _ => borderColor,
-  };
+  bool _loaded = false;
 
-  /// 笺的外框细墨线（L1 装裱边）
-  Color get frameColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianFrame,
-    'sujian_dark' => XqColors.sujianDarkFrame,
-    _ => borderColor,
-  };
+  /// 本地偏好已读出（读出那一下的变化不做过渡动画）
+  bool get loaded => _loaded;
 
-  /// 纸纹染色：浅色暖墨纤维、深色月白纤维
-  Color get paperFiber => isDark ? XqColors.sujianDarkPaperFiber : XqColors.sujianPaperFiber;
-
-  /// 凹陷区（素笺：比纸深一层的标签/代码底），其余主题回退到卡片色
-  Color get sunkenColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianSunken,
-    'sujian_dark' => XqColors.sujianDarkSunken,
-    _ => cardColor,
-  };
-
-  /// 朱砂小印：素笺专属品牌点睛色（每屏至多一处），其余主题回退到各自的点缀色
-  Color get sealColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianSeal,
-    'sujian_dark' => XqColors.sujianDarkSeal,
-    _ => gold,
-  };
-
-  /// P9 起只有两套：素笺（浅）/ 磁青（深）。老主题（暖笺/黛笺/青笺/藕笺）2026-11-04 用户决定下线，存值自动迁移。
-  static const Map<String, String> themeNames = {
-    'sujian': '素笺',
-    'sujian_dark': '磁青',
-  };
-
-  static const Map<String, List<Color>> themeColors = {
-    'sujian': [XqColors.sujianAccent, XqColors.sujianCard, XqColors.sujianBackground],
-    'sujian_dark': [XqColors.sujianDarkAccent, XqColors.sujianDarkCard, XqColors.sujianDarkBackground],
-  };
-
-  /// 旧主题存值 → 新主题：深色系（黛笺）迁到磁青，其余迁到素笺
-  static String migrate(String? stored) => switch (stored) {
-        'sujian_dark' || 'dark' => 'sujian_dark',
-        _ => 'sujian',
-      };
+  /// 下一次换纸从哪里晕开（全局坐标）；用一次就清掉
+  Offset? revealOrigin;
 
   ThemeState() {
+    WidgetsBinding.instance.addObserver(this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    final next = PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+    if (next == _systemDark) return;
+    _systemDark = next;
+    if (_appearance == XqAppearance.system) notifyListeners();
+  }
+
+  XqAppearance get appearance => _appearance;
+  XqPalette get lightPaper => _lightPaper;
+  XqPalette get darkPaper => _darkPaper;
+
+  bool get isDark => switch (_appearance) {
+        XqAppearance.system => _systemDark,
+        XqAppearance.light => false,
+        XqAppearance.dark => true,
+      };
+
+  /// 当前在用的纸
+  XqPalette get palette => isDark ? _darkPaper : _lightPaper;
+
+  /// 当前纸的 id（兼容旧调用）
+  String get themeMode => palette.id;
+
+  /// 旧存值 → (深浅, 纸)。v2.21 只有素笺/磁青；更早的暖笺/黛笺/青笺/藕笺 id 原样认回。
+  static (XqAppearance, XqPalette) migrate(String? stored, {required bool explicit}) {
+    final p = XqPalette.byId(stored);
+    if (!explicit || p == null) return (XqAppearance.system, p ?? XqPalette.sujian);
+    return (p.dark ? XqAppearance.dark : XqAppearance.light, p);
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(StorageKeys.themeMode);
-    final next = migrate(stored);
-    _themeMode = next;
-    if (next != stored) await prefs.setString(StorageKeys.themeMode, next);
+    final a = prefs.getString(StorageKeys.appearance);
+    if (a != null) {
+      _appearance = XqAppearance.values.firstWhere((e) => e.name == a, orElse: () => XqAppearance.system);
+      _lightPaper = _pick(prefs.getString(StorageKeys.paperLight), XqPalette.lights, XqPalette.sujian);
+      _darkPaper = _pick(prefs.getString(StorageKeys.paperDark), XqPalette.darks, XqPalette.cixing);
+    } else {
+      final (ap, paper) = migrate(
+        prefs.getString(StorageKeys.themeMode),
+        explicit: prefs.getBool(StorageKeys.themeExplicit) ?? false,
+      );
+      _appearance = ap;
+      if (paper.dark) {
+        _darkPaper = paper;
+      } else {
+        _lightPaper = paper;
+      }
+      await _save(prefs);
+    }
+    _loaded = true;
     notifyListeners();
   }
 
-  Future<void> setTheme(String mode) async {
-    final next = migrate(mode);
-    if (_themeMode == next) return;
-    _transitioning = true;
-    _themeMode = next;
-    notifyListeners();
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setString(StorageKeys.themeMode, next);
-      prefs.setBool(StorageKeys.themeExplicit, true);
-    });
-    await Future.delayed(const Duration(milliseconds: 280));
-    _transitioning = false;
-    notifyListeners();
+  static XqPalette _pick(String? id, List<XqPalette> pool, XqPalette fallback) {
+    final p = XqPalette.byId(id);
+    return p != null && pool.contains(p) ? p : fallback;
   }
 
-  // ── Color getters indexed by theme ──
+  Future<void> _save([SharedPreferences? prefs]) async {
+    final sp = prefs ?? await SharedPreferences.getInstance();
+    await sp.setString(StorageKeys.appearance, _appearance.name);
+    await sp.setString(StorageKeys.paperLight, _lightPaper.id);
+    await sp.setString(StorageKeys.paperDark, _darkPaper.id);
+  }
 
-  Color get backgroundColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianBackground,
-    'sujian_dark' => XqColors.sujianDarkBackground,
-    'dark' => XqColors.darkBackground,
-    'mint' => XqColors.mintBackground,
-    'blush' => XqColors.blushBackground,
-    _ => XqColors.sujianBackground,
-  };
+  void setAppearance(XqAppearance a, {Offset? origin}) {
+    if (a == _appearance) return;
+    revealOrigin = origin;
+    _appearance = a;
+    notifyListeners();
+    _save();
+  }
 
-  Color get cardColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianCard,
-    'sujian_dark' => XqColors.sujianDarkCard,
-    'dark' => XqColors.darkCard,
-    'mint' => XqColors.mintCard,
-    'blush' => XqColors.blushCard,
-    _ => XqColors.sujianCard,
-  };
+  /// 换纸：点哪张就用哪张。点的纸和当前深浅不同时，顺带把深浅固定过去，否则点了看不到变化。
+  void setPaper(XqPalette p, {Offset? origin}) {
+    final before = palette;
+    if (p.dark) {
+      _darkPaper = p;
+    } else {
+      _lightPaper = p;
+    }
+    if (p.dark != isDark) _appearance = p.dark ? XqAppearance.dark : XqAppearance.light;
+    if (palette == before) return;
+    revealOrigin = origin;
+    notifyListeners();
+    _save();
+  }
 
-  Color get cardElevated => switch (_themeMode) {
-    'sujian' => XqColors.sujianCardElevated,
-    'sujian_dark' => XqColors.sujianDarkCardElevated,
-    'dark' => XqColors.darkCardElevated,
-    'mint' => XqColors.mintCardElevated,
-    'blush' => XqColors.blushCardElevated,
-    _ => XqColors.sujianCardElevated,
-  };
+  /// 兼容旧调用：按 id 换纸
+  void setTheme(String id) {
+    final p = XqPalette.byId(id);
+    if (p != null) setPaper(p);
+  }
 
-  Color get accentColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianAccent,
-    'sujian_dark' => XqColors.sujianDarkAccent,
-    'dark' => XqColors.darkAccent,
-    'mint' => XqColors.mintAccent,
-    'blush' => XqColors.blushAccent,
-    _ => XqColors.sujianAccent,
-  };
+  // ── 颜色 ──
 
-  Color get accentLight => switch (_themeMode) {
-    'sujian' => XqColors.sujianAccentLight,
-    'sujian_dark' => XqColors.sujianDarkAccentLight,
-    'dark' => XqColors.darkAccentLight,
-    'mint' => XqColors.mintAccentLight,
-    'blush' => XqColors.blushAccentLight,
-    _ => XqColors.sujianAccentLight,
-  };
-
-  Color get accentMuted => switch (_themeMode) {
-    'sujian' => XqColors.sujianAccentMuted,
-    'sujian_dark' => XqColors.sujianDarkAccentMuted,
-    'dark' => XqColors.darkAccentMuted,
-    'mint' => XqColors.mintAccentMuted,
-    'blush' => XqColors.blushAccentMuted,
-    _ => XqColors.sujianAccentMuted,
-  };
-
-  Color get textPrimary => switch (_themeMode) {
-    'sujian' => XqColors.sujianTextPrimary,
-    'sujian_dark' => XqColors.sujianDarkTextPrimary,
-    'dark' => XqColors.darkTextPrimary,
-    'mint' => XqColors.mintTextPrimary,
-    'blush' => XqColors.blushTextPrimary,
-    _ => XqColors.sujianTextPrimary,
-  };
-
-  Color get textSecondary => switch (_themeMode) {
-    'sujian' => XqColors.sujianTextSecondary,
-    'sujian_dark' => XqColors.sujianDarkTextSecondary,
-    'dark' => XqColors.darkTextSecondary,
-    'mint' => XqColors.mintTextSecondary,
-    'blush' => XqColors.blushTextSecondary,
-    _ => XqColors.sujianTextSecondary,
-  };
-
-  Color get textTertiary => switch (_themeMode) {
-    'sujian' => XqColors.sujianTextTertiary,
-    'sujian_dark' => XqColors.sujianDarkTextTertiary,
-    'dark' => XqColors.darkTextTertiary,
-    'mint' => XqColors.mintTextTertiary,
-    'blush' => XqColors.blushTextTertiary,
-    _ => XqColors.sujianTextTertiary,
-  };
-
-  Color get textOnAccent => switch (_themeMode) {
-    'sujian' => XqColors.sujianTextOnAccent,
-    'sujian_dark' => XqColors.sujianDarkTextOnAccent,
-    'dark' => XqColors.darkTextOnAccent,
-    _ => XqColors.sujianTextOnAccent,
-  };
-
-  Color get borderColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianBorder,
-    'sujian_dark' => XqColors.sujianDarkBorder,
-    'dark' => XqColors.darkBorder,
-    'mint' => XqColors.mintBorder,
-    'blush' => XqColors.blushBorder,
-    _ => XqColors.sujianBorder,
-  };
-
-  Color get borderFocus => switch (_themeMode) {
-    'sujian' => XqColors.sujianBorderFocus,
-    'sujian_dark' => XqColors.sujianDarkBorderFocus,
-    'dark' => XqColors.darkBorderFocus,
-    'mint' => XqColors.mintBorderFocus,
-    'blush' => XqColors.blushBorderFocus,
-    _ => XqColors.sujianBorderFocus,
-  };
-
-  Color get errorColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianError,
-    'sujian_dark' => XqColors.sujianDarkError,
-    'dark' => XqColors.darkError,
-    _ => XqColors.sujianError,
-  };
-
-  Color get successColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianSuccess,
-    'sujian_dark' => XqColors.sujianDarkSuccess,
-    'dark' => XqColors.darkSuccess,
-    _ => XqColors.sujianSuccess,
-  };
-
-  Color get warningColor => switch (_themeMode) {
-    'sujian' => XqColors.sujianWarning,
-    'sujian_dark' => XqColors.sujianDarkWarning,
-    'dark' => XqColors.darkWarning,
-    _ => XqColors.sujianWarning,
-  };
-
-  Color get ink => switch (_themeMode) {
-    'sujian' => XqColors.sujianInk,
-    'sujian_dark' => XqColors.sujianDarkInk,
-    'dark' => XqColors.darkInk,
-    'mint' => XqColors.mintInk,
-    'blush' => XqColors.blushInk,
-    _ => XqColors.sujianInk,
-  };
-
-  Color get inkLight => switch (_themeMode) {
-    'sujian' => XqColors.sujianInkLight,
-    'sujian_dark' => XqColors.sujianDarkInkLight,
-    'dark' => XqColors.darkInkLight,
-    'mint' => XqColors.mintInkLight,
-    'blush' => XqColors.blushInkLight,
-    _ => XqColors.sujianInkLight,
-  };
-
-  Color get gold => switch (_themeMode) {
-    'sujian' => XqColors.sujianGold,
-    'sujian_dark' => XqColors.sujianDarkGold,
-    'dark' => XqColors.darkGold,
-    'mint' => XqColors.mintGold,
-    'blush' => XqColors.blushGold,
-    _ => XqColors.sujianGold,
-  };
-
-  Color get paperLine => switch (_themeMode) {
-    'sujian' => XqColors.sujianPaperLine,
-    'sujian_dark' => XqColors.sujianDarkPaperLine,
-    'dark' => XqColors.darkPaperLine,
-    'mint' => XqColors.mintPaperLine,
-    'blush' => XqColors.blushPaperLine,
-    _ => XqColors.sujianPaperLine,
-  };
-
-  Color get surfaceAlpha => switch (_themeMode) {
-    'sujian' => XqColors.sujianAccent.withAlpha(20),
-    'sujian_dark' => XqColors.sujianDarkAccent.withAlpha(24),
-    'dark' => Colors.white.withAlpha(12),
-    'mint' => XqColors.mintAccent.withAlpha(20),
-    'blush' => XqColors.blushAccent.withAlpha(20),
-    _ => XqColors.sujianAccent.withAlpha(20),
-  };
-
-  List<Color> get washiColors => switch (_themeMode) {
-    'sujian' => [XqColors.sujianWashi1, XqColors.sujianWashi2, XqColors.sujianWashi3, XqColors.sujianWashi4],
-    'sujian_dark' => [XqColors.sujianDarkWashi1, XqColors.sujianDarkWashi2, XqColors.sujianDarkWashi3, XqColors.sujianDarkWashi4],
-    'dark' => [XqColors.darkWashi1, XqColors.darkWashi2, XqColors.darkWashi3, XqColors.darkWashi4],
-    'mint' => [XqColors.mintWashi1, XqColors.mintWashi2, XqColors.mintWashi3, XqColors.mintWashi4],
-    'blush' => [XqColors.blushWashi1, XqColors.blushWashi2, XqColors.blushWashi3, XqColors.blushWashi4],
-    _ => [XqColors.sujianWashi1, XqColors.sujianWashi2, XqColors.sujianWashi3, XqColors.sujianWashi4],
-  };
+  Color get backgroundColor => palette.background;
+  Color get cardColor => palette.card;
+  Color get cardElevated => palette.cardElevated;
+  Color get sunkenColor => palette.sunken;
+  Color get frameColor => palette.frame;
+  Color get borderColor => palette.border;
+  Color get controlBorder => palette.controlBorder;
+  Color get borderFocus => palette.borderFocus;
+  Color get paperLine => palette.paperLine;
+  Color get paperFiber => palette.fiber;
+  Color get accentColor => palette.accent;
+  Color get accentLight => palette.accentLight;
+  Color get accentMuted => palette.accentMuted;
+  Color get textPrimary => palette.textPrimary;
+  Color get textSecondary => palette.textSecondary;
+  Color get textTertiary => palette.textTertiary;
+  Color get textOnAccent => palette.textOnAccent;
+  Color get errorColor => palette.error;
+  Color get successColor => palette.success;
+  Color get warningColor => palette.warning;
+  Color get ink => palette.ink;
+  Color get inkLight => palette.inkLight;
+  Color get gold => palette.gold;
+  Color get sealColor => palette.seal;
+  Color get surfaceAlpha => palette.accent.withAlpha(isDark ? 24 : 20);
+  List<Color> get washiColors => palette.washi;
 }

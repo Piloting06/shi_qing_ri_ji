@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/xq_decorations.dart';
 import '../../theme/xq_typography.dart';
+import '../xq/xq_paper.dart';
+import '../../constants/mood.dart';
 import 'mood_card_data.dart';
 
 /// 极简：大留白 + 一句话 + 极小日期，性冷淡手账风
@@ -41,9 +43,10 @@ class MinimalCardTemplate {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      data.moodEmoji,
-                      style: const TextStyle(fontSize: 13),
+                    XqPigmentDab(
+                      color: Color(moodColors[data.moodScore] ?? 0xFF7A7871),
+                      size: 14,
+                      seed: data.moodScore,
                     ),
                   ],
                 ),

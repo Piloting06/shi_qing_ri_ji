@@ -59,7 +59,7 @@ class FilmCardTemplate {
                                     ),
                                     const Spacer(),
                                     Text(
-                                      'SQ·36 — FRAME ${data.moodEn}',
+                                      'SQ·36',
                                       style: TextStyle(
                                         color: _cream.withAlpha(90),
                                         fontSize: 8,
@@ -83,7 +83,7 @@ class FilmCardTemplate {
                                   child: Text(
                                     data.bodyText.isNotEmpty
                                         ? data.bodyText
-                                        : '写点什么吧',
+                                        : '今天没写字。',
                                     style: XqTypography.handwrittenBody.copyWith(
                                       color: data.bodyText.isNotEmpty
                                           ? _cream
@@ -102,7 +102,7 @@ class FilmCardTemplate {
                                 Row(
                                   children: [
                                     Text(
-                                      '${data.moodEmoji} ${data.moodLabel}',
+                                      data.moodLabel,
                                       style: TextStyle(
                                         color: _cream.withAlpha(150),
                                         fontSize: 10,

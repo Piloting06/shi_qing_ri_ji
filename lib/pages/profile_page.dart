@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../widgets/xq/xq_icons.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
@@ -10,13 +8,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:gal/gal.dart';
-import 'package:share_plus/share_plus.dart';
 import '../api/api_client.dart';
 import '../constants/keys.dart';
 import '../stores/app_state.dart';
 import '../stores/theme_state.dart';
 import '../theme/xq_decorations.dart';
+import '../theme/xq_palette.dart';
+import '../constants/app_info.dart';
+import '../constants/mood.dart';
+import '../widgets/main_scaffold.dart';
+import '../widgets/weather_sky.dart' show chineseNumber, chineseCount;
+import '../widgets/xq/xq_paper.dart';
 import '../theme/xq_typography.dart';
 import '../services/notification_service.dart';
 import '../widgets/xq_toast.dart';
@@ -59,6 +61,10 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _checkedIn = false;
   bool _capsuleNotify = true;
   int _consecutive = 0;
+  Map<int, int> _monthScores = const {}; // 本月：日 → 当天最后一笔的心情
+  int _totalDays = 0;
+  int _totalEntries = 0;
+  int _seenMoodRevision = -1;
   String? _avatarPath;
   String _phone = '';
   String _boundEmail = '';
@@ -74,6 +80,38 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadAvatar();
   }
 
+  /// 本月色谱 + 累计天数 / 笔数（全部来自 getAllMoods，失败静默）
+  Future<void> _loadMonth() async {
+    try {
+      final data = await Api.getAllMoods();
+      final moods = (data['moods'] as List?) ?? const [];
+      final now = DateTime.now();
+      final prefix = '${now.year}-${now.month.toString().padLeft(2, '0')}-';
+      final month = <int, (String, int)>{};
+      final dates = <String>{};
+      var entries = 0;
+      for (final m in moods) {
+        if (m is! Map) continue;
+        final date = m['date']?.toString() ?? '';
+        if (date.isEmpty) continue;
+        entries++;
+        dates.add(date);
+        final score = (m['emotion_type'] as num?)?.toInt() ?? 0;
+        if (!date.startsWith(prefix) || score <= 0) continue;
+        final day = int.tryParse(date.substring(prefix.length)) ?? 0;
+        final at = m['created_at']?.toString() ?? '';
+        final prev = month[day];
+        if (prev == null || at.compareTo(prev.$1) > 0) month[day] = (at, score);
+      }
+      if (!mounted) return;
+      setState(() {
+        _monthScores = {for (final e in month.entries) e.key: e.value.$2};
+        _totalDays = dates.length;
+        _totalEntries = entries;
+      });
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -87,53 +125,42 @@ class _ProfilePageState extends State<ProfilePage> {
     final theme = context.watch<ThemeState>();
     final appState = context.watch<AppState>();
 
+    if (appState.moodRevision != _seenMoodRevision) {
+      _seenMoodRevision = appState.moodRevision;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadMonth());
+    }
+
     return Scaffold(
       backgroundColor: theme.backgroundColor,
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
-          children: [
-            _profileHeader(theme, appState),
-            const SizedBox(height: 32),
-
-            _sectionTitle('记录', theme),
-            _card(theme, child: _recordsGroup(theme)),
-            const SizedBox(height: 28),
-
-            _sectionTitle('个人资料', theme),
-            _profileSettingsGroup(theme, appState),
-            const SizedBox(height: 28),
-
-            _sectionTitle('外观与偏好', theme),
-            _appearanceGroup(theme),
-            const SizedBox(height: 28),
-
-            _sectionTitle('账号与安全', theme),
-            _securityGroup(theme),
-            const SizedBox(height: 28),
-
-            _sectionTitle('关于与帮助', theme),
-            _aboutGroup(theme),
-            const SizedBox(height: 28),
-
-            // 退出登录（低调 footer 样式）
-            Center(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _logout,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    '退出登录',
-                    style: TextStyle(
-                      color: theme.textTertiary,
-                      fontSize: 13,
-                    ),
-                  ),
+      body: XqPaperPage(
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
+            children: [
+              _profileHeader(theme, appState),
+              const SizedBox(height: 30),
+              _monthCard(theme),
+              const SizedBox(height: 28),
+              _shelf(theme),
+              const SizedBox(height: 30),
+              _paperPicker(theme),
+              const SizedBox(height: 30),
+              const XqSectionTitle('设置'),
+              _settingsGroup(theme, appState),
+              const SizedBox(height: 14),
+              _aboutGroup(theme),
+              const SizedBox(height: 36),
+              _colophon(theme),
+              const SizedBox(height: 10),
+              Center(
+                child: TextButton(
+                  onPressed: _logout,
+                  child: Text('退出登录', style: TextStyle(color: theme.textTertiary, fontSize: 13)),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

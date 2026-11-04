@@ -99,7 +99,7 @@ class SeasonalCardTemplate {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${data.moodEmoji} ${data.moodLabel} · ${data.moodEn}',
+                                data.moodLabel,
                                 style: TextStyle(
                                   color: p.text.withAlpha(200),
                                   fontSize: 11.5,
@@ -124,7 +124,7 @@ class SeasonalCardTemplate {
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          data.bodyText.isNotEmpty ? data.bodyText : '写点什么吧',
+                          data.bodyText.isNotEmpty ? data.bodyText : '今天没写字。',
                           style: XqTypography.handwrittenBody.copyWith(
                             color: data.bodyText.isNotEmpty
                                 ? p.text

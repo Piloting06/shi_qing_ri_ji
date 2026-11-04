@@ -329,10 +329,9 @@ class _TreeholePageState extends State<TreeholePage>
         children: [
           const SizedBox(height: 56),
           XqEmptyState(
-            icon: XqIcons.leaf,
+            motif: XqMotif.boat,
             title: '还没有留言',
             subtitle: '还没人写。写一句就行。',
-            iconColor: theme.accentColor.withAlpha(80),
           ),
         ],
     );

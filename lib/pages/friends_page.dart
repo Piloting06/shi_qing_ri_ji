@@ -784,7 +784,7 @@ class _FriendsPageState extends State<FriendsPage> {
         const SizedBox(height: 10),
         if (_friends.isEmpty)
           XqEmptyState(
-            icon: XqIcons.people,
+            motif: XqMotif.sail,
             title: '还没有好友',
             subtitle: '用手机号加好友。看对方的心情，要对方同意。',
             actionLabel: '添加好友',

@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import '../api/api_client.dart';
 import '../services/notification_service.dart';
 import '../stores/theme_state.dart';
-import '../theme/xq_colors.dart';
 import '../stores/app_state.dart';
 import '../widgets/xq_toast.dart';
 import '../pages/home_page.dart';
@@ -84,6 +83,21 @@ class _MainScaffoldState extends State<MainScaffold> {
     });
   }
 
+  double _swipeDx = 0;
+
+  /// 快划（速度够或距离够）才切；往左划去下一个，往右划回上一个
+  void _onSwipeEnd(DragEndDetails d) {
+    final v = d.primaryVelocity ?? 0;
+    final dx = _swipeDx;
+    _swipeDx = 0;
+    final fling = v.abs() > 700 || dx.abs() > 96;
+    if (!fling) return;
+    final dir = (v.abs() > 700 ? v : dx) < 0 ? 1 : -1;
+    final next = _currentIndex + dir;
+    if (next < 0 || next > 3) return;
+    goToTab(next);
+  }
+
   void _onTabTap(int i) {
     if (_currentIndex == i) return;
     goToTab(i);
@@ -95,10 +109,11 @@ class _MainScaffoldState extends State<MainScaffold> {
     final appState = context.watch<AppState>();
 
     final overlayStyle = SystemUiOverlayStyle(
-      systemNavigationBarColor: _navBarColor(theme.themeMode),
-      systemNavigationBarDividerColor: _navBarColor(theme.themeMode),
-      systemNavigationBarIconBrightness:
-          theme.isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarColor: theme.cardColor,
+      systemNavigationBarDividerColor: theme.cardColor,
+      systemNavigationBarIconBrightness: theme.isDark
+          ? Brightness.light
+          : Brightness.dark,
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: theme.isDark
           ? Brightness.light
@@ -113,9 +128,9 @@ class _MainScaffoldState extends State<MainScaffold> {
           MaterialPageRoute(builder: (_) => const LoginPage()),
           (_) => false,
         );
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('登录已过期，请重新登录')),
-        );
+        ScaffoldMessenger.maybeOf(
+          context,
+        )?.showSnackBar(const SnackBar(content: Text('登录已过期，请重新登录')));
       });
     }
 
@@ -139,67 +154,53 @@ class _MainScaffoldState extends State<MainScaffold> {
         }
       },
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-      value: overlayStyle,
-      child: Scaffold(
-        backgroundColor: theme.backgroundColor,
-        body: Column(
-          children: [
-            Expanded(
-              // 切 Tab：只淡入当前页（160ms），其余页 Offstage 保活、暂停动画、不参与绘制
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  for (final (i, page) in const [
-                    HomePage(),
-                    MoodPage(),
-                    CityMapPage(),
-                    ProfilePage(),
-                  ].indexed)
-                    if (_visited.contains(i))
-                      _TabSlot(key: ValueKey(i), active: i == _currentIndex, child: page),
-                ],
-              ),
-            ),
-            if (theme.transitioning)
-              SizedBox(
-                height: 2,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.3, end: 0.0),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOut,
-                  builder: (context, value, child) => Opacity(
-                    opacity: value,
-                    child: Container(
-                      color: theme.accentColor.withAlpha((value * 120).round()),
-                    ),
+        value: overlayStyle,
+        child: Scaffold(
+          backgroundColor: theme.backgroundColor,
+          body: Column(
+            children: [
+              Expanded(
+                // 左右快划切到相邻 Tab（页内横向列表、输入框的手势优先）。不跟手翻页：跟手翻会把相邻页拉出来一起画
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onHorizontalDragStart: (_) => _swipeDx = 0,
+                  onHorizontalDragUpdate: (d) => _swipeDx += d.delta.dx,
+                  onHorizontalDragEnd: _onSwipeEnd,
+                  // 切 Tab：只淡入当前页（160ms），其余页 Offstage 保活、暂停动画、不参与绘制
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      for (final (i, page) in const [
+                        HomePage(),
+                        MoodPage(),
+                        CityMapPage(),
+                        ProfilePage(),
+                      ].indexed)
+                        if (_visited.contains(i))
+                          _TabSlot(
+                            key: ValueKey(i),
+                            active: i == _currentIndex,
+                            child: page,
+                          ),
+                    ],
                   ),
                 ),
               ),
-            // 素笺贴底通栏：surface 底 + 顶部 1px 线，无毛玻璃无光晕
-            _SujianBottomBar(
-              currentIndex: _currentIndex,
-              theme: theme,
-              onTap: _onTabTap,
-            ),
-          ],
+              // 素笺贴底通栏：surface 底 + 顶部 1px 线，无毛玻璃无光晕
+              _SujianBottomBar(
+                currentIndex: _currentIndex,
+                theme: theme,
+                onTap: _onTabTap,
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 }
 
 /// 系统导航栏颜色 — 匹配页面背景（胶囊半透明，底部统一）
-Color _navBarColor(String theme) => switch (theme) {
-  'sujian' => XqColors.sujianCard, // 素笺通栏 surface
-  'sujian_dark' => XqColors.sujianDarkCard,
-  'warm' => const Color(0xFFFAF4EC),
-  'dark' => const Color(0xFF0E1222),
-  'mint' => const Color(0xFFDDEBE3),
-  'blush' => const Color(0xFFF2DED8),
-  _ => XqColors.sujianCard,
-};
-
 /// 笺谱底栏：贴底纸条 + 顶部一道乌丝栏；四个单字「天 · 心 · 城 · 我」（展示体），
 /// 选中的那个变成一枚墨色白文小印（朱砂留给内容里的印）。遵守系统减弱动效。
 class _SujianBottomBar extends StatelessWidget {
@@ -225,7 +226,10 @@ class _SujianBottomBar extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          image: XqPaper.grain(theme.paperFiber, strength: theme.isDark ? 0.6 : 0.8),
+          image: XqPaper.grain(
+            theme.paperFiber,
+            strength: theme.isDark ? 0.6 : 0.8,
+          ),
           border: Border(top: BorderSide(color: theme.frameColor, width: 0.6)),
         ),
         padding: EdgeInsets.only(bottom: bottom),
@@ -302,7 +306,8 @@ class _TabSlot extends StatefulWidget {
   State<_TabSlot> createState() => _TabSlotState();
 }
 
-class _TabSlotState extends State<_TabSlot> with SingleTickerProviderStateMixin {
+class _TabSlotState extends State<_TabSlot>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _fade = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 160),

@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../theme/xq_decorations.dart';
 import '../../theme/xq_typography.dart';
+import '../xq/xq_paper.dart';
+import '../../constants/mood.dart';
 import 'mood_card_data.dart';
 
 /// 晴收集：卡片随当天真实天气自动换肤（晴/云/阴雾/雨/雪），
@@ -110,9 +112,10 @@ class SunnyCardTemplate {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          data.moodEmoji,
-                          style: const TextStyle(fontSize: 30),
+                        XqPigmentDab(
+                          color: Color(moodColors[data.moodScore] ?? 0xFF7A7871),
+                          size: 30,
+                          seed: data.moodScore + 1,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -126,16 +129,7 @@ class SunnyCardTemplate {
                                   fontSize: 16,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                data.moodEn,
-                                style: TextStyle(
-                                  color: p.accent.withAlpha(150),
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 2.2,
-                                ),
-                              ),
+
                             ],
                           ),
                         ),
@@ -155,7 +149,7 @@ class SunnyCardTemplate {
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          data.bodyText.isNotEmpty ? data.bodyText : '写点什么吧',
+                          data.bodyText.isNotEmpty ? data.bodyText : '今天没写字。',
                           style: XqTypography.handwrittenBody.copyWith(
                             color: data.bodyText.isNotEmpty
                                 ? p.text

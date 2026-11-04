@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/keys.dart';
+import 'api_errors.dart';
 
 class ApiBase {
   static const String baseUrl = 'https://xqrj.glxgo.xin/api';
@@ -43,12 +44,12 @@ class ApiBase {
       throw ApiException(msg, 401);
     }
     if (res.statusCode >= 400) {
-      String msg = '请求失败';
+      String msg = '';
       try {
         final body = json.decode(res.body);
         if (body is Map && body['message'] != null) msg = body['message'];
       } catch (_) {}
-      throw ApiException(msg, res.statusCode);
+      throw ApiException(friendlyServerMessage(msg, res.statusCode), res.statusCode);
     }
     if (res.body.isEmpty) return {};
     return Map<String, dynamic>.from(json.decode(res.body));

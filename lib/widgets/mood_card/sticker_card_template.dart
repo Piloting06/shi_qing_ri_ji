@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../constants/mood.dart';
 import '../../theme/xq_decorations.dart';
 import '../../theme/xq_typography.dart';
+import '../xq/xq_paper.dart';
 import 'mood_card_data.dart';
 
 /// 手账贴纸：和纸胶带 + 贴纸 emoji + 涂鸦画笔，纸面拼贴感
@@ -79,15 +80,12 @@ class StickerCardTemplate {
                           ),
                         ),
                         const Spacer(),
-                        // 贴纸两枚
-                        const Text('☁️', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 4),
-                        Text(
-                          data.moodEmoji,
-                          style: const TextStyle(fontSize: 16),
+                        // 一抹心情颜料当贴纸
+                        XqPigmentDab(
+                          color: Color(moodColors[data.moodScore] ?? 0xFF7A7871),
+                          size: 22,
+                          seed: data.moodScore + 5,
                         ),
-                        const SizedBox(width: 2),
-                        const Text('⭐', style: TextStyle(fontSize: 13)),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -109,7 +107,7 @@ class StickerCardTemplate {
                     const SizedBox(height: 8),
                     Expanded(
                       child: Text(
-                        data.bodyText.isNotEmpty ? data.bodyText : '写点什么吧',
+                        data.bodyText.isNotEmpty ? data.bodyText : '今天没写字。',
                         style: XqTypography.handwrittenBody.copyWith(
                           color: data.bodyText.isNotEmpty
                               ? _ink
@@ -203,7 +201,7 @@ class _WashiTape extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        '❋ ❋ ❋ ❋ ❋ ❋',
+        '·  ·  ·  ·  ·  ·',
         style: TextStyle(
           color: Colors.white.withAlpha(150),
           fontSize: 8,

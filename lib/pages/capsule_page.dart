@@ -635,15 +635,10 @@ class _CapsulePageState extends State<CapsulePage> {
           ),
           Row(
             children: [
-              _quickDayButton(theme, '1天', 1),
-              const SizedBox(width: 8),
-              _quickDayButton(theme, '3天', 3),
-              const SizedBox(width: 8),
-              _quickDayButton(theme, '7天', 7),
-              const SizedBox(width: 8),
-              _quickDayButton(theme, '14天', 14),
-              const SizedBox(width: 8),
-              _quickDayButton(theme, '30天', 30),
+              for (final (i, d) in const [1, 3, 7, 14, 30].indexed) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(child: _quickDayButton(theme, '$d天', d)),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -694,7 +689,7 @@ class _CapsulePageState extends State<CapsulePage> {
             child: OutlinedButton.icon(
               onPressed: _testNotification,
               icon: const XqIcon(XqIcons.hourglass, size: 16),
-              label: const Text('测试通知 — 1分钟后推送'),
+              label: const Text('测试通知（1 分钟后推送）'),
             ),
           ),
           ],
@@ -738,10 +733,9 @@ class _CapsulePageState extends State<CapsulePage> {
   Widget _capsuleList(ThemeState theme) {
     if (_capsules.isEmpty) {
       return XqEmptyState(
-        icon: XqIcons.hourglass,
+        motif: XqMotif.boat,
         title: '还没有时光胶囊',
         subtitle: '写几句给以后的自己，到日子再打开',
-        iconColor: theme.accentColor.withAlpha(80),
       );
     }
 
@@ -760,22 +754,26 @@ class _CapsulePageState extends State<CapsulePage> {
 
   Widget _quickDayButton(ThemeState theme, String label, int days) {
     final active = _days == days;
+    // 签条：细墨框，选中墨底反白
     return GestureDetector(
       onTap: () => setState(() => _days = days),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: active ? theme.accentColor.withAlpha(20) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: active ? theme.accentColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: active ? theme.accentColor.withAlpha(80) : theme.borderColor,
+            color: active ? theme.accentColor : theme.controlBorder.withAlpha(150),
+            width: 0.8,
           ),
         ),
         child: Text(
           label,
+          maxLines: 1,
           style: TextStyle(
-            color: active ? theme.accentColor : theme.textTertiary,
+            color: active ? theme.textOnAccent : theme.textSecondary,
             fontSize: 12,
             fontWeight: active ? FontWeight.w600 : FontWeight.w400,
           ),

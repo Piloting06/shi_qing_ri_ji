@@ -22,6 +22,17 @@ Express 5 + helmet + cors + express-rate-limit + sql.js。端口 3001，PM2 进�
 - **安全基线**：`trust proxy 1`（限流按真实 IP）；CORS 白名单在 `index.js`（加域名改那里）；全部 SQL 参数绑定；`sms_codes`/密码只存哈希。
 - **天气缓存**：`routes/weather.js` 内存缓存 10 分钟；`/location` 必须把 `X-Forwarded-For`/`X-Real-IP` 的客户端 IP 放进 ip-api **路径**（`/json/{ip}`），内网 IP 返回未知。
 
+## 测试
+
+`npm run smoke`（`scripts/smoke_test.js`）：对隔离实例跑 35 项主链路（账号 / 心情 / 签到 / 胶囊 / 树洞 / 好友 / 城迹 / 落地页 / 限流 / 中文报错）。会注册用户、写数据，默认拒绝对生产地址运行。隔离实例 = 拷一份 server 目录（不带 `*.db`、`.env`）+ 空库 + 测试用环境变量：
+
+```
+JWT_SECRET=test PORT=3997 DB_BACKUP_DIR=/tmp/x DB_BACKUP_DIR_EXTERNAL=/tmp/x ALIBABA_ACCESS_KEY_ID=dummy ALIBABA_ACCESS_KEY_SECRET=dummy node index.js &
+BASE=http://127.0.0.1:3997 npm run smoke
+```
+
+部署前先跑一遍。
+
 ## 部署
 
 运维凭据、SSH 别名、发布步骤见 `artifacts/ops.md`（本地，git 忽略）。改动后 `pm2 restart xinqingriji` + 内外网 health 双验证；涉 db.js 需确认备份目录出现新文件。**每次发版**把新 APK 传到服务器 `server/landing/sqrj.apk`（不进 Git），并改 `landing/index.html` 里的版本号与大小。

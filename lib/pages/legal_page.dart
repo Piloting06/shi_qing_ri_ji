@@ -48,7 +48,7 @@ class LegalPage extends StatelessWidget {
 
 五、你的权利
 
-你可依法访问、更正、删除个人信息，申请注销账号（App内"我的-账号-注销账号"），或撤回权限授权。联系我们：QQ交流群或App内反馈渠道。
+你可依法访问、更正、删除个人信息，申请注销账号（App内「我的 → 退出登录 → 彻底注销账号」），或撤回权限授权。联系我们：QQ交流群或App内反馈渠道。
 ''';
 
   static const _termsContent = '''

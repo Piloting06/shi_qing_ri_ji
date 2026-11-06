@@ -17,7 +17,7 @@ import '../theme/xq_palette.dart';
 import '../constants/app_info.dart';
 import '../constants/mood.dart';
 import '../widgets/main_scaffold.dart';
-import '../widgets/weather_sky.dart' show chineseNumber, chineseCount;
+import '../widgets/weather_sky.dart' show chineseNumber;
 import '../widgets/xq/xq_paper.dart';
 import '../theme/xq_typography.dart';
 import '../services/notification_service.dart';

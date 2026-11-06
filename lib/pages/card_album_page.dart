@@ -123,7 +123,7 @@ class _CardAlbumPageState extends State<CardAlbumPage> {
                   child: XqEmptyState(
                     motif: XqMotif.branch,
                     title: '还没有卡片',
-                    subtitle: '在心情页做一张卡，保存或分享后会收进这里。',
+                    subtitle: '存过的卡会收在这里',
                   ),
                 )
               : XqRefresh(

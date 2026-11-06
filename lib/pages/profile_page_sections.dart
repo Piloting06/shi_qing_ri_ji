@@ -173,13 +173,7 @@ extension _ProfilePageSections on _ProfilePageState {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        XqSectionTitle(
-          '${chineseNumber(now.month)}月',
-          trailing: Text(
-            recorded == 0 ? '这个月还没记' : '记了${chineseCount(recorded)}天',
-            style: TextStyle(color: theme.textTertiary, fontSize: 12.5),
-          ),
-        ),
+        XqSectionTitle('${chineseNumber(now.month)}月'),
         Semantics(
           button: true,
           label: '这个月记了$recorded天，去心情页',
@@ -246,8 +240,6 @@ extension _ProfilePageSections on _ProfilePageState {
                       title,
                       style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16, letterSpacing: 1),
                     ),
-                    const SizedBox(height: 3),
-                    Text(sub, style: TextStyle(color: theme.textTertiary, fontSize: 11.5)),
                   ],
                 ),
               ),
@@ -273,17 +265,13 @@ extension _ProfilePageSections on _ProfilePageState {
     );
   }
 
-  // ── 纸：深浅 + 六张纸 ──
+  // ── 纸：深浅 + 四张纸（来历在换纸时浮出，这里不常驻）──
 
   Widget _paperPicker(ThemeState theme) {
-    final current = theme.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        XqSectionTitle(
-          '纸',
-          trailing: Text('现在用的是${current.name}', style: TextStyle(color: theme.textTertiary, fontSize: 12.5)),
-        ),
+        const XqSectionTitle('纸'),
         XqSurface(
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
           child: Column(
@@ -294,23 +282,6 @@ extension _ProfilePageSections on _ProfilePageState {
               _paperRow(theme, '白天', XqPalette.lights, theme.lightPaper),
               const SizedBox(height: 14),
               _paperRow(theme, '夜里', XqPalette.darks, theme.darkPaper),
-              const SizedBox(height: 14),
-              Container(height: 0.6, color: theme.borderColor),
-              const SizedBox(height: 12),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: Text.rich(
-                  key: ValueKey(current.id),
-                  TextSpan(children: [
-                    TextSpan(
-                      text: '${current.name}　${current.paper}\n',
-                      style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16, height: 1.9),
-                    ),
-                    TextSpan(text: current.story),
-                  ]),
-                  style: TextStyle(color: theme.textSecondary, fontSize: 13, height: 1.6),
-                ),
-              ),
             ],
           ),
         ),
@@ -425,7 +396,7 @@ extension _ProfilePageSections on _ProfilePageState {
           _row(
             theme,
             title: '邮箱',
-            value: _boundEmail.isEmpty ? '没绑定，绑了能用邮箱登录' : _boundEmail,
+            value: _boundEmail.isEmpty ? '未绑定' : _boundEmail,
             onTap: () => _showEmailSheet(theme),
           ),
           _rule(theme),

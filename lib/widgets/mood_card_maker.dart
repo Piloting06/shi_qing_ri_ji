@@ -253,7 +253,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
         square: _square,
       );
       if (mounted) {
-        XqToast.success(context, '已存进相册，也收进了卡片册');
+        XqToast.success(context, '已存进相册');
         Navigator.pop(context);
       }
     } catch (_) {
@@ -446,19 +446,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
               child: Row(
                 children: [
                   Text('做一张卡', style: XqTypography.displaySmall.copyWith(color: t.textPrimary, fontSize: 22)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 160),
-                      child: Text(
-                        '${_spec.name} · ${_spec.label}',
-                        key: ValueKey(_templateIndex),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: t.textTertiary, fontSize: 12.5),
-                      ),
-                    ),
-                  ),
+                  const Spacer(),
                   IconButton(
                     tooltip: '关闭',
                     onPressed: () => Navigator.pop(context),
@@ -530,7 +518,6 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                       onChanged: (v) => setState(() => _bodyText = v),
                       style: kaiStyle(15, t.textPrimary, height: 1.6),
                       decoration: InputDecoration(
-                        hintText: '写几句当天的话',
                         fillColor: t.sunkenColor,
                         counterStyle: TextStyle(color: t.textTertiary, fontSize: 11),
                       ),
@@ -574,7 +561,6 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                           }),
                       ],
                     ),
-                    trailing: Text('最多两个', style: TextStyle(color: t.textTertiary, fontSize: 12)),
                   ),
                   _field(
                     '版式',
@@ -625,7 +611,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                           },
                           style: TextStyle(color: t.textPrimary, fontSize: 14),
                           decoration: InputDecoration(
-                            hintText: '署名（可不填）',
+                            hintText: '署名',
                             isDense: true,
                             fillColor: t.sunkenColor,
                             counterText: '',
@@ -637,7 +623,7 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text('分享时在卡角附一枚下载二维码', style: TextStyle(color: t.textSecondary, fontSize: 13.5)),
+                        child: Text('附二维码', style: TextStyle(color: t.textSecondary, fontSize: 13.5)),
                       ),
                       Switch(
                         value: _shareWithQr,

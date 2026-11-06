@@ -91,8 +91,6 @@ class SolarTermSheet extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (i == houIndex)
-                        Text('这几天', style: TextStyle(color: t.textTertiary, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -118,7 +116,7 @@ class SolarTermSheet extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                '下一个节气是${next.name}，${chineseNumber(next.date.month)}月${chineseNumber(next.date.day)}日。',
+                '下一个 · ${next.name} ${chineseNumber(next.date.month)}月${chineseNumber(next.date.day)}日',
                 style: TextStyle(color: t.textTertiary, fontSize: 12.5),
               ),
             ],

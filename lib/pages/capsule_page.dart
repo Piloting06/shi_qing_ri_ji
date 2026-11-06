@@ -31,7 +31,12 @@ class _BrandGuide {
   final String system;
   final XqIcons icon;
   final List<_BrandStep> steps;
-  const _BrandGuide({required this.name, required this.system, required this.icon, required this.steps});
+  const _BrandGuide({
+    required this.name,
+    required this.system,
+    required this.icon,
+    required this.steps,
+  });
 }
 
 class CapsulePage extends StatefulWidget {
@@ -109,9 +114,9 @@ class _CapsulePageState extends State<CapsulePage> {
       }
     }
     if (capsule == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('没找到这颗胶囊')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('没找到这颗胶囊')));
       return;
     }
     final targetCapsule = capsule;
@@ -126,7 +131,9 @@ class _CapsulePageState extends State<CapsulePage> {
     final text = _contentCtrl.text.trim();
     if (text.isEmpty || _creating) return;
     if (text.length > 500) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('内容最多 500 字')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('内容最多 500 字')));
       return;
     }
 
@@ -203,7 +210,10 @@ class _CapsulePageState extends State<CapsulePage> {
           reducedMotion: reduced,
         );
         if (mounted) {
-          _showContent(Map<String, dynamic>.from(data), fromReminder: fromReminder);
+          _showContent(
+            Map<String, dynamic>.from(data),
+            fromReminder: fromReminder,
+          );
           await _load();
         }
       }
@@ -228,7 +238,11 @@ class _CapsulePageState extends State<CapsulePage> {
       icon: XqIcons.phone,
       steps: [
         _BrandStep(XqIcons.logout, '自启动', '设置 → 应用 → 应用管理 → 拾晴日记 → 打开「自启动」'),
-        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 应用管理 → 拾晴日记 → 耗电保护 → 选择「无限制」'),
+        _BrandStep(
+          XqIcons.battery,
+          '电池优化',
+          '设置 → 应用 → 应用管理 → 拾晴日记 → 耗电保护 → 选择「无限制」',
+        ),
         _BrandStep(XqIcons.bell, '通知', '设置 → 通知与状态栏 → 拾晴日记 → 允许通知'),
       ],
     ),
@@ -237,8 +251,16 @@ class _CapsulePageState extends State<CapsulePage> {
       system: 'HarmonyOS',
       icon: XqIcons.spark,
       steps: [
-        _BrandStep(XqIcons.logout, '自启动', '手机管家 → 应用启动管理 → 拾晴日记 → 关闭「自动管理」→ 全部手动开启'),
-        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 拾晴日记 → 耗电详情 → 启动管理 → 手动管理'),
+        _BrandStep(
+          XqIcons.logout,
+          '自启动',
+          '手机管家 → 应用启动管理 → 拾晴日记 → 关闭「自动管理」→ 全部手动开启',
+        ),
+        _BrandStep(
+          XqIcons.battery,
+          '电池优化',
+          '设置 → 应用 → 拾晴日记 → 耗电详情 → 启动管理 → 手动管理',
+        ),
         _BrandStep(XqIcons.bell, '通知', '设置 → 通知和状态栏 → 拾晴日记 → 允许通知'),
       ],
     ),
@@ -248,7 +270,11 @@ class _CapsulePageState extends State<CapsulePage> {
       icon: XqIcons.spark,
       steps: [
         _BrandStep(XqIcons.logout, '自启动', '设置 → 应用设置 → 拾晴日记 → 打开「自启动」'),
-        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用设置 → 拾晴日记 → 省电策略 → 选择「无限制」'),
+        _BrandStep(
+          XqIcons.battery,
+          '电池优化',
+          '设置 → 应用设置 → 拾晴日记 → 省电策略 → 选择「无限制」',
+        ),
         _BrandStep(XqIcons.bell, '通知', '设置 → 通知管理 → 拾晴日记 → 允许通知'),
       ],
     ),
@@ -258,7 +284,11 @@ class _CapsulePageState extends State<CapsulePage> {
       icon: XqIcons.spark,
       steps: [
         _BrandStep(XqIcons.logout, '自启动', 'i管家 → 应用管理 → 权限管理 → 拾晴日记 → 打开「自启动」'),
-        _BrandStep(XqIcons.battery, '电池优化', '设置 → 应用 → 拾晴日记 → 电池 → 打开「允许后台高耗电」'),
+        _BrandStep(
+          XqIcons.battery,
+          '电池优化',
+          '设置 → 应用 → 拾晴日记 → 电池 → 打开「允许后台高耗电」',
+        ),
         _BrandStep(XqIcons.bell, '通知', '设置 → 通知 → 拾晴日记 → 允许通知'),
       ],
     ),
@@ -287,10 +317,14 @@ class _CapsulePageState extends State<CapsulePage> {
         return StatefulBuilder(
           builder: (ctx, setState) {
             return Container(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.72),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.72,
+              ),
               decoration: BoxDecoration(
                 color: theme.cardColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(8),
+                ),
               ),
               child: SafeArea(
                 top: false,
@@ -298,24 +332,45 @@ class _CapsulePageState extends State<CapsulePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 8),
-                    Container(width: 36, height: 4, decoration: BoxDecoration(color: theme.borderColor, borderRadius: BorderRadius.circular(2))),
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.borderColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                     const SizedBox(height: 12),
-                    Text('让提醒准时到', style: XqTypography.headlineMedium.copyWith(color: theme.textPrimary)),
+                    Text(
+                      '让提醒准时到',
+                      style: XqTypography.headlineMedium.copyWith(
+                        color: theme.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    Text('左右滑，找你的手机品牌', style: TextStyle(color: theme.textSecondary, fontSize: 13)),
+                    Text(
+                      '左右滑，找你的手机品牌',
+                      style: TextStyle(
+                        color: theme.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     // 品牌指示器
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_brands.length, (i) =>
-                        AnimatedContainer(
+                      children: List.generate(
+                        _brands.length,
+                        (i) => AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeOutCubic,
                           margin: const EdgeInsets.symmetric(horizontal: 3),
                           width: currentPage == i ? 20.0 : 6.0,
                           height: 6.0,
                           decoration: BoxDecoration(
-                            color: currentPage == i ? theme.accentColor : theme.borderColor,
+                            color: currentPage == i
+                                ? theme.accentColor
+                                : theme.borderColor,
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
@@ -342,41 +397,84 @@ class _CapsulePageState extends State<CapsulePage> {
                                     color: theme.accentColor.withAlpha(18),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: XqIcon(b.icon, color: theme.accentColor, size: 26),
+                                  child: XqIcon(
+                                    b.icon,
+                                    color: theme.accentColor,
+                                    size: 26,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(b.name, style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-                                const SizedBox(height: 2),
-                                Text(b.system, style: TextStyle(color: theme.textTertiary, fontSize: 12)),
-                                const SizedBox(height: 20),
-                                ...b.steps.map((s) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 14),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(
-                                          color: theme.accentColor.withAlpha(14),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: XqIcon(s.icon, color: theme.accentColor, size: 18),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(s.title, style: TextStyle(color: theme.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
-                                            const SizedBox(height: 3),
-                                            Text(s.desc, style: TextStyle(color: theme.textSecondary, fontSize: 12, height: 1.4)),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                Text(
+                                  b.name,
+                                  style: TextStyle(
+                                    color: theme.textPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                )),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  b.system,
+                                  style: TextStyle(
+                                    color: theme.textTertiary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                ...b.steps.map(
+                                  (s) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 14),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: 36,
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            color: theme.accentColor.withAlpha(
+                                              14,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: XqIcon(
+                                            s.icon,
+                                            color: theme.accentColor,
+                                            size: 18,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                s.title,
+                                                style: TextStyle(
+                                                  color: theme.textPrimary,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                s.desc,
+                                                style: TextStyle(
+                                                  color: theme.textSecondary,
+                                                  fontSize: 12,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           );
@@ -389,15 +487,43 @@ class _CapsulePageState extends State<CapsulePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         IconButton(
-                          onPressed: currentPage > 0 ? () => pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic) : null,
-                          icon: XqIcon(XqIcons.back, size: 18, color: currentPage > 0 ? theme.accentColor : theme.borderColor),
+                          onPressed: currentPage > 0
+                              ? () => pageCtrl.previousPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOutCubic,
+                                )
+                              : null,
+                          icon: XqIcon(
+                            XqIcons.back,
+                            size: 18,
+                            color: currentPage > 0
+                                ? theme.accentColor
+                                : theme.borderColor,
+                          ),
                         ),
                         const SizedBox(width: 24),
-                        Text('${currentPage + 1} / ${_brands.length}', style: TextStyle(color: theme.textTertiary, fontSize: 12)),
+                        Text(
+                          '${currentPage + 1} / ${_brands.length}',
+                          style: TextStyle(
+                            color: theme.textTertiary,
+                            fontSize: 12,
+                          ),
+                        ),
                         const SizedBox(width: 24),
                         IconButton(
-                          onPressed: currentPage < _brands.length - 1 ? () => pageCtrl.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic) : null,
-                          icon: XqIcon(XqIcons.chevronRight, size: 18, color: currentPage < _brands.length - 1 ? theme.accentColor : theme.borderColor),
+                          onPressed: currentPage < _brands.length - 1
+                              ? () => pageCtrl.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOutCubic,
+                                )
+                              : null,
+                          icon: XqIcon(
+                            XqIcons.chevronRight,
+                            size: 18,
+                            color: currentPage < _brands.length - 1
+                                ? theme.accentColor
+                                : theme.borderColor,
+                          ),
                         ),
                       ],
                     ),
@@ -414,7 +540,9 @@ class _CapsulePageState extends State<CapsulePage> {
                           style: FilledButton.styleFrom(
                             backgroundColor: theme.accentColor,
                             foregroundColor: theme.textOnAccent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
@@ -431,10 +559,7 @@ class _CapsulePageState extends State<CapsulePage> {
     pageCtrl.dispose();
   }
 
-  void _showContent(
-    Map<String, dynamic> capsule, {
-    bool fromReminder = false,
-  }) {
+  void _showContent(Map<String, dynamic> capsule, {bool fromReminder = false}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -442,7 +567,9 @@ class _CapsulePageState extends State<CapsulePage> {
       builder: (ctx) {
         final theme = Provider.of<ThemeState>(ctx, listen: false);
         return Container(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
           decoration: BoxDecoration(
             color: theme.cardColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
@@ -452,55 +579,62 @@ class _CapsulePageState extends State<CapsulePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: theme.borderColor, borderRadius: BorderRadius.circular(2)))),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    XqIcon(
-                      fromReminder
-                          ? XqIcons.bell
-                          : XqIcons.mail,
-                      color: theme.accentColor,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      fromReminder ? '提醒你打开的胶囊' : '来自过去的自己',
-                      style: XqTypography.headlineSmall.copyWith(
-                        color: theme.textPrimary,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.borderColor,
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  capsule['content']?.toString() ?? '',
-                  style: TextStyle(
-                    color: theme.textPrimary,
-                    fontSize: 16,
-                    height: 1.65,
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '封存于 ${_shortDate(capsule['created_at'])}',
-                  style: TextStyle(color: theme.textSecondary, fontSize: 12),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('收好'),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      XqIcon(
+                        fromReminder ? XqIcons.bell : XqIcons.mail,
+                        color: theme.accentColor,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        fromReminder ? '提醒你打开的胶囊' : '来自过去的自己',
+                        style: XqTypography.headlineSmall.copyWith(
+                          color: theme.textPrimary,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(
+                    capsule['content']?.toString() ?? '',
+                    style: TextStyle(
+                      color: theme.textPrimary,
+                      fontSize: 16,
+                      height: 1.65,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '封存于 ${_shortDate(capsule['created_at'])}',
+                    style: TextStyle(color: theme.textSecondary, fontSize: 12),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('收好'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
       },
     );
   }
@@ -540,10 +674,7 @@ class _CapsulePageState extends State<CapsulePage> {
       children: [
         IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: XqIcon(XqIcons.back,
-            color: theme.textPrimary,
-            size: 20,
-          ),
+          icon: XqIcon(XqIcons.back, color: theme.textPrimary, size: 20),
         ),
         Expanded(
           child: Text(
@@ -562,7 +693,11 @@ class _CapsulePageState extends State<CapsulePage> {
   Widget _createCard(ThemeState theme) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
-      decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
+      decoration: XqDecorations.surface(
+        theme.cardColor,
+        dark: theme.isDark,
+        edge: theme.borderColor,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -607,13 +742,10 @@ class _CapsulePageState extends State<CapsulePage> {
               ),
               const Spacer(),
               Text(
-                DateFormat('M月d日').format(
-                  DateTime.now().add(Duration(days: _days)),
-                ),
-                style: TextStyle(
-                  color: theme.textSecondary,
-                  fontSize: 12,
-                ),
+                DateFormat(
+                  'M月d日',
+                ).format(DateTime.now().add(Duration(days: _days))),
+                style: TextStyle(color: theme.textSecondary, fontSize: 12),
               ),
             ],
           ),
@@ -668,11 +800,7 @@ class _CapsulePageState extends State<CapsulePage> {
             child: ElevatedButton.icon(
               onPressed: _creating ? null : _create,
               icon: _creating
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: XqInkLoader(),
-                    )
+                  ? const SizedBox(width: 18, height: 18, child: XqInkLoader())
                   : const XqIcon(XqIcons.lock, size: 18),
               label: Text(_creating ? '封存中' : '确认封存'),
               style: ElevatedButton.styleFrom(
@@ -683,16 +811,16 @@ class _CapsulePageState extends State<CapsulePage> {
           ),
           // 通知自测入口只在调试包出现，正式包不暴露
           if (kDebugMode) ...[
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            height: 40,
-            child: OutlinedButton.icon(
-              onPressed: _testNotification,
-              icon: const XqIcon(XqIcons.hourglass, size: 16),
-              label: const Text('测试通知（1 分钟后推送）'),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: OutlinedButton.icon(
+                onPressed: _testNotification,
+                icon: const XqIcon(XqIcons.hourglass, size: 16),
+                label: const Text('测试通知（1 分钟后推送）'),
+              ),
             ),
-          ),
           ],
         ],
       ),
@@ -703,9 +831,10 @@ class _CapsulePageState extends State<CapsulePage> {
     final err = await NotificationService.scheduleQuickTest();
     if (!mounted) return;
     if (err != null) {
-      XqToast.error(context, err == '系统通知未开启'
-          ? '通知权限未开启，请在系统设置中允许拾晴日记发送通知'
-          : err);
+      XqToast.error(
+        context,
+        err == '系统通知未开启' ? '通知权限未开启，请在系统设置中允许拾晴日记发送通知' : err,
+      );
     } else {
       XqToast.success(context, '测试通知已设置，1 分钟后弹出，可回到桌面等待');
     }
@@ -766,7 +895,9 @@ class _CapsulePageState extends State<CapsulePage> {
           color: active ? theme.accentColor : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: active ? theme.accentColor : theme.controlBorder.withAlpha(150),
+            color: active
+                ? theme.accentColor
+                : theme.controlBorder.withAlpha(150),
             width: 0.8,
           ),
         ),
@@ -798,7 +929,11 @@ class _CapsulePageState extends State<CapsulePage> {
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-          decoration: XqDecorations.surface(theme.cardColor, dark: theme.isDark, edge: theme.borderColor),
+          decoration: XqDecorations.surface(
+            theme.cardColor,
+            dark: theme.isDark,
+            edge: theme.borderColor,
+          ),
           child: Row(
             children: [
               // 封缄印：没到日子是淡墨朱文「封」，到日子了是朱砂白文「启」，拆过的是淡墨「阅」
@@ -823,24 +958,27 @@ class _CapsulePageState extends State<CapsulePage> {
                       opened
                           ? '拆过了'
                           : canOpen
-                          ? '到日子了，可以拆开'
+                          ? '可以拆了'
                           : '${chineseNumber((openDate ?? DateTime.now()).month)}月${chineseNumber((openDate ?? DateTime.now()).day)}日拆封',
-                      style: XqTypography.headlineSmall.copyWith(color: theme.textPrimary, fontSize: 16),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      opened
-                          ? (content.isEmpty ? '内容已开启' : content)
-                          : canOpen
-                          ? '点开，看看那时写给现在的话'
-                          : '还要等 ${daysLeft == null ? '--' : daysLeft.clamp(1, 999)} 天',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: theme.textSecondary,
-                        fontSize: 12,
+                      style: XqTypography.headlineSmall.copyWith(
+                        color: theme.textPrimary,
+                        fontSize: 16,
                       ),
                     ),
+                    if (!canOpen) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        opened
+                            ? (content.isEmpty ? '内容已开启' : content)
+                            : '还要等 ${daysLeft == null ? '--' : daysLeft.clamp(1, 999)} 天',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: theme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -850,7 +988,11 @@ class _CapsulePageState extends State<CapsulePage> {
                   onTap: () => _deleteCapsule(capsule),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: XqIcon(XqIcons.trash, color: theme.errorColor.withAlpha(160), size: 18),
+                    child: XqIcon(
+                      XqIcons.trash,
+                      color: theme.errorColor.withAlpha(160),
+                      size: 18,
+                    ),
                   ),
                 ),
             ],
@@ -869,8 +1011,17 @@ class _CapsulePageState extends State<CapsulePage> {
         title: Text('删除这颗胶囊', style: TextStyle(color: theme.textPrimary)),
         content: const Text('删除后找不回来。'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('取消', style: TextStyle(color: theme.textSecondary))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('删除', style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('取消', style: TextStyle(color: theme.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              '删除',
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+            ),
+          ),
         ],
       ),
     );
@@ -902,4 +1053,3 @@ class _CapsulePageState extends State<CapsulePage> {
     return '${cleaned.substring(0, 36)}…';
   }
 }
-

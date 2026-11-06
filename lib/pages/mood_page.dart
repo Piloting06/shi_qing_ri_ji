@@ -680,6 +680,8 @@ class _MoodPageState extends State<MoodPage> {
                   controller: _notesCtrl,
                   minLines: 4,
                   maxLines: 12,
+                  maxLength: 2000, // 与服务端上限一致；计数不显示
+
                   style: XqTypography.handwrittenBody.copyWith(
                     color: t.textPrimary,
                     height: 32 / 17,
@@ -691,6 +693,7 @@ class _MoodPageState extends State<MoodPage> {
                     _scrollToEditor,
                   ),
                   decoration: InputDecoration(
+                    counterText: '',
                     hintText: _moodScore == 0
                         ? '今天发生了什么'
                         : _placeholderForScore(_moodScore),

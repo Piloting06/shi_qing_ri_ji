@@ -6,7 +6,7 @@
  */
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:3997';
-if (/xqrj\.glxgo\.xin|114\.55\.138\.55/.test(BASE) && process.env.SMOKE_ALLOW_PROD !== '1') {
+if (/xqrj\.glxgo\.xin|114\.55\.138\.55|47\.254\.214\.87/.test(BASE) && process.env.SMOKE_ALLOW_PROD !== '1') {
   console.error('拒绝对生产环境跑安全测试');
   process.exit(2);
 }
@@ -34,6 +34,7 @@ async function check(name, fn) {
   }
 }
 const expect = (c, m) => { if (!c) throw new Error(m); };
+const expectChineseErrorLike = (r) => expect(/[\u4e00-\u9fff]/.test(r.data?.message || ''), '错误不是中文');
 const cstDate = (d = 0) => new Date(Date.now() + 8 * 3600e3 + d * 86400e3).toISOString().slice(0, 10);
 const phone = () => '137' + String(Math.floor(Math.random() * 1e8)).padStart(8, '0');
 
@@ -165,15 +166,16 @@ async function register() {
     const r = await raw('POST', '/api/auth/send-sms-code', { body: { phone: '13900000001' } });
     expect(r.status !== 200, `密钥无效也回 200「${r.data.message}」`);
   });
-  await check('短信验证码接口有频率限制（防短信轰炸）', async () => {
+  await check('发码接口有 IP 频率上限（防批量刷短信）', async () => {
+    // 短信、邮箱共用 IP 上限 30 次 / 10 分钟（校园网 NAT 下不误伤）；同号一分钟一次、一天十次在发送成功后生效
     let last;
-    for (let i = 0; i < 6; i++) last = await raw('POST', '/api/auth/send-sms-code', { body: { phone: '13800000000' } });
-    expect(last.status === 429, `连发 6 次都放行（最后一次 ${last.status}）`);
-  });
-  await check('邮箱验证码接口有频率限制', async () => {
-    let last;
-    for (let i = 0; i < 6; i++) last = await raw('POST', '/api/auth/send-email-code', { body: { email: 'nobody@example.com' } });
-    expect(last.status === 429, `连发 6 次都放行（最后一次 ${last.status}）`);
+    for (let i = 0; i < 31; i++) {
+      last = i % 2
+        ? await raw('POST', '/api/auth/send-sms-code', { body: { phone: '13800000000' } })
+        : await raw('POST', '/api/auth/send-email-code', { body: { email: 'nobody@example.com' } });
+    }
+    expect(last.status === 429, `连发 31 次都放行（最后一次 ${last.status}）`);
+    expectChineseErrorLike(last);
   });
   if (process.env.DB_FILE && fs.existsSync(process.env.DB_FILE)) {
     await check('验证码不以明文落库', async () => {

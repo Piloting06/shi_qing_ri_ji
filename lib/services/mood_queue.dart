@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/keys.dart';
+import '../api/api_base.dart';
 import '../api/mood_api.dart';
 
 class MoodQueue {
@@ -35,8 +36,15 @@ class MoodQueue {
           [],
         );
         sent.add(i);
+      } on ApiException catch (e) {
+        // 服务器明确拒收（4xx，例如字数超限）：这条重试也不会成功，丢掉，别卡住后面的
+        if (e.statusCode >= 400 && e.statusCode < 500 && e.statusCode != 401 && e.statusCode != 429) {
+          sent.add(i);
+          continue;
+        }
+        break;
       } catch (_) {
-        break; // Network still down, stop trying
+        break; // 网络还没恢复，下次再试
       }
     }
 

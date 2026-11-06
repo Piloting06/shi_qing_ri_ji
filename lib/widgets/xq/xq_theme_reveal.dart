@@ -33,6 +33,8 @@ class _XqThemeRevealState extends State<XqThemeReveal> with TickerProviderStateM
   late final AnimationController _c = AnimationController(vsync: this);
   late final AnimationController _storyC = AnimationController(vsync: this, duration: const Duration(milliseconds: 3600));
   XqPalette? _story;
+  int _gen = 0; // 过渡代号：连续换纸时，旧过渡的收尾回调不能动新过渡的图
+  int _storyGen = 0;
   ThemeState? _theme;
   String? _lastId;
   bool _lastLoaded = false;
@@ -86,8 +88,9 @@ class _XqThemeRevealState extends State<XqThemeReveal> with TickerProviderStateM
     });
     if (story != null) _tellStory(story);
     _c.duration = Duration(milliseconds: _origin == null ? 260 : 640);
+    final gen = ++_gen;
     _c.forward(from: 0).whenCompleteOrCancel(() {
-      if (!mounted) return;
+      if (!mounted || gen != _gen) return;
       setState(() {
         _old?.dispose();
         _old = null;
@@ -97,8 +100,9 @@ class _XqThemeRevealState extends State<XqThemeReveal> with TickerProviderStateM
 
   void _tellStory(XqPalette p) {
     setState(() => _story = p);
+    final gen = ++_storyGen;
     _storyC.forward(from: 0).whenCompleteOrCancel(() {
-      if (mounted) setState(() => _story = null);
+      if (mounted && gen == _storyGen) setState(() => _story = null);
     });
   }
 

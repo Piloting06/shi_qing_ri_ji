@@ -45,8 +45,8 @@ class VText extends StatelessWidget {
           continue;
         }
         final v = _vertical[ch] ?? ch;
-        // 标点不起列：本该落到新列开头的标点，挂在上一列末尾（多占半格也不另起一列）
-        if (cur.isEmpty && cols.isNotEmpty && _punct.contains(v)) {
+        // 标点不起列：本该落到新列开头的标点，挂在上一列末尾（只挂一个，连续句读不再往上挂，免得列高溢出）
+        if (cur.isEmpty && cols.isNotEmpty && _punct.contains(v) && !_punct.contains(cols.last.last)) {
           cols.last.add(v);
           continue;
         }

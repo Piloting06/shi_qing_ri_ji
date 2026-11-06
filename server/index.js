@@ -73,7 +73,9 @@ app.get('/admin', (_req, res) => res.sendFile(require('path').join(__dirname, 'a
     res.status(500).json({ message: '服务器内部错误' });
   });
 
-  app.listen(PORT, () => {
+  // 只听本机：外面经 nginx 反代进来。直接暴露 3001 时，别人伪造 X-Forwarded-For 就能绕过全部限流
+  const HOST = process.env.HOST || '127.0.0.1';
+  app.listen(PORT, HOST, () => {
     console.log(`心晴日记 API running on port ${PORT}`);
   });
 

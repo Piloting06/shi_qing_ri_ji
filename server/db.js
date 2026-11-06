@@ -363,6 +363,12 @@ async function init() {
     db.run('ALTER TABLE time_capsules ADD COLUMN email_notified INTEGER DEFAULT 0');
   }
 
+  // 验证码错误次数（错满 5 次作废）
+  const codeCols = db.exec('PRAGMA table_info(sms_codes)')[0]?.values?.map((row) => row[1]) || [];
+  if (!codeCols.includes('attempts')) {
+    db.run('ALTER TABLE sms_codes ADD COLUMN attempts INTEGER DEFAULT 0');
+  }
+
   // 心情记录关联城市（城迹·城市心晴榜）
   const moodCols = db.exec('PRAGMA table_info(moods)')[0]?.values?.map((row) => row[1]) || [];
   if (!moodCols.includes('city')) {

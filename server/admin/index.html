@@ -110,7 +110,10 @@ function api(method,path,body){
   var h={'Content-Type':'application/json'};
   if(token)h['Authorization']='Bearer '+token;
   return fetch(A+path,{method:method,headers:h,body:body?JSON.stringify(body):null})
-  .then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.message||'Error');return d})});
+  .then(function(r){
+    // 登录过期或没有管理权限（例如升级前签发的旧 token）：清掉 token 回登录框，不留空白页
+    if((r.status===401||r.status===403)&&path!=='/login'){token='';localStorage.removeItem('at');location.reload();return new Promise(function(){})}
+    return r.json().then(function(d){if(!r.ok)throw new Error(d.message||'Error');return d})});
 }
 
 function loadDash(){

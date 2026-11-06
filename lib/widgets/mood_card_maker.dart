@@ -96,8 +96,10 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
   static const _namePrefKey = 'card_username';
   static const _landingUrl = 'https://xqrj.glxgo.xin/?from=card';
 
-  final _repaintKey = GlobalKey();
+  // 每页固定一个导出 key：翻页时不用拆掉重建可见页
+  final _cardKeys = List.generate(moodCardTemplates.length, (_) => GlobalKey());
   final _pageController = PageController();
+  bool _programmaticPaging = false; // 点样式条 / 恢复上次样式时的翻页，不当作用户滑动
   late final _bodyCtrl = TextEditingController(text: widget.text);
   final _nameCtrl = TextEditingController();
   bool _saving = false;
@@ -193,7 +195,11 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
       _watermark = const {'cn', 'xiaoqing', 'none'}.contains(mark) ? mark! : 'cn';
       _nameCtrl.text = prefs.getString(_namePrefKey) ?? '';
     });
-    if (idx >= 0 && _pageController.hasClients) _pageController.jumpToPage(idx);
+    if (idx >= 0 && _pageController.hasClients) {
+      _programmaticPaging = true;
+      _pageController.jumpToPage(idx);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _programmaticPaging = false);
+    }
   }
 
   Future<void> _remember(String key, Object value) async {
@@ -207,19 +213,25 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
   }
 
   void _selectTemplate(int index, {bool animate = true}) {
+    if (index == _templateIndex) return;
     HapticFeedback.selectionClick();
     setState(() => _templateIndex = index);
     _remember(_templatePrefKey, moodCardTemplates[index].id);
     if (animate && _pageController.hasClients) {
-      _pageController.animateToPage(index, duration: const Duration(milliseconds: 280), curve: Curves.easeOutQuart);
+      // 跨多页跳转时 onPageChanged 会逐页触发，期间不再重复震动、写偏好
+      _programmaticPaging = true;
+      _pageController
+          .animateToPage(index, duration: const Duration(milliseconds: 280), curve: Curves.easeOutQuart)
+          .whenComplete(() => _programmaticPaging = false);
     }
   }
 
   Future<File?> _render(String name) async {
-    final boundary = _repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary = _cardKeys[_templateIndex].currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) return null;
     final image = await boundary.toImage(pixelRatio: 3.0);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
     if (bytes == null) return null;
     final dir = await getApplicationDocumentsDirectory();
     final file = File(p.join(dir.path, name));
@@ -461,34 +473,42 @@ class _MoodCardMakerState extends State<MoodCardMaker> {
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: moodCardTemplates.length,
-                onPageChanged: (i) => _selectTemplate(i, animate: false),
+                onPageChanged: (i) {
+                  if (!_programmaticPaging) _selectTemplate(i, animate: false);
+                },
                 itemBuilder: (context, i) {
-                  Widget card = DefaultTextStyle.merge(
-                    style: const TextStyle(fontFamily: XqTypography.content, fontFamilyFallback: XqTypography.contentFallback),
-                    child: moodCardTemplates[i].buildCard(_data(cardHeight)),
-                  );
-                  if (i == _templateIndex && _shareWithQr) {
-                    card = Stack(
-                      children: [
-                        card,
-                        Positioned(
-                          right: 10,
-                          top: 10,
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFBF8F1),
-                              border: Border.all(color: const Color(0xFFC6BDAA), width: 0.6),
+                  // 卡片是导出的图片，尺寸固定：不跟系统字号放大，免得字挤出卡面
+                  return MediaQuery.withNoTextScaling(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: RepaintBoundary(
+                        key: _cardKeys[i],
+                        child: Stack(
+                          children: [
+                            DefaultTextStyle.merge(
+                              style: const TextStyle(fontFamily: XqTypography.content, fontFamilyFallback: XqTypography.contentFallback),
+                              child: moodCardTemplates[i].buildCard(_data(cardHeight)),
                             ),
-                            child: QrImageView(data: _landingUrl, version: QrVersions.auto, size: 40, padding: EdgeInsets.zero),
-                          ),
+                            // 二维码画在导出边界里，存出来、发出去的图上都有；用 Visibility 保持树结构不变
+                            Positioned(
+                              right: 10,
+                              top: 10,
+                              child: Visibility(
+                                visible: _shareWithQr,
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFBF8F1),
+                                    border: Border.all(color: const Color(0xFFC6BDAA), width: 0.6),
+                                  ),
+                                  child: QrImageView(data: _landingUrl, version: QrVersions.auto, size: 40, padding: EdgeInsets.zero),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    );
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: RepaintBoundary(key: i == _templateIndex ? _repaintKey : null, child: card),
+                      ),
+                    ),
                   );
                 },
               ),

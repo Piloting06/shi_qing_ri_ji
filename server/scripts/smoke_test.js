@@ -8,7 +8,7 @@
  *   BASE=http://127.0.0.1:3997 node scripts/smoke_test.js
  */
 const BASE = process.env.BASE || 'http://127.0.0.1:3997';
-if (/xqrj\.glxgo\.xin|114\.55\.138\.55/.test(BASE) && process.env.SMOKE_ALLOW_PROD !== '1') {
+if (/xqrj\.glxgo\.xin|114\.55\.138\.55|47\.254\.214\.87/.test(BASE) && process.env.SMOKE_ALLOW_PROD !== '1') {
   console.error('拒绝对生产环境跑冒烟测试（会注册用户、写数据）。确需如此请设 SMOKE_ALLOW_PROD=1');
   process.exit(2);
 }

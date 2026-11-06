@@ -27,13 +27,15 @@ async function sendViaResend(to, subject, html) {
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(JSON.parse(data));
+          try { resolve(JSON.parse(data)); } catch (_) { resolve({}); }
         } else {
           reject(new Error(`Resend API error ${res.statusCode}: ${data}`));
         }
       });
     });
     req.on('error', reject);
+    // Resend 卡住时 8 秒放弃，别让发码接口一直挂着
+    req.setTimeout(8000, () => req.destroy(new Error('Resend 请求超时')));
     req.write(body);
     req.end();
   });

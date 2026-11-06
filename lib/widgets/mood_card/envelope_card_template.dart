@@ -82,7 +82,14 @@ class EnvelopeCardTemplate {
               const SizedBox(width: 4),
               Text(d.moodLabel, style: displayStyle(12, CardStock.inkSoft)),
               const SizedBox(width: 10),
-              Text(from.isEmpty ? '寄自今天' : '寄自 $from', style: kaiStyle(12.5, CardStock.inkSoft, height: 1.2)),
+              Flexible(
+                child: Text(
+                  from.isEmpty ? '寄自今天' : '寄自 $from',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: kaiStyle(12.5, CardStock.inkSoft, height: 1.2),
+                ),
+              ),
             ],
           ),
         ],
